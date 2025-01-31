@@ -41,7 +41,7 @@ export default function UserProfilePage() {
               <h2 className="text-2xl font-bold text-cyan-500">{user.name}</h2>
               <Badge
                 variant="outline"
-                className={user.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : ''}
+                className={user.status === 'active' ? 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' : ''}
               >
                 {user.status}
               </Badge>

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye } from 'lucide-react';
 import type { Merchant } from '@/types';
+import { cn } from '@/lib/utils';
 
 // Mock data for submitted merchants
 const mockSubmittedMerchants : Merchant[] = [
@@ -78,30 +79,71 @@ export default function MerchantReviewPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Dossier des Commerçants</h1>
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className={cn(
+          "absolute top-0 -right-4 w-96 h-96 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob",
+          "dark:bg-cyan-800/30 bg-cyan-600/30"
+        )} />
+        <div className={cn(
+          "absolute -bottom-8 left-20 w-96 h-96 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000",
+          "dark:bg-cyan-700/30 bg-cyan-500/30"
+        )} />
       </div>
 
-      <Card>
+      {/* Page Title */}
+      <div className="flex justify-between items-center">
+        <h1 className={cn(
+          "text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent",
+          "dark:from-cyan-400 dark:to-cyan-200",
+          "from-cyan-600 to-cyan-400"
+        )}>
+          Dossier des Commerçants
+        </h1>
+      </div>
+
+      <Card className={cn(
+        "dark:bg-gray-900/50 bg-white/50",
+        "backdrop-blur-sm",
+        "dark:border-cyan-900/20 border-cyan-200/20"
+      )}>
         <CardHeader>
-          <CardTitle>Validation Dossier</CardTitle>
+          <CardTitle className="dark:text-gray-100 text-gray-900">
+            Validation Dossier
+          </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Search and Filter */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-3 h-4 w-4 dark:text-gray-400 text-gray-500" />
               <Input
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className={cn(
+                  "pl-9",
+                  "transition-colors duration-200",
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-200/20",
+                  "dark:text-gray-100 text-gray-900",
+                  "dark:placeholder-gray-500 placeholder-gray-400"
+                )}
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className={cn(
+                "w-[180px]",
+                "dark:bg-gray-800/50 bg-gray-50",
+                "dark:border-cyan-900/20 border-cyan-200/20",
+                "dark:text-gray-100 text-gray-900"
+              )}>
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={cn(
+                "dark:bg-gray-800 bg-white",
+                "dark:border-cyan-900/20 border-cyan-200/20"
+              )}>
                 <SelectItem value="all">Statut</SelectItem>
                 <SelectItem value="pending">En cours</SelectItem>
                 <SelectItem value="approved">Accepté</SelectItem>
@@ -110,25 +152,29 @@ export default function MerchantReviewPage() {
             </Select>
           </div>
 
+          {/* Merchant Cards Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredMerchants.map((merchant) => (
-              <Card key={merchant.id} className="border-primary/20 hover:border-primary/40 transition-colors">
+              <Card key={merchant.id} className={cn(
+                "dark:bg-gray-800/50 bg-gray-50",
+                "dark:border-cyan-900/20 border-cyan-200/20",
+                "hover:border-cyan-500/50 transition-colors duration-200"
+              )}>
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="space-y-1">
-                      <h3 className="font-semibold text-lg">{merchant.businessName}</h3>
-                      <p className="text-sm text-muted-foreground">{merchant.ownerName}</p>
+                      <h3 className="font-semibold text-lg dark:text-gray-100 text-gray-900">
+                        {merchant.businessName}
+                      </h3>
+                      <p className="text-sm dark:text-gray-400 text-gray-500">
+                        {merchant.ownerName}
+                      </p>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={
-                        merchant.status === 'approved'
-                          ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                          : merchant.status === 'denied'
-                          ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                          : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-                      }
-                    >
+                    <Badge variant="outline" className={cn(
+                      merchant.status === 'approved' && "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                      merchant.status === 'denied' && "bg-red-500/10 text-red-500 border-red-500/20",
+                      merchant.status === 'pending' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                    )}>
                       en cours
                     </Badge>
                   </div>
@@ -182,7 +228,7 @@ export default function MerchantReviewPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                          className="text-cyan-500 hover:text-cyan-600 hover:bg-cyan-500/10"
                           onClick={() => handleApprove(merchant.id)}
                         >
                           <CheckCircle2 className="h-4 w-4" />
@@ -197,8 +243,15 @@ export default function MerchantReviewPage() {
         </CardContent>
       </Card>
 
+      {/* Details Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="sm:max-w-[600px] md:max-w-[600px] md:h-[700px] overflow-auto">
+        <DialogContent className={cn(
+          "sm:max-w-[600px] md:max-w-[600px] md:h-[700px]",
+          "dark:bg-gray-900/50 bg-white/50",
+          "backdrop-blur-sm",
+          "dark:border-cyan-900/20 border-cyan-200/20",
+          "overflow-auto"
+        )}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-primary">
               Application Details

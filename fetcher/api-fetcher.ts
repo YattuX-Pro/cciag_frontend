@@ -14,3 +14,9 @@ export const getUsers = (params: Record<string, any> = {}): Promise<any> => {
 
 //Créer un utilisateur
 export const createUser = (body: User): Promise<any> => poster('/api/users/', body);
+
+//Modifier un utilisateur
+export const updateUser = (body: User, id): Promise<any> => updater(`/api/users/${id}`, body);
+
+
+export const getUserDetail = (id): Promise<User> => fetcher(`/api/users/${id}`);

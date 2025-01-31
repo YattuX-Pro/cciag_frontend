@@ -1,23 +1,39 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { AuthActions } from "@/app/(auth)/utils";
+import { protectedRoutes, roleBasedRoutes, urls } from "./types/const";
+
 
 export async function middleware(request: NextRequest) {
-  const { isTokenExpired } = AuthActions();
+  const { isTokenExpired, removeTokens, getToken } = AuthActions();
   const cookieStore = request.cookies;
   const accessToken = cookieStore.get("accessToken");
+  const role = cookieStore.get("userRoleToken");
+  const { pathname } = request.nextUrl;
 
-  if (request.nextUrl.pathname === "/login") {
+  if (pathname === urls.login) {
+    removeTokens();
     return NextResponse.next();
   }
 
-  if (!accessToken || isTokenExpired(accessToken.value)) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (!accessToken || isTokenExpired(accessToken.value) || !role) {
+    return NextResponse.redirect(new URL(urls.login, request.url));
+  }
+
+  const allowedRoutes = roleBasedRoutes[role.value] || [];
+
+  if (protectedRoutes.some((route) => pathname.startsWith(route))) {
+    if(pathname === urls.dashboard) return NextResponse.next();
+    
+    const hasAccess = allowedRoutes.some((route) => pathname.startsWith(route));
+    if (!hasAccess) {
+      return NextResponse.redirect(new URL(urls.not_fount, request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|auth|_next/static|_next/image|.*\\.png$).*)"],
+  matcher: ["/dashboard/:path*"],
 };

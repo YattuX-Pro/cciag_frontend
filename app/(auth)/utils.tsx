@@ -1,3 +1,4 @@
+import { User } from "@/types";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
@@ -11,7 +12,7 @@ const api = axios.create({
   },
 });
 
-const storeToken = (token: string, type: "access" | "refresh") => {
+const storeToken = (token: string, type: "access" | "refresh" | "userRole") => {
   Cookies.set(type + "Token", token);
 };
 
@@ -19,9 +20,42 @@ const getToken = (type: string) => {
   return Cookies.get(type + "Token");
 };
 
+const getUserIdFromToken = (token: string): string | null => {
+  try {
+    const decodedToken: { user_id: string } = jwtDecode(token);
+    return decodedToken.user_id || null;
+  } catch (error) {
+    console.error("Failed to decode token", error);
+    return null;
+  }
+};
+
+const isAuthenticated = (): boolean => {
+  const accessToken = getToken("access");
+  const role = getToken("userRole");
+  
+  if (!accessToken || !role) {
+    return false;
+  }
+  
+  return !isTokenExpired(accessToken);
+};
+
+const getUserRoleFromToken = (token: string): string | null => {
+  try {
+
+    const decodedToken: { role: string } = jwtDecode(token);
+    return decodedToken.role || null;
+  } catch (error) {
+    console.error("Failed to decode token", error);
+    return null;
+  }
+};
+
 const removeTokens = () => {
   Cookies.remove("accessToken");
   Cookies.remove("refreshToken");
+  Cookies.remove("userRoleToken");
 };
 
 const isTokenExpired = (token: string) => {
@@ -40,7 +74,7 @@ const register = (email: string, username: string, password: string) => {
 };
 
 const login = (email: string, password: string) => {
-  return api.post("/auth/jwt/create", { email, password });
+  return api.post("/token", { email, password });
 };
 
 const logout = () => {
@@ -51,7 +85,7 @@ const logout = () => {
 
 const handleJWTRefresh = () => {
   const refreshToken = getToken("refresh");
-  return api.post("/auth/jwt/refresh", { refresh: refreshToken });
+  return api.post("/token/refresh/", { refresh: refreshToken });
 };
 
 const resetPassword = (email: string) => {
@@ -84,5 +118,8 @@ export const AuthActions = () => {
     logout,
     removeTokens,
     isTokenExpired,
+    getUserIdFromToken,
+    getUserRoleFromToken,
+    isAuthenticated
   };
 };

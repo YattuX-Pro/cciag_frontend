@@ -1,55 +1,55 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Upload, Camera, CreditCard, CheckCircle2 } from 'lucide-react';
-import type { Merchant } from '@/types';
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Upload, Camera, CreditCard, CheckCircle2 } from "lucide-react";
+import type { Merchant } from "@/types";
+import { cn } from "@/lib/utils";
 
 const mockMerchants: Merchant[] = [
   {
-    id: '1',
-    businessName: 'Acme Corp',
-    ownerName: 'John Smith',
-    email: 'john@acmecorp.com',
-    phone: '+1234567890',
-    address: '123 Business St, City',
-    status: 'active',
-    createdAt: '2024-03-20',
-    signature: '',
-    photo: ''
+    id: "1",
+    businessName: "Acme Corp",
+    ownerName: "John Smith",
+    email: "john@acmecorp.com",
+    phone: "+1234567890",
+    address: "123 Business St, City",
+    status: "active",
+    createdAt: "2024-03-20",
+    signature: "",
+    photo: "",
   },
 ];
 
 const steps = [
-  { id: 1, title: 'Information Commerçant' },
-  { id: 2, title: 'Photo & Signature' },
-  { id: 3, title: 'Paiement' },
-  { id: 4, title: 'Revu & Soummison' },
+  { id: 1, title: "Information Commerçant" },
+  { id: 2, title: "Photo & Signature" },
+  { id: 3, title: "Paiement" },
+  { id: 4, title: "Revu & Soummison" },
 ];
-
 
 export default function AddMerchantDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    businessName: '',
-    ownerName: '',
-    email: '',
-    phone: '',
-    address: '',
+    businessName: "",
+    ownerName: "",
+    email: "",
+    phone: "",
+    address: "",
     photo: null as string | null,
     signature: null as string | null,
     paymentComplete: false,
@@ -57,10 +57,9 @@ export default function AddMerchantDialog() {
 
   const progress = (currentStep / steps.length) * 100;
 
-  const changeStep = ( step : number )=>{
+  const changeStep = (step: number) => {
     setCurrentStep(step);
-  }
-  
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -68,18 +67,17 @@ export default function AddMerchantDialog() {
         return (
           <div className="space-y-6">
             <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -96,12 +94,12 @@ export default function AddMerchantDialog() {
               <div className="space-y-2">
                 <Label htmlFor="businessName">Prenom</Label>
                 <Input
-                    id="businessName"
-                    value={formData.businessName}
-                    onChange={(e) =>
+                  id="businessName"
+                  value={formData.businessName}
+                  onChange={(e) =>
                     setFormData({ ...formData, businessName: e.target.value })
-                    }
-                    required
+                  }
+                  required
                 />
               </div>
             </div>
@@ -150,7 +148,9 @@ export default function AddMerchantDialog() {
                         variant="ghost"
                         size="icon"
                         className="absolute top-2 right-2 bg-black/50 hover:bg-black/70"
-                        onClick={() => setFormData({ ...formData, photo: null })}
+                        onClick={() =>
+                          setFormData({ ...formData, photo: null })
+                        }
                       >
                         <Camera className="w-4 h-4 text-white" />
                       </Button>
@@ -271,9 +271,11 @@ export default function AddMerchantDialog() {
             </div>
 
             {formData.paymentComplete && (
-              <div className="flex items-center justify-center p-4 bg-green-500/10 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mr-2" />
-                <span className="text-green-500">Payment completed successfully</span>
+              <div className="flex items-center justify-center p-4 bg-cyan-500/10 rounded-lg">
+                <CheckCircle2 className="w-5 h-5 text-cyan-500 mr-2" />
+                <span className="text-cyan-500">
+                  Payment completed successfully
+                </span>
               </div>
             )}
           </div>
@@ -284,16 +286,22 @@ export default function AddMerchantDialog() {
           <div className="space-y-6">
             <div className="grid gap-6">
               <div className="space-y-2">
-                <Label className="text-muted-foreground">Information Enrolement</Label>
+                <Label className="text-muted-foreground">
+                  Information Enrolement
+                </Label>
                 <Card className="border-primary/20">
                   <CardContent className="pt-6">
                     <dl className="grid grid-cols-2 gap-4">
                       <div>
-                        <dt className="text-sm text-muted-foreground">Business Name</dt>
+                        <dt className="text-sm text-muted-foreground">
+                          Business Name
+                        </dt>
                         <dd className="font-medium">{formData.businessName}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-muted-foreground">Owner Name</dt>
+                        <dt className="text-sm text-muted-foreground">
+                          Owner Name
+                        </dt>
                         <dd className="font-medium">{formData.ownerName}</dd>
                       </div>
                       <div>
@@ -330,11 +338,13 @@ export default function AddMerchantDialog() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-muted-foreground">Statut de paiement</Label>
-                <div className="p-4 bg-green-500/10 rounded-lg">
+                <Label className="text-muted-foreground">
+                  Statut de paiement
+                </Label>
+                <div className="p-4 bg-cyan-500/10 rounded-lg">
                   <div className="flex items-center">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 mr-2" />
-                    <span className="text-green-500">Payment verified</span>
+                    <CheckCircle2 className="w-5 h-5 text-cyan-500 mr-2" />
+                    <span className="text-cyan-500">Payment verified</span>
                   </div>
                 </div>
               </div>
@@ -344,21 +354,29 @@ export default function AddMerchantDialog() {
     }
   };
 
-
-
   return (
     <div>
-              <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Commerçants</h1>
+      <div className="flex justify-between items-center">
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Enroller un Commerçant
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px]">
+          <DialogContent
+            className={cn(
+              "sm:max-w-[800px]",
+              "bg-white opacity-100",
+              "dark:bg-gray-900/50 bg-white/50",
+              "backdrop-blur-sm",
+              "dark:border-cyan-900/20 border-cyan-200/20",
+              "shadow-lg"
+            )}
+          >
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-primary">Nouveau Commerçant</DialogTitle>
+              <DialogTitle className="text-2xl font-bold text-primary">
+                Nouveau Commerçant
+              </DialogTitle>
             </DialogHeader>
             <div className="mb-8">
               <div className="flex justify-between mb-2">
@@ -366,20 +384,24 @@ export default function AddMerchantDialog() {
                   <div
                     key={step.id}
                     className={`flex items-center ${
-                      currentStep >= step.id ? 'text-primary' : 'text-muted-foreground'
+                      currentStep >= step.id
+                        ? "text-primary"
+                        : "text-muted-foreground"
                     }`}
                   >
                     <div
                       onClick={() => changeStep(step.id)}
                       className={`w-8 h-8 rounded-full cursor-pointer flex items-center justify-center mr-2 ${
                         currentStep >= step.id
-                          ? 'bg-primary text-white'
-                          : 'bg-muted border-2 border-muted-foreground'
+                          ? "bg-primary text-white"
+                          : "bg-muted border-2 border-muted-foreground"
                       }`}
                     >
                       {step.id}
                     </div>
-                    <span className="hidden md:inline text-sm">{step.title}</span>
+                    <span className="hidden md:inline text-sm">
+                      {step.title}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -413,14 +435,14 @@ export default function AddMerchantDialog() {
                   }}
                   className="border-primary/20"
                 >
-                  {currentStep === 1 ? 'Cancel' : 'Previous'}
+                  {currentStep === 1 ? "Cancel" : "Previous"}
                 </Button>
                 <Button
                   type="submit"
                   className="bg-primary hover:bg-primary/90"
                   disabled={currentStep === 3 && !formData.paymentComplete}
                 >
-                  {currentStep === steps.length ? 'Submit' : 'Next'}
+                  {currentStep === steps.length ? "Submit" : "Next"}
                 </Button>
               </div>
             </form>
@@ -428,5 +450,5 @@ export default function AddMerchantDialog() {
         </Dialog>
       </div>
     </div>
-  )
+  );
 }
