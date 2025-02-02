@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Column } from "@/types";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -29,6 +30,9 @@ import { toast } from "@/hooks/use-toast";
 import { user_roles, user_status_list } from "@/types/const";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { DataTable } from "@/components/DataTable";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,22 +41,107 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState(user_roles);
+  const [next, setNext] = useState(null);
+  const [count, setCount] = useState(0);
+  const [previous, setPrevious] = useState(null);
   const [afterUserDialogClose, setAfterUserDialogClose] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<boolean>(true);
 
-  useEffect(() => {
+  const loadUsers = async (url?: string) => {
     setLoading(true);
-    getUsers({search: searchTerm})
-      .then((data) => {
-        setUsers(data);
-      })
-      .catch((err) => {
-        console.log(err);
-      }).finally;
-    {
+    try {
+      const params = url
+        ? { url }
+        : {
+            search: searchTerm,
+            role: roleFilter !== "all" ? roleFilter : "",
+            is_active: activeFilter !== null ? activeFilter : true,
+          };
+
+      const data = await getUsers(params);
+      setUsers(data.results);
+      setNext(data.next);
+      setPrevious(data.previous);
+      setCount(data.count);
+    } catch (err) {
+      console.log(err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les utilisateurs",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
     }
-  }, [afterUserDialogClose, searchTerm]);
+  };
 
+  useEffect(() => {
+    loadUsers();
+  }, [afterUserDialogClose, searchTerm, roleFilter, activeFilter]);
+
+  const columns: Column<User>[] = [
+    {
+      header: "Nom",
+      accessorKey: "last_name",
+    },
+    {
+      header: "Prénom",
+      accessorKey: "first_name",
+    },
+    {
+      header: "Email",
+      accessorKey: "email",
+    },
+    {
+      header: "Téléphone",
+      accessorKey: "phone_number",
+    },
+    {
+      header: "Rôle",
+      cell: (user) => (
+        <span
+          className={cn(
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            "dark:bg-cyan-500/10 bg-cyan-500/20",
+            "dark:text-cyan-400 text-cyan-600"
+          )}
+        >
+          {user_roles().find((role) => role.value === user.role)?.name ||
+            user.role}
+        </span>
+      ),
+      accessorKey: "id",
+    },
+    {
+      header: "Statut",
+      cell: (user) => (
+        <span
+          className={cn(
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            user.is_active
+              ? "dark:bg-emerald-500/10 bg-emerald-500/20 dark:text-emerald-400 text-emerald-600"
+              : "dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600"
+          )}
+        >
+          {user.is_active ? "Actif" : "Non actif"}
+        </span>
+      ),
+      accessorKey: "id",
+    },
+    {
+      header: "Actions",
+      cell: (user) => (
+        <div className="text-right">
+          <AddUserDialog
+            afterClose={setAfterUserDialogClose}
+            isEdit={true}
+            user={user}
+          />
+        </div>
+      ),
+      accessorKey: "id",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -164,137 +253,34 @@ export default function UsersPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {/* Similar update for status filter Select component */}
+            </div>
+            <div className="flex justify-start items-center space-x-2 mb-4">
+              <Switch
+                checked={activeFilter}
+                onCheckedChange={(checked) => {
+                  setActiveFilter(checked);
+                }}
+              />
+              <Label htmlFor="airplane-mode">
+                {activeFilter === null
+                  ? "Tous les statuts"
+                  : activeFilter
+                  ? "Actifs"
+                  : "Non Actifs"}
+              </Label>
             </div>
 
-            <div
-              className={cn(
-                "rounded-md border overflow-hidden",
-                "dark:border-cyan-900/20 border-cyan-200/20"
-              )}
-            >
-              <Table>
-                <TableHeader>
-                  <TableRow
-                    className={cn(
-                      "transition-colors duration-200",
-                      "dark:bg-gray-800/50 bg-gray-50/80",
-                      "dark:hover:bg-gray-800/70 hover:bg-gray-100/80",
-                      "dark:border-b dark:border-cyan-900/20 border-b border-cyan-200/20"
-                    )}
-                  >
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Nom
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Prénom
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Email
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Téléphone
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Rôle
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Statut
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className={cn(
-                            "w-6 h-6 border-2 rounded-full animate-spin",
-                            "dark:border-cyan-500 border-cyan-600",
-                            "dark:border-t-transparent border-t-transparent"
-                          )} />
-                          <span className="dark:text-gray-400 text-gray-600">
-                            Chargement des utilisateurs...
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : users?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
-                        <span className="dark:text-gray-400 text-gray-600">
-                          Aucun utilisateur trouvé
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
-                  <AnimatePresence>
-                    {users?.map((user, index) => (
-                      <motion.tr
-                        key={user.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={cn(
-                          "transition-colors duration-200",
-                          "dark:bg-gray-900/50 bg-white/50",
-                          "dark:hover:bg-gray-800/70 hover:bg-gray-50/70",
-                          "dark:border-b dark:border-cyan-900/20 border-b border-cyan-200/20"
-                        )}
-                      >
-                        <TableCell className="dark:text-gray-100 text-gray-900 font-medium">
-                          {user.last_name}
-                        </TableCell>
-                        <TableCell className="dark:text-gray-100 text-gray-900">
-                          {user.first_name}
-                        </TableCell>
-                        <TableCell className="dark:text-gray-100 text-gray-900">
-                          {user.email}
-                        </TableCell>
-                        <TableCell className="dark:text-gray-100 text-gray-900">
-                          {user.phone_number}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                              "dark:bg-cyan-500/10 bg-cyan-500/20",
-                              "dark:text-cyan-400 text-cyan-600"
-                            )}
-                          >
-                            {user_roles().find(
-                              (role) => role.value === user.role
-                            )?.name || user.role}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                              user.is_active
-                                ? "dark:bg-emerald-500/10 bg-emerald-500/20 dark:text-emerald-400 text-emerald-600"
-                                : "dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600"
-                            )}
-                          >
-                            {user.is_active ? "Actif" : "Non actif"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <AddUserDialog
-                            afterClose={setAfterUserDialogClose}
-                            isEdit={true}
-                            user={user}
-                          />
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
-            </div>
+            <DataTable
+              data={users}
+              columns={columns}
+              loading={loading}
+              pagination={{
+                count,
+                next,
+                previous,
+                onPageChange: loadUsers,
+              }}
+            />
           </CardContent>
         </Card>
       </motion.div>

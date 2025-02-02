@@ -5,7 +5,7 @@ import { protectedRoutes, roleBasedRoutes, urls } from "./types/const";
 
 
 export async function middleware(request: NextRequest) {
-  const { isTokenExpired, removeTokens, getToken } = AuthActions();
+  const { isTokenExpired, removeTokens, logout } = AuthActions();
   const cookieStore = request.cookies;
   const accessToken = cookieStore.get("accessToken");
   const role = cookieStore.get("userRoleToken");
@@ -17,6 +17,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!accessToken || isTokenExpired(accessToken.value) || !role) {
+    logout();
     return NextResponse.redirect(new URL(urls.login, request.url));
   }
 

@@ -56,3 +56,9 @@ export interface CardHistory {
   actionDate: string;
   performedBy: string;
 }
+
+export interface Column<T> {
+  header: string;
+  accessorKey: keyof T | ((item: T) => React.ReactNode);
+  cell?: (item: T) => React.ReactNode;
+}

@@ -40,6 +40,10 @@ export default function LoginPage() {
         storeToken(res.data.refresh, "refresh");
         const role = getUserRoleFromToken(res.data.access);
         storeToken(role, "userRole");
+        
+        // Force token refresh and add small delay
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const allowedRoutes = roleBasedRoutes[role];
         router.push(allowedRoutes[0]);
       })

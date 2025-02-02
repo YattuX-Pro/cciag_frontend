@@ -54,4 +54,9 @@ export const roleBasedRoutes = {
 
 export const protectedRoutes = [urls.dashboard]
 
+export const defaultPagination = {
+    "limit" : 1,
+}
+
+
 
