@@ -1,68 +1,97 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, Upload, Camera, CreditCard, CheckCircle2 } from 'lucide-react';
-import type { Merchant } from '@/types';
+import { Plus, Search } from 'lucide-react';
 import AddMerchantDialog from './(dialog)/AddMerchantDialog';
 import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const mockMerchants: Merchant[] = [
-  {
-    id: '1',
-    businessName: 'Acme Corp',
-    ownerName: 'Saliou Sow',
-    email: 'saliou@test.com',
-    phone: '+1234567890',
-    address: '123 Conakry St, City',
-    status: 'active',
-    createdAt: '2024-03-20',
-    signature: '',
-    photo: ''
-  },
-];
-
+import { motion } from 'framer-motion';
+import { columns } from './columns';
+import { getMerchants } from '@/fetcher/api-fetcher';
+import { DataTable } from '@/components/DataTable';
+import { toast } from '@/hooks/use-toast';
+import { MerchantEnrollment } from '@/types';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { statusMap } from '@/types/const';
 
 export default function MerchantsPage() {
+  const [data, setData] = useState<MerchantEnrollment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
+  const [count, setCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [status, setStatus] = useState('');
+  const [date, setDate] = useState<Date>();
 
-  const filteredMerchants = mockMerchants.filter((merchant) => {
-    const matchesSearch =
-      merchant.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      merchant.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      merchant.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || merchant.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const loadMerchants = async (url?: string) => {
+    setLoading(true);
+    try {
+      const params = url
+        ? { url }
+        : {
+            search: searchTerm ? searchTerm : ""  ,
+            status: status ? status : "",
+            exact_date: date ? format(date, "yyyy-MM-dd") : "",
+          };
+
+      const response = await getMerchants(params);
+      console.log(response);
+      setData(response.results);
+      setNext(response.next);
+      setPrevious(response.previous);
+      setCount(response.count);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les commerçants",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMerchants();
+  }, [searchTerm, status, date]);
+
+  const actionsColumn = {
+    header: "Actions", 
+    cell: (merchant) => (
+      <div className="text-right space-x-2">
+        <AddMerchantDialog
+          onSuccess={() => loadMerchants()}
+          merchant={merchant}
+          trigger={
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "transition-colors duration-200",
+                "dark:text-cyan-400 text-cyan-600",
+                "dark:hover:text-cyan-300 hover:text-cyan-500",
+                "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+              )}
+            >
+              Edit
+            </Button>
+          }
+        />
+      </div>
+    ),
+    accessorKey: "id",
+  }
+
+  const columnsWithActions = [...columns, actionsColumn];
 
   return (
     <div className="space-y-6">
@@ -89,14 +118,14 @@ export default function MerchantsPage() {
             "from-cyan-600 to-cyan-400"
           )}
         >
-          Commerçants
+          Enrollements
         </motion.h1>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <AddMerchantDialog />
+          <AddMerchantDialog onSuccess={() => loadMerchants()} />
         </motion.div>
       </div>
 
@@ -110,21 +139,15 @@ export default function MerchantsPage() {
           "dark:bg-gray-900/50 bg-white/50",
           "dark:border-cyan-900/20 border-cyan-200/20"
         )}>
-          <CardHeader>
-            <CardTitle className={cn(
-              "text-lg font-medium",
-              "dark:text-gray-300 text-gray-600"
-            )}>
-              Enrôlement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1 relative">
-                <Search className={cn(
-                  "absolute left-3 top-3 h-4 w-4",
-                  "dark:text-cyan-400 text-cyan-600"
-                )} />
+                <Search
+                  className={cn(
+                    "absolute left-3 top-3 h-4 w-4",
+                    "dark:text-cyan-400 text-cyan-600"
+                  )}
+                />
                 <Input
                   placeholder="Rechercher des commerçants..."
                   value={searchTerm}
@@ -140,137 +163,91 @@ export default function MerchantsPage() {
                   )}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className={cn(
-                  "w-[180px]",
-                  "dark:bg-gray-800/50 bg-gray-50",
-                  "dark:border-cyan-900/20 border-cyan-200/20",
-                  "dark:text-gray-100 text-gray-900"
-                )}>
+
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger 
+                  className={cn(
+                    "w-[200px] transition-colors duration-200",
+                    "dark:bg-gray-800/50 bg-gray-50",
+                    "dark:border-cyan-900/20 border-cyan-200/20",
+                    "dark:focus:border-cyan-500 focus:border-cyan-600",
+                    "dark:text-gray-100 text-gray-900"
+                  )}
+                >
                   <SelectValue placeholder="Filtrer par statut" />
                 </SelectTrigger>
-                <SelectContent className={cn(
-                  "dark:bg-gray-800 bg-white",
-                  "dark:border-cyan-900/20 border-cyan-200/20"
-                )}>
-                  <SelectItem value="all" className="dark:text-gray-100 text-gray-900">
-                    Tous les statuts
-                  </SelectItem>
-                  <SelectItem value="active" className="dark:text-gray-100 text-gray-900">
-                    Actif
-                  </SelectItem>
-                  <SelectItem value="suspended" className="dark:text-gray-100 text-gray-900">
-                    Suspendu
-                  </SelectItem>
+                <SelectContent>
+                  {Object.entries(statusMap).map(([key, value]) => (
+                    <SelectItem key={key} value={key}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal transition-colors duration-200",
+                      "dark:bg-gray-800/50 bg-gray-50",
+                      "dark:border-cyan-900/20 border-cyan-200/20",
+                      "dark:focus:border-cyan-500 focus:border-cyan-600",
+                      "dark:text-gray-100 text-gray-900",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "dd/MM/yyyy") : "Filtrer par date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                    locale={fr}
+                    formatters={{
+                      formatCaption: (date, options) => format(date, "MMMM yyyy", { locale: fr }),
+                      formatDay: (date) => format(date, "d")
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {(status || date || searchTerm) && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setStatus('');
+                    setDate(undefined);
+                    setSearchTerm('');
+                  }}
+                  className={cn(
+                    "transition-colors duration-200",
+                    "dark:text-cyan-400 text-cyan-600",
+                    "dark:hover:text-cyan-300 hover:text-cyan-500",
+                    "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+                  )}
+                >
+                  Réinitialiser les filtres
+                </Button>
+              )}
             </div>
 
-            <div className={cn(
-              "rounded-md border overflow-hidden",
-              "dark:border-cyan-900/20 border-cyan-200/20"
-            )}>
-              <Table>
-                <TableHeader>
-                  <TableRow className={cn(
-                    "transition-colors duration-200",
-                    "dark:bg-gray-800/50 bg-gray-50/80",
-                    "dark:hover:bg-gray-800/70 hover:bg-gray-100/80",
-                    "dark:border-b dark:border-cyan-900/20 border-b border-cyan-200/20"
-                  )}>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Nom
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Adresse
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Contact
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Statut
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium">
-                      Date Création
-                    </TableHead>
-                    <TableHead className="dark:text-gray-300 text-gray-600 font-medium text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <AnimatePresence>
-                    {filteredMerchants.map((merchant, index) => (
-                      <motion.tr
-                        key={merchant.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={cn(
-                          "transition-colors duration-200",
-                          "dark:bg-gray-900/50 bg-white/50",
-                          "dark:hover:bg-gray-800/70 hover:bg-gray-50/70",
-                          "dark:border-b dark:border-cyan-900/20 border-b border-cyan-200/20"
-                        )}
-                      >
-                        <TableCell className="dark:text-gray-100 text-gray-900 font-medium">
-                          {merchant.businessName}
-                        </TableCell>
-                        <TableCell className="dark:text-gray-100 text-gray-900">
-                          {merchant.ownerName}
-                        </TableCell>
-                        <TableCell>
-                          <div className="dark:text-gray-100 text-gray-900">
-                            {merchant.email}
-                          </div>
-                          <div className="text-sm dark:text-gray-400 text-gray-500">
-                            {merchant.phone}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className={cn(
-                            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                            merchant.status === 'active' && "dark:bg-emerald-500/10 bg-emerald-500/20 dark:text-emerald-400 text-emerald-600",
-                            merchant.status === 'suspended' && "dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600"
-                          )}>
-                            {merchant.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="dark:text-gray-100 text-gray-900">
-                          {merchant.createdAt}
-                        </TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "transition-colors duration-200",
-                              "dark:text-cyan-400 text-cyan-600",
-                              "dark:hover:text-cyan-300 hover:text-cyan-500",
-                              "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
-                            )}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "transition-colors duration-200",
-                              "dark:text-cyan-400 text-cyan-600",
-                              "dark:hover:text-cyan-300 hover:text-cyan-500",
-                              "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
-                            )}
-                          >
-                            Generate ID
-                          </Button>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
-            </div>
+            <DataTable 
+              columns={columnsWithActions} 
+              data={data}
+              loading={loading}
+              pagination={{
+                count,
+                next,
+                previous,
+                onPageChange: loadMerchants,
+              }}
+            />
           </CardContent>
         </Card>
       </motion.div>

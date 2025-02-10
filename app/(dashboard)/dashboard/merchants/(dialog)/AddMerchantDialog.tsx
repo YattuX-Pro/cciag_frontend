@@ -1,454 +1,637 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Upload, Camera, CreditCard, CheckCircle2 } from "lucide-react";
-import type { Merchant } from "@/types";
+import { Edit2, Loader, Plus, Upload, RefreshCw, Check, Save } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import {
+  createMerchant,
+  getAddresses,
+  updateMerchant,
+} from "@/fetcher/api-fetcher";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Address, MerchantEnrollment } from "@/types";
+import { useDropzone } from "react-dropzone";
+import SignatureCanvas from "react-signature-canvas";
 
-const mockMerchants: Merchant[] = [
-  {
-    id: "1",
-    businessName: "Acme Corp",
-    ownerName: "John Smith",
-    email: "john@acmecorp.com",
-    phone: "+1234567890",
-    address: "123 Business St, City",
-    status: "active",
-    createdAt: "2024-03-20",
-    signature: "",
-    photo: "",
-  },
-];
+import SearchableSelect from "@/components/SearchableSelect";
 
-const steps = [
-  { id: 1, title: "Information Commerçant" },
-  { id: 2, title: "Photo & Signature" },
-  { id: 3, title: "Paiement" },
-  { id: 4, title: "Revu & Soummison" },
-];
+interface AddMerchantDialogProps {
+  merchant?: MerchantEnrollment;
+  onSuccess?: () => void;
+  trigger?: React.ReactNode;
+}
 
-export default function AddMerchantDialog() {
+export default function AddMerchantDialog({
+  merchant,
+  onSuccess,
+  trigger,
+}: AddMerchantDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    businessName: "",
-    ownerName: "",
-    email: "",
-    phone: "",
-    address: "",
-    photo: null as string | null,
-    signature: null as string | null,
-    paymentComplete: false,
+  const [isLoading, setIsLoading] = useState(false);
+  const signaturePadRef = useRef<SignatureCanvas>(null);
+  const [selectedAddress, setSelectedAddress] = useState(
+    merchant?.address?.id || ""
+  );
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [profilePreview, setProfilePreview] = useState<string | null>(
+    merchant?.profile_photo || null
+  );
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(
+    merchant?.signature_photo || null
+  );
+  const [isSignatureSaved, setIsSignatureSaved] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    setValue,
+    setError,
+    formState: { errors },
+  } = useForm<MerchantEnrollment>({
+    defaultValues: merchant ? {
+      ...merchant,
+      user: {
+        ...merchant?.user,
+        phone_number: merchant?.user?.phone_number ? Number(merchant.user.phone_number) : ''
+      }
+    } : undefined
   });
 
-  const progress = (currentStep / steps.length) * 100;
-
-  const changeStep = (step: number) => {
-    setCurrentStep(step);
-  };
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ownerName">Nom</Label>
-                <Input
-                  id="ownerName"
-                  value={formData.ownerName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ownerName: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Prenom</Label>
-                <Input
-                  id="businessName"
-                  value={formData.businessName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, businessName: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Addresse</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                required
-              />
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <Label>Photo</Label>
-              <div className="border-2 border-dashed border-primary/20 rounded-lg p-8">
-                <div className="flex flex-col items-center">
-                  {formData.photo ? (
-                    <div className="relative w-full h-48">
-                      <img
-                        src={formData.photo}
-                        alt="Business"
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 bg-black/50 hover:bg-black/70"
-                        onClick={() =>
-                          setFormData({ ...formData, photo: null })
-                        }
-                      >
-                        <Camera className="w-4 h-4 text-white" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <label className="w-full cursor-pointer">
-                      <div className="flex flex-col items-center">
-                        <Upload className="w-12 h-12 text-primary mb-4" />
-                        <p className="text-sm text-muted-foreground text-center">
-                          Click to upload or drag and drop
-                          <br />
-                          SVG, PNG, JPG or GIF (max. 800x400px)
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setFormData({
-                                ...formData,
-                                photo: reader.result as string,
-                              });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label>Signature</Label>
-              <div className="border-2 border-dashed border-primary/20 rounded-lg p-8">
-                <div className="flex flex-col items-center">
-                  {formData.signature ? (
-                    <div className="relative w-full h-32">
-                      <img
-                        src={formData.signature}
-                        alt="Signature"
-                        className="w-full h-full object-contain"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 bg-black/50 hover:bg-black/70"
-                        onClick={() =>
-                          setFormData({ ...formData, signature: null })
-                        }
-                      >
-                        <Camera className="w-4 h-4 text-white" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <label className="w-full cursor-pointer">
-                      <div className="flex flex-col items-center">
-                        <Upload className="w-12 h-12 text-primary mb-4" />
-                        <p className="text-sm text-muted-foreground text-center">
-                          Upload signature image
-                          <br />
-                          PNG or JPG (max. 400x200px)
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setFormData({
-                                ...formData,
-                                signature: reader.result as string,
-                              });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="bg-primary/5 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <CreditCard className="w-6 h-6 text-primary mr-2" />
-                  <h3 className="text-lg font-semibold">Paiement</h3>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-6">
-                Complétez le paiement pour finaliser l'enrôlement
-              </p>
-              <Button
-                className="w-full bg-primary hover:bg-primary/90"
-                onClick={() => {
-                  setFormData({ ...formData, paymentComplete: true });
-                }}
-              >
-                Process Payment
-              </Button>
-            </div>
-
-            {formData.paymentComplete && (
-              <div className="flex items-center justify-center p-4 bg-cyan-500/10 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-cyan-500 mr-2" />
-                <span className="text-cyan-500">
-                  Payment completed successfully
-                </span>
-              </div>
-            )}
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div className="grid gap-6">
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">
-                  Information Enrolement
-                </Label>
-                <Card className="border-primary/20">
-                  <CardContent className="pt-6">
-                    <dl className="grid grid-cols-2 gap-4">
-                      <div>
-                        <dt className="text-sm text-muted-foreground">
-                          Business Name
-                        </dt>
-                        <dd className="font-medium">{formData.businessName}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">
-                          Owner Name
-                        </dt>
-                        <dd className="font-medium">{formData.ownerName}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">Email</dt>
-                        <dd className="font-medium">{formData.email}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">Phone</dt>
-                        <dd className="font-medium">{formData.phone}</dd>
-                      </div>
-                    </dl>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Documents</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  {formData.photo && (
-                    <img
-                      src={formData.photo}
-                      alt="Business"
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                  )}
-                  {formData.signature && (
-                    <img
-                      src={formData.signature}
-                      alt="Signature"
-                      className="w-full h-32 object-contain rounded-lg bg-white"
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">
-                  Statut de paiement
-                </Label>
-                <div className="p-4 bg-cyan-500/10 rounded-lg">
-                  <div className="flex items-center">
-                    <CheckCircle2 className="w-5 h-5 text-cyan-500 mr-2" />
-                    <span className="text-cyan-500">Payment verified</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+  const onOpenChange = (open: boolean) => {
+    setIsLoading(false);
+    setIsOpen(open);
+    if (!open) {
+      reset();
+      setProfilePreview(merchant?.profile_photo || null);
+      setSignaturePreview(merchant?.signature_photo || null);
+      setIsSignatureSaved(false);
+      if (signaturePadRef.current) {
+        signaturePadRef.current.clear();
+      }
+    } else {
+      if (merchant) {
+        reset({
+          ...merchant,
+          user: {
+            ...merchant?.user,
+            phone_number: merchant?.user?.phone_number ? Number(merchant.user.phone_number) : ''
+          }
+        });
+      } else {
+        reset();
+      }
     }
   };
 
+  const onSubmit = async (data: MerchantEnrollment) => {
+    try {
+      setIsLoading(true);
+      
+      if (!data.profile_photo) {
+        setError('profile_photo', {
+          type: 'manual',
+          message: 'La photo de profil est requise'
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!data.signature_photo) {
+        setError('signature_photo', {
+          type: 'manual',
+          message: 'La signature est requise'
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      let response;
+      if (merchant) {
+        response = await updateMerchant(data, merchant.id);
+      } else {
+        response = await createMerchant(data);
+      }
+      if (response?.status === "success") {
+        const { status, message } = response;
+        toast({
+          title: merchant ? "Modification Commerçant" : "Création Commerçant",
+          description: message || "Opération effectuée avec succès",
+          variant: status === "error" ? "destructive" : "default",
+          className: cn(
+            status === "success" && "bg-green-50 dark:bg-green-900/50 border-green-200 dark:border-green-800",
+            "text-green-600 dark:text-green-400"
+          ),
+          duration: 3000,
+        });
+
+        onSuccess?.();
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      
+      if (error.response?.data) {
+        const { message, field } = error.response.data;
+        
+        const title = field 
+          ? `Erreur - ${field.charAt(0).toUpperCase() + field.slice(1)}` 
+          : "Erreur";
+
+        toast({
+          title: title,
+          description: message,
+          variant: "destructive",
+          duration: 5000,
+        });
+
+        handleSubmit(onSubmit);
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Une erreur inattendue est survenue.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePreview(reader.result as string);
+        setValue('profile_photo', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, [setValue]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png"],
+    },
+    maxFiles: 1,
+  });
+
+  const clearSignature = () => {
+    if (signaturePadRef.current) {
+      signaturePadRef.current.clear();
+      setSignaturePreview(null);
+      setValue('signature_photo', null);
+      setIsSignatureSaved(false);
+    }
+  };
+
+  const saveSignature = () => {
+    if (signaturePadRef.current) {
+      const signatureData = signaturePadRef.current.toDataURL();
+      setSignaturePreview(signatureData);
+      setValue('signature_photo', signatureData as string);
+      setIsSignatureSaved(true);
+    }
+  };
+
+  const loadAddresses = async () => {
+    try {
+      const addresses = await getAddresses();
+      console.log(addresses);
+      setAddresses(addresses.results);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadAddresses();
+    }
+  }, [isOpen]);
+
   return (
-    <div>
-      <div className="flex justify-between items-center">
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Enroller un Commerçant
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild onClick={() => setIsOpen(true)}>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          {merchant ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="dark:text-cyan-400 text-cyan-600 dark:hover:text-cyan-300 hover:text-cyan-700 dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+            >
+              <Edit2 className="h-4 w-4 mr-2" />
+              Edit
             </Button>
-          </DialogTrigger>
-          <DialogContent
+          ) : (
+            <Button className="bg-cyan-600 dark:bg-cyan-500 hover:bg-cyan-700 dark:hover:bg-cyan-600 text-white">
+              <Plus className="mr-2 h-4 w-4" /> Nouvel Enrollement
+            </Button>
+          )}
+        </motion.div>
+      </DialogTrigger>
+      <DialogContent
+        className={cn(
+          "sm:max-w-[600px] backdrop-blur-sm",
+          "dark:bg-gray-900/95 bg-white/95",
+          "dark:border-cyan-900/20 border-cyan-600/20",
+          "fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]",
+          "max-h-[90vh] overflow-y-auto"
+        )}
+      >
+        <DialogHeader>
+          <DialogTitle
             className={cn(
-              "sm:max-w-[800px]",
-              "bg-white opacity-100",
-              "dark:bg-gray-900/50 bg-white/50",
-              "backdrop-blur-sm",
-              "dark:border-cyan-900/20 border-cyan-200/20",
-              "shadow-lg"
+              "text-2xl font-bold",
+              "dark:from-cyan-400 dark:to-cyan-200 from-cyan-600 to-cyan-500",
+              "bg-gradient-to-r bg-clip-text text-transparent"
             )}
           >
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-primary">
-                Nouveau Commerçant
-              </DialogTitle>
-            </DialogHeader>
-            <div className="mb-8">
-              <div className="flex justify-between mb-2">
-                {steps.map((step) => (
-                  <div
-                    key={step.id}
-                    className={`flex items-center ${
-                      currentStep >= step.id
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <div
-                      onClick={() => changeStep(step.id)}
-                      className={`w-8 h-8 rounded-full cursor-pointer flex items-center justify-center mr-2 ${
-                        currentStep >= step.id
-                          ? "bg-primary text-white"
-                          : "bg-muted border-2 border-muted-foreground"
-                      }`}
-                    >
-                      {step.id}
-                    </div>
-                    <span className="hidden md:inline text-sm">
-                      {step.title}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (currentStep < steps.length) {
-                  setCurrentStep(currentStep + 1);
-                } else {
-                  setIsOpen(false);
-                  setCurrentStep(1);
-                }
-              }}
+            {merchant ? "Modifier Enrollement" : "Nouvel Enrollement"}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <input type="hidden" {...register('profile_photo')} />
+          <input type="hidden" {...register('signature_photo')} />
+          {/* Name Fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-2"
             >
-              {renderStep()}
+              <Label
+                htmlFor="first_name"
+                className="dark:text-gray-300 text-gray-600"
+              >
+                Prénom
+              </Label>
+              <Input
+                id="first_name"
+                placeholder="Ex: Prenom"
+                {...register("user.first_name", {
+                  required: "Veuillez saisir le prénom",
+                })}
+                className={cn(
+                  "transition-colors duration-200",
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-600/20",
+                  "dark:text-gray-100 text-gray-900",
+                  "dark:placeholder:text-gray-500 placeholder:text-gray-400",
+                  "dark:focus:border-cyan-500 focus:border-cyan-600",
+                  "dark:focus:ring-cyan-500 focus:ring-cyan-600"
+                )}
+              />
+              {errors.user?.first_name && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {errors.user?.first_name.message}
+                </p>
+              )}
+            </motion.div>
 
-              <div className="flex justify-between mt-8">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="last_name"
+                className="dark:text-gray-300 text-gray-600"
+              >
+                Nom
+              </Label>
+              <Input
+                id="last_name"
+                placeholder="Ex: Nom"
+                {...register("user.last_name", {
+                  required: "Veuillez saisir le nom",
+                })}
+                className={cn(
+                  "transition-colors duration-200",
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-600/20",
+                  "dark:text-gray-100 text-gray-900",
+                  "dark:placeholder:text-gray-500 placeholder:text-gray-400",
+                  "dark:focus:border-cyan-500 focus:border-cyan-600",
+                  "dark:focus:ring-cyan-500 focus:ring-cyan-600"
+                )}
+              />
+              {errors.user?.last_name && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {errors.user?.last_name.message}
+                </p>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Contact Fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="phone_number"
+                className="dark:text-gray-300 text-gray-600"
+              >
+                Téléphone
+              </Label>
+              <Input
+                id="phone_number"
+                type="number"
+                placeholder="123456789"
+                {...register("user.phone_number", {
+                  required: "Le numéro de téléphone est requis",
+                  validate: {
+                    maxLength: (value) => 
+                      value.toString().length <= 9 || "Le numéro doit contenir maximum 9 chiffres",
+                    isNumber: (value) => 
+                      !isNaN(Number(value)) || "Le numéro doit contenir uniquement des chiffres"
+                  },
+                  setValueAs: (value) => value ? Number(value) : value
+                })}
+                className={cn(
+                  "transition-colors duration-200",
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-600/20",
+                  "dark:text-gray-100 text-gray-900",
+                  "dark:placeholder:text-gray-500 placeholder:text-gray-400",
+                  "dark:focus:border-cyan-500 focus:border-cyan-600",
+                  "dark:focus:ring-cyan-500 focus:ring-cyan-600"
+                )}
+              />
+              {errors.user?.phone_number && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {errors.user?.phone_number.message}
+                </p>
+              )}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="email"
+                className="dark:text-gray-300 text-gray-600"
+              >
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@email.com"
+                {...register("user.email", {
+                  required: "Veuillez saisir l'email",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Adresse email invalide",
+                  },
+                })}
+                className={cn(
+                  "transition-colors duration-200",
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-600/20",
+                  "dark:text-gray-100 text-gray-900",
+                  "dark:placeholder:text-gray-500 placeholder:text-gray-400",
+                  "dark:focus:border-cyan-500 focus:border-cyan-600",
+                  "dark:focus:ring-cyan-500 focus:ring-cyan-600"
+                )}
+              />
+              {errors.user?.email && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {errors.user?.email.message}
+                </p>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Adresse */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-2"
+          >
+            <SearchableSelect
+              control={control}
+              {...register(`address_id`, {
+                required: "L'adresse est requis",
+              })}
+              label="Adresse"
+              data={addresses}
+              valueKey="name"
+              placeholder="Sélectionnez l'adresse"
+              currentValue={merchant?.address?.id}
+            />
+            {errors.address?.name && (
+              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                {errors.address.name.message}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Photos et Signature */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Photo de profil avec Drag & Drop */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <Label className="dark:text-gray-300 text-gray-600">
+                Photo de profil
+              </Label>
+              <div
+                {...getRootProps()}
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
+                  "dark:border-cyan-900/20 border-cyan-600/20",
+                  "hover:border-cyan-500",
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  isDragActive && "border-cyan-500",
+                  "h-[140px] flex flex-col items-center justify-center" // Hauteur réduite
+                )}
+              >
+                <input  {...getInputProps()} />
+                {profilePreview ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <img
+                      
+                      src={profilePreview}
+                      alt="Profile Preview"
+                      className="w-24 h-24 object-cover rounded-full"
+                    />
+                    <p className="text-sm text-gray-500">
+                      Cliquez ou déposez pour changer
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <p className="text-sm text-gray-500">
+                      {isDragActive
+                        ? "Déposez l'image ici"
+                        : "Cliquez ou déposez une image ici"}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {errors.profile_photo && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {errors.profile_photo.message}
+                </p>
+              )}
+            </motion.div>
+
+            {/* Signature électronique */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <Label className="dark:text-gray-300 text-gray-600">
+                Signature
+              </Label>
+              <div
+                className={cn(
+                  "border rounded-lg p-2",
+                  "dark:border-cyan-900/20 border-cyan-600/20",
+                  "dark:bg-cyan-950 bg-white"
+                )}
+              >
+                <SignatureCanvas
+                  ref={signaturePadRef}
+                  canvasProps={{
+                    className: "signature-canvas",
+                    width: 250,
+                    height: 80, // Hauteur réduite
+                  }}
+                  backgroundColor="white"
+                />
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSignature}
+                    className={cn(
+                      "dark:border-cyan-900/20 border-cyan-600/20",
+                      "dark:text-gray-300 text-gray-600"
+                    )}
+                  >
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    Effacer
+                  </Button>
+                  
+                  {isSignatureSaved ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800"
+                    >
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                      >
+                        <Check className="w-4 h-4" />
+                      </motion.div>
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveSignature}
+                      className={cn(
+                        "bg-cyan-600 dark:bg-cyan-600 hover:bg-cyan-700 dark:hover:bg-cyan-700",
+                        "text-white",
+                        "transition-all duration-200"
+                      )}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Sauvegarder
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {errors.signature_photo && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {errors.signature_photo.message}
+                </p>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Footer Buttons */}
+          <DialogFooter className="gap-2">
+            {isLoading ? (
+              <div className="w-20 flex justify-center items-center">
+                <div
+                  className={cn(
+                    "w-6 h-6 border-2 rounded-full animate-spin",
+                    "dark:border-cyan-500 border-cyan-600",
+                    "dark:border-t-transparent border-t-transparent"
+                  )}
+                />
+              </div>
+            ) : (
+              <>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    if (currentStep > 1) {
-                      setCurrentStep(currentStep - 1);
-                    } else {
-                      setIsOpen(false);
-                      setCurrentStep(1);
-                    }
-                  }}
-                  className="border-primary/20"
+                  onClick={() => onOpenChange(false)}
+                  className={cn(
+                    "dark:border-cyan-900/20 border-cyan-600/20",
+                    "dark:text-gray-300 text-gray-600",
+                    "dark:hover:bg-gray-800/50 hover:bg-gray-50"
+                  )}
                 >
-                  {currentStep === 1 ? "Cancel" : "Previous"}
+                  Annuler
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-primary hover:bg-primary/90"
-                  disabled={currentStep === 3 && !formData.paymentComplete}
+                  className={cn(
+                    "dark:bg-cyan-500 bg-cyan-600",
+                    "dark:hover:bg-cyan-600 hover:bg-cyan-700",
+                    "text-white"
+                  )}
+                  disabled={isLoading}
                 >
-                  {currentStep === steps.length ? "Submit" : "Next"}
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <Loader className="animate-spin mr-2" />
+                      Traitement...
+                    </span>
+                  ) : merchant ? (
+                    "Modifier"
+                  ) : (
+                    "Ajouter"
+                  )}
                 </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+              </>
+            )}
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

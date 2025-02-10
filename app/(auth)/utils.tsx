@@ -13,7 +13,15 @@ const api = axios.create({
 });
 
 const storeToken = (token: string, type: "access" | "refresh" | "userRole") => {
-  Cookies.set(type + "Token", token);
+  Cookies.set(type + "Token", token, {
+    secure: true,
+    sameSite: 'strict',
+    path: '/',
+  });
+
+  if (type === 'access') {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
 };
 
 const getToken = (type: string) => {

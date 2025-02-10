@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { AuthActions } from "@/app/(auth)/utils";
-import { protectedRoutes, roleBasedRoutes, urls } from "./types/const";
+import { protectedRoutes, roleBasedRoutes, roles, urls } from "./types/const";
 
 
 export async function middleware(request: NextRequest) {
@@ -24,8 +24,9 @@ export async function middleware(request: NextRequest) {
   const allowedRoutes = roleBasedRoutes[role.value] || [];
 
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
-    if(pathname === urls.dashboard) return NextResponse.next();
-    
+    // if (pathname === urls.dashboard && role.value !== roles.client) return NextResponse.redirect(new URL(urls.espace_client, request.url));
+
+
     const hasAccess = allowedRoutes.some((route) => pathname.startsWith(route));
     if (!hasAccess) {
       return NextResponse.redirect(new URL(urls.not_fount, request.url));
@@ -36,5 +37,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/espace-client/:path*"],
 };

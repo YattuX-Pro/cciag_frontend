@@ -7,11 +7,12 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Shield, CreditCard, Users, BarChart3, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AuthActions } from './(auth)/utils';
-import { urls } from '@/types/const';
+import { roles, urls } from '@/types/const';
 
 export default function Home() {
   const router = useRouter();
-  const {isAuthenticated} = AuthActions();
+  const {isAuthenticated, getToken} = AuthActions();
+  const role = getToken('userRole');
 
   const features = [
     {
@@ -108,9 +109,9 @@ export default function Home() {
                   <Button
                     size="lg"
                     className="text-lg bg-cyan-500 hover:bg-cyan-600 text-white transition-all duration-300"
-                    onClick={() => router.push(isAuthenticated() ? urls.dashboard : urls.login)}
+                    onClick={() => router.push(isAuthenticated() ? role === roles.client ? urls.espace_client : urls.dashboard : urls.login)}
                   >
-                    {isAuthenticated() ? 'Mon Pannel' : 'Connexion'} <ArrowRight className="ml-2 h-5 w-5" />
+                    {isAuthenticated() ? 'Mon Espace' : 'Connexion'} <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </motion.div>
               </div>
