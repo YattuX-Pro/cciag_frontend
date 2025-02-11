@@ -91,6 +91,7 @@ interface UserData {
 export interface MerchantEnrollment {
   id: number;
   card_number: string;
+  id_card: string;
   user?: UserData;
   profile_photo: string;
   signature_photo: string;

@@ -9,8 +9,8 @@ import { getStatusColor, statusMap } from "@/types/const";
 export const columns: Column<MerchantEnrollment>[] = [
   {
     header: "Id Card",
-    accessorKey: "card_number",
-    cell: (merchant) => merchant.card_number,
+    accessorKey: "id_card",
+    cell: (merchant) => merchant.id_card,
   },
   {
     header: "Nom",
