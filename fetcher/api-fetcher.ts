@@ -42,6 +42,9 @@ export const updateUser = (body: User, id): Promise<any> => updater(`/api/users/
 
 export const getUserDetail = (id): Promise<User> => fetcher(`/api/users/${id}`);
 
+export const resetPassword = (email: string): Promise<any> => 
+  poster('/api/users/admin/reset_password', { email });
+
 export const getMerchants = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<MerchantEnrollment>> => {
   let queryString;
   if (params.url) {
@@ -104,5 +107,8 @@ export const updateAddress = (body: Address, id: number): Promise<any> =>
 
 export const getAddressDetail = (id: number): Promise<Address> => 
   fetcher(`/api/addresses/${id}`);
+
+
+
 
 

@@ -10,7 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Edit2, Loader, Plus, Upload, User as UserIcon } from "lucide-react";
+import { Edit2, Loader, Plus, Upload, User as UserIcon, KeyRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,7 +22,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { User } from "@/types";
 import { user_roles } from "@/types/const";
-import { createUser, updateUser } from "@/fetcher/api-fetcher";
+import { createUser, updateUser, resetPassword } from "@/fetcher/api-fetcher";
 import { toast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
@@ -53,6 +53,7 @@ function AddUserDialog({ afterClose, isEdit = false, user }: Props) {
       is_active: true,
     },
   });
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (isEdit) {
@@ -133,6 +134,34 @@ function AddUserDialog({ afterClose, isEdit = false, user }: Props) {
     }
 
     return true;
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      setIsResetting(true);
+      await resetPassword(user?.email as string);
+      
+      toast({
+        title: "Réinitialisation du mot de passe",
+        description: "Un email de réinitialisation a été envoyé à l'utilisateur.",
+        className: cn(
+          "bg-green-50 dark:bg-green-900/50",
+          "border-green-200 dark:border-green-800",
+          "text-green-600 dark:text-green-400"
+        ),
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la réinitialisation du mot de passe.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   return (
@@ -496,6 +525,31 @@ function AddUserDialog({ afterClose, isEdit = false, user }: Props) {
               </div>
             ) : (
               <>
+                {isEdit && (
+                  <Button
+                    type="button"
+                    onClick={handleResetPassword}
+                    disabled={isResetting}
+                    variant="outline"
+                    className={cn(
+                      "dark:border-cyan-900/20 border-cyan-600/20",
+                      "dark:text-cyan-400 text-cyan-600",
+                      "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+                    )}
+                  >
+                    {isResetting ? (
+                      <span className="flex items-center">
+                        <Loader className="animate-spin mr-2 h-4 w-4" />
+                        Réinitialisation...
+                      </span>
+                    ) : (
+                      <>
+                        <KeyRound className="mr-2 h-4 w-4" />
+                        Réinitialiser le mot de passe
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
