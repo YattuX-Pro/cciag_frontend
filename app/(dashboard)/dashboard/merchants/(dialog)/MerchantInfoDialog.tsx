@@ -107,7 +107,7 @@ export function MerchantInfoDialog({ merchantData }: MerchantInfoDialogProps) {
                     </h3>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full dark:bg-cyan-500/10 bg-cyan-600/10">
                       <span className="text-sm font-medium dark:text-cyan-400 text-cyan-600">
-                        N° {merchantData.card_number}
+                        N° {merchantData.id_card}
                       </span>
                     </div>
                   </div>
