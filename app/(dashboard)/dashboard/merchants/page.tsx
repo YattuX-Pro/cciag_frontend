@@ -20,6 +20,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { statusMap } from '@/types/const';
+import { MerchantInfoDialog } from './(dialog)/MerchantInfoDialog';
 
 export default function MerchantsPage() {
   const [data, setData] = useState<MerchantEnrollment[]>([]);
@@ -86,6 +87,7 @@ export default function MerchantsPage() {
             </Button>
           }
         />
+        <MerchantInfoDialog merchantData={merchant} />
       </div>
     ),
     accessorKey: "id",

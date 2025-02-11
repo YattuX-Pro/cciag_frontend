@@ -23,16 +23,6 @@ export const columns: Column<MerchantEnrollment>[] = [
     cell: (merchant) => merchant.user?.first_name,
   },
   {
-    header: "Email",
-    accessorKey: "user",
-    cell: (merchant) => merchant.user?.email,
-  },
-  {
-    header: "Téléphone",
-    accessorKey: "user",
-    cell: (merchant) => merchant.user?.phone_number,
-  },
-  {
     header: "Status",
     accessorKey: "status",
     cell: (merchant) => {
@@ -50,21 +40,6 @@ export const columns: Column<MerchantEnrollment>[] = [
         </span>
       );
     },
-  },
-  {
-    header: "Adresse",
-    cell: (merchant) => (
-      <span
-        className={cn(
-          "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-          "dark:bg-cyan-500/10 bg-cyan-500/20",
-          "dark:text-cyan-400 text-cyan-600"
-        )}
-      >
-        {merchant.address?.name || 'Non définie'}
-      </span>
-    ),
-    accessorKey: "address_id",
   },
   {
     header: "Date Enrollment",
