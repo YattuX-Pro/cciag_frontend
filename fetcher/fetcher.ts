@@ -1,5 +1,6 @@
 import axios from "axios";
 import { AuthActions } from "@/app/(auth)/utils";
+import Cookies from 'js-cookie';
 
 const { handleJWTRefresh, storeToken, getToken } = AuthActions();
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -7,7 +8,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 const api = axios.create({
   baseURL: baseUrl,
   headers: {
-    Authorization: `Bearer ${getToken("access")}`,
+    Authorization: `Bearer ${Cookies.get("accessToken")}`,
   },
 });
 
@@ -46,3 +47,9 @@ export const updater = async (url: string, body: any): Promise<any> => {
   const response = await api.put(url, body);
   return response.data;
 };
+
+export const deleter = async (url: string): Promise<any> => {
+  const response = await api.delete(url);
+  return response.data;
+};
+

@@ -212,7 +212,7 @@ export default function AddMerchantDialog({
 
   const loadAddresses = async () => {
     try {
-      const addresses = await getAddresses();
+      const addresses = await getAddresses({limit: 0});
       console.log(addresses);
       setAddresses(addresses.results);
     } catch (error) {

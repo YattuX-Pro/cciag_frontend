@@ -114,4 +114,15 @@ export enum Status {
   ANNULE = "ANNULE"
 }
 
+export interface DocumentItem{
+  id: number;
+  name: string;
+  document: string;
+  merchant_id: number;
+}
+
+export interface MerchantDocument {
+  merchant_id: number;
+  documents: DocumentItem[];
+}
 

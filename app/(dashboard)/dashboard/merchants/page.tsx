@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { statusMap } from '@/types/const';
 import { MerchantInfoDialog } from './(dialog)/MerchantInfoDialog';
+import AddMerchantDocumentDialog from './(dialog)/AddMerchantDocumentDialog';
 
 export default function MerchantsPage() {
   const [data, setData] = useState<MerchantEnrollment[]>([]);
@@ -68,7 +69,7 @@ export default function MerchantsPage() {
   const actionsColumn = {
     header: "Actions", 
     cell: (merchant) => (
-      <div className="text-right space-x-2">
+      <div className="text-right flex gap-2">
         <AddMerchantDialog
           onSuccess={() => loadMerchants()}
           merchant={merchant}
@@ -87,6 +88,13 @@ export default function MerchantsPage() {
             </Button>
           }
         />
+        <AddMerchantDocumentDialog 
+            merchantId={merchant?.id}
+            merchantStatus={merchant?.status}
+            onSuccess={() => {
+              loadMerchants()
+            }}
+          />
         <MerchantInfoDialog merchantData={merchant} />
       </div>
     ),
@@ -126,8 +134,10 @@ export default function MerchantsPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
+          className='flex gap-2'
         >
           <AddMerchantDialog onSuccess={() => loadMerchants()} />
+          
         </motion.div>
       </div>
 

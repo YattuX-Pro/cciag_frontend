@@ -1,5 +1,5 @@
-import { Address, MerchantEnrollment, User, MerchantPayment } from "@/types";
-import { fetcher, poster, updater } from "./fetcher";
+import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem } from "@/types";
+import { deleter, fetcher, poster, updater } from "./fetcher";
 
 interface DjangoPaginatedResponse<T> {
   count: number;
@@ -107,6 +107,33 @@ export const updateAddress = (body: Address, id: number): Promise<any> =>
 
 export const getAddressDetail = (id: number): Promise<Address> => 
   fetcher(`/api/addresses/${id}`);
+
+
+export const getMerchantDocuments = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<MerchantDocument>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/merchants/documents/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getMerchantDocumentDetail = (id: number): Promise<Address> => 
+  fetcher(`/api/merchants/documents/${id}`);
+
+export const createMerchantDocument= (body: MerchantDocument): Promise<any> => 
+  poster('/api/merchants/documents/', body);
+
+export const getMerchantDocumentByMerchantId = (merchant_id: number): Promise<Array<DocumentItem>> => 
+  fetcher(`/api/merchant-documents/${merchant_id}`);
+
+export const deleteMerchantDocument = (merchant_id: number, document_id: number): Promise<any> => 
+  deleter(`/api/merchants/${merchant_id}/documents/${document_id}`);
+
+
 
 
 
