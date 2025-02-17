@@ -35,15 +35,11 @@ export default function LoginPage() {
   const onSubmit = (data: FormData) => {
     setLoading(true);
     login(data.email, data.password)
-      .then(async (res) => {
+      .then((res) => {
         storeToken(res.data.access, "access");
         storeToken(res.data.refresh, "refresh");
-        const role = getUserRoleFromToken(res.data.access);
+        const role = getUserRoleFromToken();
         storeToken(role, "userRole");
-        
-        // Force token refresh and add small delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
         const allowedRoutes = roleBasedRoutes[role];
         router.push(allowedRoutes[0]);
       })

@@ -106,12 +106,22 @@ export interface MerchantEnrollment {
   submited_by_id: number;
   validated_by_id: number;
   printed_by_id: number;
+  payed_by_id: number;
+  suspended_by_id: number;
+  refused_by_id: number;
+  is_active: boolean;
 }
 
 export enum Status {
   A_PAYER = "A_PAYER",
   PAYE = "PAYE",
-  ANNULE = "ANNULE"
+  A_VALIDER = "A_VALIDER",
+  VALIDE = "VALIDE",
+  ANNULE = "ANNULE",
+  SUSPENDU = "SUSPENDU",
+  IMPRIME = "IMPRIME",
+  RENOUVELE = "RENOUVELE",
+  REFUSE = "REFUSE"
 }
 
 export interface DocumentItem{

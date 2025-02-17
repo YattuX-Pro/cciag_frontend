@@ -220,6 +220,7 @@ export default function AddMerchantDialog({
     }
   };
 
+
   useEffect(() => {
     if (isOpen) {
       loadAddresses();

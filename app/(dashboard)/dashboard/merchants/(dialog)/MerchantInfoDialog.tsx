@@ -8,14 +8,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { FileText, Info } from "lucide-react";
+import { FileText, Info, Loader } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getMerchantDocumentByMerchantId } from "@/fetcher/api-fetcher";
-import { DocumentItem } from "@/types";
+import { getMerchantDocumentByMerchantId, updateMerchant } from "@/fetcher/api-fetcher";
+import { DocumentItem, MerchantEnrollment, Status } from "@/types";
 import IFramePdfDialog from "./IFramePdfDialog";
+import { AuthActions } from "@/app/(auth)/utils";
+import { statusMap } from "@/types/const";
+import { toast } from "@/hooks/use-toast";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -39,14 +42,17 @@ const itemVariants = {
 };
 
 interface MerchantInfoDialogProps {
-  merchantData: any;
+  merchantData: MerchantEnrollment;
+  onSuccess?: () => void;
 }
 
-export function MerchantInfoDialog({ merchantData }: MerchantInfoDialogProps) {
+export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDialogProps) {
+  const { getUserIdFromToken } = AuthActions();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadDocuments = async () => {
     try {
@@ -71,21 +77,43 @@ export function MerchantInfoDialog({ merchantData }: MerchantInfoDialogProps) {
     fetchDocuments();
   }, [isOpen]);
 
-  // const handleViewDocument = (base64Data: string) => {
-  //   const base64Clean = base64Data.split(",")[1] || base64Data;
-
-  //   const fileType =
-  //     base64Data.split(";")[0]?.split(":")[1] || "application/pdf";
-
-  //   const dataUrl = `data:${fileType};base64,${base64Clean}`;
-
-  //   window.open(dataUrl, "_blank");
-  // };
 
   const handleViewDocument = (base64Data: string) => {
     setSelectedDoc(base64Data);
     setIsPdfOpen(true);
   };
+
+  const handleSubmitDocument = async () => {
+    setIsLoading(true)
+    try {
+      const user_id = getUserIdFromToken();
+      merchantData.submited_by_id = Number(user_id)
+      merchantData.status = Status.A_VALIDER
+      const result = await updateMerchant(merchantData, merchantData.id)
+      toast({
+        title: "Succes",
+        description: "Le dossier a été soumis avec succès",
+        variant: "default",
+        className: cn(
+          "bg-green-50 dark:bg-green-900/50 border-green-200 dark:border-green-800",
+          "text-green-600 dark:text-green-400"
+        ),
+        duration: 3000,
+      });
+      onSuccess();
+      setIsOpen(false);
+    } catch (error) {
+      console.log(error)
+      toast({
+        title:"Erreur",
+        description: "Erreur de soumission de dossier",
+        variant: 'destructive',
+        duration: 3000
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -287,30 +315,37 @@ export function MerchantInfoDialog({ merchantData }: MerchantInfoDialogProps) {
         />
 
         <DialogFooter className="mt-6 flex justify-center">
-          <DialogTrigger asChild>
-            <div className="flex gap-4">
-              <Button
+          <div className="flex gap-4">
+            <Button
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "dark:bg-cyan-500 bg-cyan-600",
+                "dark:hover:bg-cyan-600 hover:bg-cyan-700",
+                "text-white"
+              )}
+            >
+              Fermer
+            </Button>
+            {documents.length && merchantData.status === Status.PAYE
+              ? (isLoading ? (
+                <span className="flex items-center">
+                  <Loader className="animate-spin mr-2" />
+                  Traitement...
+                </span>
+
+              ) : <Button
+                type="button"
+                onClick={handleSubmitDocument}
                 className={cn(
-                  "dark:bg-cyan-500 bg-cyan-600",
-                  "dark:hover:bg-cyan-600 hover:bg-cyan-700",
+                  "dark:bg-green-500 bg-green-600",
+                  "dark:hover:bg-green-600 hover:bg-green-700",
                   "text-white"
                 )}
               >
-                Fermer
-              </Button>
-              {documents.length > 0 ? (
-                <Button
-                  className={cn(
-                    "dark:bg-green-500 bg-green-600",
-                    "dark:hover:bg-green-600 hover:bg-green-700",
-                    "text-white"
-                  )}
-                >
-                  Soummettre le dossier
-                </Button>
-              ) : null}
-            </div>
-          </DialogTrigger>
+                Soummettre le dossier
+              </Button>)
+              : null}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

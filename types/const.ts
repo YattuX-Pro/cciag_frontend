@@ -68,29 +68,24 @@ export const statusMap = {
     'VALIDE': 'Validé',
     'IMPRIME': 'Imprimé',
     'SUSPENDU': 'Suspendu',
-    'RENOUVELE': 'Renouvelé'
+    'RENOUVELE': 'Renouvelé',
+    'REFUSE': 'Refusé'
 
   };
 
+const statusColorMap = {
+  'A_PAYER': 'dark:bg-orange-500/10 bg-yellow-300 dark:text-orange-400 text-orange-600',
+  'PAYE': 'dark:bg-green-500/10 bg-green-500/20 dark:text-green-400 text-green-600',
+  'A_VALIDER': 'dark:bg-cyan-500/10 bg-cyan-500/20 dark:text-cyan-400 text-cyan-600',
+  'VALIDE': 'dark:bg-emerald-500/10 bg-emerald-500/20 dark:text-emerald-400 text-emerald-600',
+  'SUSPENDU': 'dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600',
+  'REFUSE' : 'dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600',
+  'RENOUVELE': 'dark:bg-blue-500/10 bg-blue-500/20 dark:text-blue-400 text-blue-600'
+} as const;
 
 export const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'A_PAYER':
-        return 'dark:bg-orange-500/10 bg-orange-500/20 dark:text-orange-400 text-orange-600';
-      case 'PAYE':
-        return 'dark:bg-green-500/10 bg-green-500/20 dark:text-green-400 text-green-600';
-      case 'A_VALIDER':
-        return 'dark:bg-yellow-500/10 bg-yellow-500/20 dark:text-yellow-400 text-yellow-600';
-      case 'VALIDE':
-        return 'dark:bg-emerald-500/10 bg-emerald-500/20 dark:text-emerald-400 text-emerald-600';
-      case 'SUSPENDU':
-        return 'dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600';
-      case 'RENOUVELE':
-        return 'dark:bg-blue-500/10 bg-blue-500/20 dark:text-blue-400 text-blue-600';
-      default:
-        return 'dark:bg-gray-500/10 bg-gray-500/20 dark:text-gray-400 text-gray-600';
-    }
-  };
-
-
-
+    console.log('Status reçu:', status);
+    const color = statusColorMap[status as keyof typeof statusColorMap];
+    console.log('Couleur trouvée:', color);
+    return color || 'dark:bg-gray-500/10 bg-gray-500/20 dark:text-gray-400 text-gray-600';
+};

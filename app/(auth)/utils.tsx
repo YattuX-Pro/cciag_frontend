@@ -28,8 +28,9 @@ const getToken = (type: string) => {
   return Cookies.get(type + "Token");
 };
 
-const getUserIdFromToken = (token: string): string | null => {
+const getUserIdFromToken = (): string | null => {
   try {
+    const token = Cookies.get('accessToken');
     const decodedToken: { user_id: string } = jwtDecode(token);
     return decodedToken.user_id || null;
   } catch (error) {
@@ -49,11 +50,11 @@ const isAuthenticated = (): boolean => {
   return !isTokenExpired(accessToken);
 };
 
-const getUserRoleFromToken = (token: string): string | null => {
+const getUserRoleFromToken = (): string | null => {
   try {
-
-    const decodedToken: { role: string } = jwtDecode(token);
-    return decodedToken.role || null;
+    const token = Cookies.get('accessToken');
+    const decodedToken: { role: string} = jwtDecode(token);
+    return decodedToken.role;
   } catch (error) {
     console.error("Failed to decode token", error);
     return null;

@@ -29,11 +29,14 @@ export const columns: Column<MerchantEnrollment>[] = [
       
       const status = merchant.status;
       const displayStatus = statusMap[status] || status;
+      const statusColor = getStatusColor(status);
+      console.log('Classes appliquées:', statusColor);
+      
       return (
         <span
           className={cn(
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-            getStatusColor(status)
+            statusColor
           )}
         >
           {displayStatus}

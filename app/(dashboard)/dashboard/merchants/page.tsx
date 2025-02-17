@@ -45,7 +45,6 @@ export default function MerchantsPage() {
           };
 
       const response = await getMerchants(params);
-      console.log(response);
       setData(response.results);
       setNext(response.next);
       setPrevious(response.previous);
@@ -95,7 +94,7 @@ export default function MerchantsPage() {
               loadMerchants()
             }}
           />
-        <MerchantInfoDialog merchantData={merchant} />
+        <MerchantInfoDialog merchantData={merchant} onSuccess={() => loadMerchants()} />
       </div>
     ),
     accessorKey: "id",

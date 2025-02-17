@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -11,47 +12,90 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Search, Printer, Store, User, Calendar } from 'lucide-react';
-import type { IDCard } from '@/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye, Printer, Calendar, User } from 'lucide-react';
+import { Status, type Merchant, type MerchantEnrollment } from '@/types';
+import { format } from "date-fns";
 import { cn } from '@/lib/utils';
+import { getMerchants, updateMerchant } from '@/fetcher/api-fetcher';
+import { toast } from '@/hooks/use-toast';
+import { useConfirmationDialog } from '@/hooks/use-confirmation-dialog';
+import { AuthActions } from '@/app/(auth)/utils';
+import { MerchantCardSkeleton } from '@/components/merchant/merchant-card-skeleton';
+import BadgeCardDialog from './(dialog)/BadgeCardDialog';
 
-const mockIDCards: IDCard[] = [
-  {
-    id: '1',
-    merchantId: '1',
-    merchantName: 'Ibrahim Barry',
-    cardNumber: 'ID-2024-001',
-    issuedDate: '2024-03-20',
-    expiryDate: '2025-03-20',
-    status: 'active',
-  },
-  {
-    id: '2',
-    merchantId: '2',
-    merchantName: 'Saliou Sow',
-    cardNumber: 'ID-2024-002',
-    issuedDate: '2024-03-21',
-    expiryDate: '2025-03-21',
-    status: 'active',
-  },
-  // Add more mock cards as needed
-];
+const statusMap = {
+  A_VALIDER: 'A Valider',
+  VALIDE: 'Accepté',
+  REFUSE: 'Reffusé',
+  SUSPENDU: 'SUSPENDU'
+};
 
-export default function IDCardsPage() {
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'VALIDE':
+      return 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20';
+    case 'REFUSE':
+      return 'bg-red-500/10 text-red-500 border-red-500/20';
+    case 'SUSPENDU':
+      return 'bg-red-500/10 text-red-500 border-red-500/20';
+    default:
+      return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+  }
+};
+
+export default function MerchantReviewPage() {
+  const [data, setData] = useState<MerchantEnrollment[]>([]);
+  const { getUserIdFromToken } = AuthActions();
+  const [loading, setLoading] = useState(true);
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
+  const [count, setCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
 
-  const filteredCards = mockIDCards.filter((card) => {
-    const matchesSearch =
-      card.merchantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.cardNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || card.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const { showConfirmation } = useConfirmationDialog();
+
+  const loadMerchants = async (url?: string) => {
+    setLoading(true);
+    try {
+      const params = url
+        ? { url }
+        : {
+          search: searchTerm ? searchTerm : "",
+          status: "VALIDE",
+        };
+
+      const response = await getMerchants(params);
+      setData(response.results);
+      setNext(response.next);
+      setPrevious(response.previous);
+      setCount(response.count);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les commerçants",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMerchants();
+  }, [searchTerm]);
+
 
   return (
     <div className="space-y-6">
+      {/* Decorative background elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className={cn(
           "absolute top-0 -right-4 w-96 h-96 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob",
@@ -63,7 +107,8 @@ export default function IDCardsPage() {
         )} />
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Page Title */}
+      <div className="flex justify-between items-center">
         <h1 className={cn(
           "text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent",
           "dark:from-cyan-400 dark:to-cyan-200",
@@ -71,15 +116,6 @@ export default function IDCardsPage() {
         )}>
           Cartes
         </h1>
-        <Button className={cn(
-          "transition-colors duration-200",
-          "dark:bg-cyan-500 bg-cyan-600",
-          "dark:hover:bg-cyan-600 hover:bg-cyan-700",
-          "text-white",
-          "w-full sm:w-auto"
-        )}>
-          <Printer className="mr-2 h-4 w-4" /> Imprimer une nouvelle carte
-        </Button>
       </div>
 
       <Card className={cn(
@@ -93,7 +129,8 @@ export default function IDCardsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          {/* Search and Filter */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 dark:text-gray-400 text-gray-500" />
               <Input
@@ -110,117 +147,157 @@ export default function IDCardsPage() {
                 )}
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className={cn(
-                "w-full sm:w-[180px]",
-                "dark:bg-gray-800/50 bg-gray-50",
-                "dark:border-cyan-900/20 border-cyan-200/20",
-                "dark:text-gray-100 text-gray-900"
-              )}>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className={cn(
-                "dark:bg-gray-800 bg-white",
-                "dark:border-cyan-900/20 border-cyan-200/20"
-              )}>
-                <SelectItem value="all">Statuts</SelectItem>
-                <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="expired">Expiré</SelectItem>
-                <SelectItem value="revoked">Revoqué</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
+          {/* Merchant Cards Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCards.map((card) => (
-              <Card key={card.id} className={cn(
-                "dark:bg-gray-800/50 bg-gray-50",
-                "dark:border-cyan-900/20 border-cyan-200/20",
-                "hover:border-cyan-500/50 transition-colors duration-200"
-              )}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium dark:text-gray-400 text-gray-500">
-                        Numéro Carte
-                      </p>
-                      <p className="font-semibold dark:text-gray-100 text-gray-900">
-                        {card.cardNumber}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className={cn(
-                      card.status === 'active' && "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-                      card.status === 'expired' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-                      card.status === 'revoked' && "bg-red-500/10 text-red-500 border-red-500/20"
-                    )}>
-                      {card.status}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-sm">
-                      <User className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
-                      <span className="font-medium dark:text-gray-100 text-gray-900">
-                        {card.merchantName}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+            {loading ? (
+              // Afficher 6 skeletons pendant le chargement
+              [...Array(6)].map((_, index) => (
+                <MerchantCardSkeleton key={index} />
+              ))
+            ) : data.length === 0 ? (
+              // Message quand il n'y a pas de commerçants
+              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                <Store className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+                  Aucun dossier trouvé
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Aucun dossier ne correspond à vos critères de recherche.
+                </p>
+              </div>
+            ) : (
+              // Afficher les cartes des commerçants
+              data.map((merchant) => (
+                <Card key={merchant.id} className={cn(
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-200/20",
+                  "hover:border-cyan-500/50 transition-colors duration-200"
+                )}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start mb-4">
                       <div className="space-y-1">
-                        <p className="text-xs dark:text-gray-400 text-gray-500">
-                          Date Création
+                        <p className="text-sm font-medium dark:text-gray-400 text-gray-500">
+                          Numéro Carte
                         </p>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
-                          <span className="text-sm dark:text-gray-300 text-gray-600">
-                            {card.issuedDate}
-                          </span>
+                        <p className="font-semibold dark:text-gray-100 text-gray-900">
+                          {merchant.id_card}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className={cn(
+                        merchant.is_active && "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                        !merchant.is_active && "bg-red-500/10 text-red-500 border-red-500/20",
+                      )}>
+                        {merchant.is_active ? 'Active' : 'Non Active'}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-sm">
+                        <User className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
+                        <span className="font-medium dark:text-gray-100 text-gray-900">
+                          {merchant?.user.first_name} {merchant?.user.last_name}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-xs dark:text-gray-400 text-gray-500">
+                            Date Création
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
+                            <span className="text-sm dark:text-gray-300 text-gray-600">
+                              {new Date(merchant.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs dark:text-gray-400 text-gray-500">
+                            Date Exp
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
+                            <span className="text-sm dark:text-gray-300 text-gray-600">
+                              {merchant?.user.phone_number}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-xs dark:text-gray-400 text-gray-500">
-                          Date Exp
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
-                          <span className="text-sm dark:text-gray-300 text-gray-600">
-                            {card.expiryDate}
-                          </span>
-                        </div>
+
+                      <div className="pt-4 flex justify-between items-center border-t dark:border-cyan-900/20 border-cyan-200/20">
+                        <BadgeCardDialog merchant={merchant} />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn(
+                            "dark:text-cyan-400 text-cyan-600",
+                            "dark:hover:text-cyan-300 hover:text-cyan-700",
+                            "dark:hover:bg-cyan-900/20 hover:bg-cyan-100/20"
+                          )}
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="pt-4 flex justify-between items-center border-t dark:border-cyan-900/20 border-cyan-200/20">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "dark:text-cyan-400 text-cyan-600",
-                          "dark:hover:text-cyan-300 hover:text-cyan-700",
-                          "dark:hover:bg-cyan-900/20 hover:bg-cyan-100/20"
-                        )}
-                      >
-                        Voir Details
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "dark:text-cyan-400 text-cyan-600",
-                          "dark:hover:text-cyan-300 hover:text-cyan-700",
-                          "dark:hover:bg-cyan-900/20 hover:bg-cyan-100/20"
-                        )}
-                      >
-                        <Printer className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
+      {(previous || next || count > 0) && (
+        <Card className={cn(
+          "mt-4",
+          "dark:bg-gray-900/50 bg-white/50",
+          "backdrop-blur-sm",
+          "dark:border-cyan-900/20 border-cyan-200/20"
+        )}>
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "flex h-7 items-center justify-center rounded px-3 text-xs",
+                  count === 0 ? "bg-gray-500/10 text-gray-500" : "bg-cyan-500/10 text-cyan-500"
+                )}>
+                  {count} résultats
+                </div>
+                {count > 0 && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Page {next ? Math.ceil(count / 10) - (next ? 1 : 0) : Math.ceil(count / 10)} sur {Math.ceil(count / 10)}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => previous && loadMerchants(previous)}
+                  disabled={!previous || loading}
+                  className={cn(
+                    "hover:bg-cyan-500/10 hover:text-cyan-500",
+                    "disabled:opacity-50"
+                  )}
+                >
+                  {'<<'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => next && loadMerchants(next)}
+                  disabled={!next || loading}
+                  className={cn(
+                    "hover:bg-cyan-500/10 hover:text-cyan-500",
+                    "disabled:opacity-50"
+                  )}
+                >
+                  {'>>'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
