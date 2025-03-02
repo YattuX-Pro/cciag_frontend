@@ -13,22 +13,22 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon, Search } from 'lucide-react';
-import type { CardHistory, MerchantEnrollementHistory } from '@/types';
+import type { CardHistory, MerchantEnrollementHistory, MerchantPayment } from '@/types';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { format } from "date-fns";
-import { getMerchantEnrollementHistory } from '@/fetcher/api-fetcher';
+import { getMerchantEnrollementHistory, getMerchantPayments } from '@/fetcher/api-fetcher';
 import { motion } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { fr } from 'date-fns/locale';
 import { DataTable } from '@/components/DataTable';
+import { paymentStatusMap, statusMap } from '@/types/const';
 import { columns } from './columns';
-import { statusMap } from '@/types/const';
-import { InfoDialog } from './info-dialog';
+import { PaymentDialog } from './payment-dialog';
 
-export default function CardHistoryPage() {
-  const [data, setData] = useState<MerchantEnrollementHistory[]>([]);
+export default function MerchantPaymentPage() {
+  const [data, setData] = useState<MerchantPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [next, setNext] = useState<string | null>(null);
   const [previous, setPrevious] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function CardHistoryPage() {
   const [status, setStatus] = useState('');
   const [date, setDate] = useState<Date>();
 
-  const loadCardHistoryPage = async (url?: string) => {
+  const loadCardPaymentPage = async (url?: string) => {
     setLoading(true);
     try {
       const params = url
@@ -47,7 +47,7 @@ export default function CardHistoryPage() {
             status: status ? status : "",
           };
 
-      const response = await getMerchantEnrollementHistory(params);
+      const response = await getMerchantPayments(params);
       setData(response.results);
       console.log(response);
       setNext(response.next);
@@ -66,14 +66,14 @@ export default function CardHistoryPage() {
   };
 
   useEffect(() => {
-    loadCardHistoryPage();
+    loadCardPaymentPage();
   }, [searchTerm, status]);
 
   const actionsColumn = {
     header: "Actions", 
-    cell: (merchant) => (
+    cell: (payment) => (
       <div className="text-right flex gap-2">
-        <InfoDialog merchant={merchant} />
+        <PaymentDialog payment={payment} />
       </div>
     ),
     accessorKey: "id",
@@ -105,7 +105,7 @@ export default function CardHistoryPage() {
           "from-cyan-600 to-cyan-400"
         )}
       >
-        Enrollements
+        Paiements
       </motion.h1>
     </div>
     <motion.div
@@ -156,7 +156,7 @@ export default function CardHistoryPage() {
                 <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(statusMap).map(([key, value]) => (
+                {Object.entries(paymentStatusMap).map(([key, value]) => (
                   <SelectItem key={key} value={key}>
                     {value}
                   </SelectItem>
@@ -192,7 +192,7 @@ export default function CardHistoryPage() {
               count,
               next,
               previous,
-              onPageChange: loadCardHistoryPage,
+              onPageChange: loadCardPaymentPage,
             }}
           />
         </CardContent>

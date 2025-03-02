@@ -8,6 +8,7 @@ export const urls = {
     merchants_review : '/dashboard/merchants-review',
     id_cards : '/dashboard/id-cards',
     cards_history : '/dashboard/card-history',
+    merchant_payments : '/dashboard/payments',
 
     login : '/login',
     logout : '/logout',
@@ -48,8 +49,8 @@ export const user_status = {
 }
 
 export const roleBasedRoutes = {
-    admin: [urls.dashboard, urls.cards_history, urls.id_cards, urls.merchants, urls.merchants_review, urls.users],
-    operation: [urls.merchants, urls.dashboard],
+    admin: [urls.dashboard, urls.cards_history, urls.id_cards, urls.merchants, urls.merchants_review, urls.users, urls.merchant_payments],
+    operation: [urls.merchants, urls.dashboard,urls.merchant_payments],
     validation: [urls.merchants_review, urls.dashboard],
     impression: [urls.id_cards, urls.dashboard],
     client: [urls.espace_client],
@@ -73,6 +74,14 @@ export const statusMap = {
 
   };
 
+  export const paymentStatusMap = {
+    'PENDING': 'En Cours',
+    'PAID': 'Payé', 
+    'FAILED': 'Échoué',
+    
+
+  };
+
 const statusColorMap = {
   'A_PAYER': 'dark:bg-orange-500/10 bg-yellow-300 dark:text-orange-400 text-orange-600',
   'PAYE': 'dark:bg-green-500/10 bg-green-500/20 dark:text-green-400 text-green-600',
@@ -84,8 +93,6 @@ const statusColorMap = {
 } as const;
 
 export const getStatusColor = (status: string) => {
-    console.log('Status reçu:', status);
     const color = statusColorMap[status as keyof typeof statusColorMap];
-    console.log('Couleur trouvée:', color);
     return color || 'dark:bg-gray-500/10 bg-gray-500/20 dark:text-gray-400 text-gray-600';
 };

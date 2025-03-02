@@ -1,4 +1,4 @@
-import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem } from "@/types";
+import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics } from "@/types";
 import { deleter, fetcher, poster, updater } from "./fetcher";
 
 interface DjangoPaginatedResponse<T> {
@@ -132,6 +132,28 @@ export const getMerchantDocumentByMerchantId = (merchant_id: number): Promise<Ar
 
 export const deleteMerchantDocument = (merchant_id: number, document_id: number): Promise<any> => 
   deleter(`/api/merchants/${merchant_id}/documents/${document_id}`);
+
+export const getMerchantEnrollementHistory = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<MerchantEnrollementHistory>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/statistics/merchant-history/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getMerchantStatistics = async (): Promise<EnrollementStatistics> => {
+  const response = await fetcher(`/statistics/`);
+  return response;
+}
+
+export const getMerchantDetailedStatistics = async (): Promise<DetailedStatistics> => {
+  const response = await fetcher(`/statistics/detailed-statistics/`);
+  return response;
+}
 
 
 

@@ -73,6 +73,7 @@ export interface Address {
 export interface MerchantPayment {
   id: number;
   merchant: number;
+  merchant_details: MerchantEnrollment;
   amount: number;
   payment_date: string;
   status: string;
@@ -132,7 +133,91 @@ export interface DocumentItem{
 }
 
 export interface MerchantDocument {
-  merchant_id: number;
-  documents: DocumentItem[];
+  id: number;
+  document:string;
+  name: string;
 }
+
+// Statistiques
+
+export interface UserDataForStatistic {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  role: string;
+}
+
+export interface MerchantEnrollementHistory {
+  id: number;
+  user: UserDataForStatistic;
+  card_number: string;
+  profile_photo : string;
+  signature_photo : string;
+  address: Address;
+  status: string;
+  id_card: string;
+  is_active: boolean;
+  created_at: string;
+  created_by: UserDataForStatistic | null;
+  submited_by: UserDataForStatistic | null;
+  validated_by: UserDataForStatistic | null;
+  printed_by: UserDataForStatistic | null;
+  payed_by: UserDataForStatistic | null;
+  suspended_by: UserDataForStatistic | null;
+  refused_by: UserDataForStatistic | null;
+  documents: MerchantDocument[];
+  payments: MerchantPayment[];
+}
+
+// Enrollement Statistics Interface
+export interface UsersStatistics {
+  total_users: number;
+  last_month_users: number;
+  percentage_last_month: number;
+}
+
+export interface ActiveMerchantsStatistics {
+  total_active_merchants: number;
+  last_month_active_merchants: number;
+  percentage_last_month: number;
+}
+
+export interface PrintedMerchantsStatistics {
+  total_printed_merchants: number;
+  last_month_printed_merchants: number;
+  percentage_last_month: number;
+}
+
+export interface ToValidateMerchantsStatistics {
+  total_to_validate_merchants: number;
+  last_month_to_validate_merchants: number;
+  percentage_last_month: number;
+}
+
+export interface EnrollementStatistics {
+  users_statistics: UsersStatistics;
+  active_merchants_statistics: ActiveMerchantsStatistics;
+  printed_merchants_statistics: PrintedMerchantsStatistics;
+  to_validate_merchants_statistics: ToValidateMerchantsStatistics;
+}
+
+// Detailed Statistics Interface
+export interface MerchantsByAddress {
+  address_name: string;
+  total_merchants: number;
+}
+
+export interface PaymentsByMonth {
+  month: string;
+  total_amount: number;
+  payment_count: number;
+}
+
+export interface DetailedStatistics {
+  merchants_by_address: MerchantsByAddress[];
+  payments_by_month: PaymentsByMonth[];
+}
+
 

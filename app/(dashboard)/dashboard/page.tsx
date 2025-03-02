@@ -16,37 +16,10 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-
-const stats = [
-  {
-    name: 'Total Utilisateurs',
-    value: '2,543',
-    icon: Users,
-    change: '+12.3%',
-    changeType: 'positive',
-  },
-  {
-    name: 'Commerçants actifs',
-    value: '1,234',
-    icon: Store,
-    change: '+8.2%',
-    changeType: 'positive',
-  },
-  {
-    name: 'Cartes Générées',
-    value: '3,456',
-    icon: FileText,
-    change: '-4.5%',
-    changeType: 'negative',
-  },
-  {
-    name: 'En Cours De Traitement',
-    value: '12',
-    icon: CreditCard,
-    change: '+23.1%',
-    changeType: 'positive',
-  },
-];
+import { useEffect, useState } from 'react';
+import { DetailedStatistics, EnrollementStatistics } from '@/types';
+import { getMerchantDetailedStatistics, getMerchantStatistics } from '@/fetcher/api-fetcher';
+import { toast } from '@/hooks/use-toast';
 
 const monthlyPayments = [
   { month: 'Jan', amount: 12500 },
@@ -87,7 +60,36 @@ const merchantsByAddress = [
 ];
 
 
+
 export default function DashboardPage() {
+  const [statistics, setStatistics] = useState<EnrollementStatistics>({} as EnrollementStatistics)
+  const [detailedStatistics, setDetailedStatistics] = useState<DetailedStatistics>({} as DetailedStatistics)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
+
+  const getAppStatistics = async () => {
+    setIsLoading(true);
+    try {
+      const stats = await getMerchantStatistics()
+      setStatistics(stats)
+      const detailedStats = await getMerchantDetailedStatistics()
+      setDetailedStatistics(detailedStats)
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les commerçants",
+        variant: "destructive",
+      });
+      console.log(error)
+    }finally{
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(()=>{
+    getAppStatistics()
+  },[])
+  
   return (
     <div>
       <motion.h1
@@ -103,12 +105,10 @@ export default function DashboardPage() {
       </motion.h1>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
           <motion.div
-            key={stat.name}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
+            transition={{ duration: 0.3, delay: 2 * 0.1 }}
           >
             <Card className={cn(
               "backdrop-blur-sm transition-colors duration-300",
@@ -121,16 +121,16 @@ export default function DashboardPage() {
                   "text-sm font-medium",
                   "dark:text-gray-300 text-gray-600"
                 )}>
-                  {stat.name}
+                  Total Utilisateurs
                 </CardTitle>
                 <div className={cn(
                   "w-10 h-10 rounded-full flex items-center justify-center",
                   "dark:bg-cyan-500/10 bg-cyan-500/20"
                 )}>
-                  <stat.icon className={cn(
+                  <Users className={cn(
                     "h-5 w-5",
                     "dark:text-cyan-400 text-cyan-600"
-                  )} />
+                  )}/>
                 </div>
               </CardHeader>
               <CardContent>
@@ -138,110 +138,191 @@ export default function DashboardPage() {
                   "text-2xl font-bold",
                   "dark:text-white text-gray-900"
                 )}>
-                  {stat.value}
+                  {statistics.users_statistics?.total_users}
                 </div>
                 <div className={cn(
-                  "flex items-center text-xs mt-1",
-                  stat.changeType === 'positive' 
-                    ? 'dark:text-emerald-400 text-emerald-600'
-                    : 'dark:text-red-400 text-red-600'
+                  "flex items-center text-xs mt-1",'dark:text-emerald-400 text-emerald-600'
                 )}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
+                    transition={{ duration: 0.3, delay: 1 * 0.1 + 0.2 }}
                     className={cn(
                       "w-2 h-2 rounded-full mr-1",
-                      stat.changeType === 'positive'
-                        ? 'dark:bg-emerald-400 bg-emerald-600'
-                        : 'dark:bg-red-400 bg-red-600'
+                      'dark:bg-emerald-400 bg-emerald-600'
                     )}
                   />
-                  <span>{stat.change} depuis le mois dernier</span>
+                  <span>{statistics.users_statistics?.last_month_users} depuis le mois dernier</span>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
-        ))}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 2 * 0.1 }}
+          >
+            <Card className={cn(
+              "backdrop-blur-sm transition-colors duration-300",
+              "dark:bg-gray-900/50 bg-white/50",
+              "dark:border-cyan-900/20 border-cyan-200/20",
+              "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
+            )}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className={cn(
+                  "text-sm font-medium",
+                  "dark:text-gray-300 text-gray-600"
+                )}>
+                  Commerçants actifs
+                </CardTitle>
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center",
+                  "dark:bg-cyan-500/10 bg-cyan-500/20"
+                )}>
+                  <Store className={cn(
+                    "h-5 w-5",
+                    "dark:text-cyan-400 text-cyan-600"
+                  )}/>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className={cn(
+                  "text-2xl font-bold",
+                  "dark:text-white text-gray-900"
+                )}>
+                  {statistics.active_merchants_statistics?.total_active_merchants}
+                </div>
+                <div className={cn(
+                  "flex items-center text-xs mt-1",'dark:text-emerald-400 text-emerald-600'
+                )}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 1 * 0.1 + 0.2 }}
+                    className={cn(
+                      "w-2 h-2 rounded-full mr-1",
+                      'dark:bg-emerald-400 bg-emerald-600'
+                    )}
+                  />
+                  <span>{statistics.active_merchants_statistics?.last_month_active_merchants} depuis le mois dernier</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 2 * 0.1 }}
+          >
+            <Card className={cn(
+              "backdrop-blur-sm transition-colors duration-300",
+              "dark:bg-gray-900/50 bg-white/50",
+              "dark:border-cyan-900/20 border-cyan-200/20",
+              "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
+            )}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className={cn(
+                  "text-sm font-medium",
+                  "dark:text-gray-300 text-gray-600"
+                )}>
+                  Cartes Générées
+                </CardTitle>
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center",
+                  "dark:bg-cyan-500/10 bg-cyan-500/20"
+                )}>
+                  <FileText className={cn(
+                    "h-5 w-5",
+                    "dark:text-cyan-400 text-cyan-600"
+                  )}/>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className={cn(
+                  "text-2xl font-bold",
+                  "dark:text-white text-gray-900"
+                )}>
+                  {statistics.printed_merchants_statistics?.total_printed_merchants}
+                </div>
+                <div className={cn(
+                  "flex items-center text-xs mt-1",'dark:text-emerald-400 text-emerald-600'
+                )}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 1 * 0.1 + 0.2 }}
+                    className={cn(
+                      "w-2 h-2 rounded-full mr-1",
+                      'dark:bg-emerald-400 bg-emerald-600'
+                    )}
+                  />
+                  <span>{statistics.printed_merchants_statistics?.last_month_printed_merchants} depuis le mois dernier</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 2 * 0.1 }}
+          >
+            <Card className={cn(
+              "backdrop-blur-sm transition-colors duration-300",
+              "dark:bg-gray-900/50 bg-white/50",
+              "dark:border-cyan-900/20 border-cyan-200/20",
+              "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
+            )}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className={cn(
+                  "text-sm font-medium",
+                  "dark:text-gray-300 text-gray-600"
+                )}>
+                 En Cours De Traitement
+                </CardTitle>
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center",
+                  "dark:bg-cyan-500/10 bg-cyan-500/20"
+                )}>
+                  <CreditCard className={cn(
+                    "h-5 w-5",
+                    "dark:text-cyan-400 text-cyan-600"
+                  )}/>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className={cn(
+                  "text-2xl font-bold",
+                  "dark:text-white text-gray-900"
+                )}>
+                  {statistics.to_validate_merchants_statistics?.total_to_validate_merchants}
+                </div>
+                <div className={cn(
+                  "flex items-center text-xs mt-1",'dark:text-emerald-400 text-emerald-600'
+                )}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 1 * 0.1 + 0.2 }}
+                    className={cn(
+                      "w-2 h-2 rounded-full mr-1",
+                      'dark:bg-emerald-400 bg-emerald-600'
+                    )}
+                  />
+                  <span>{statistics.to_validate_merchants_statistics?.total_to_validate_merchants} depuis le mois dernier</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
       </div>
 
       {/* Charts Grid */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-6">
-        {/* Merchants by Address Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
-        >
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader>
-              <CardTitle className={cn(
-                "text-lg font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Commerçants par Zone
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={merchantsByAddress}
-                      dataKey="merchants"
-                      nameKey="address"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label
-                    >
-                      {merchantsByAddress.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          className={cn(
-                            index === 0 && "dark:fill-cyan-400 fill-cyan-600",
-                            index === 1 && "dark:fill-cyan-500 fill-cyan-500",
-                            index === 2 && "dark:fill-cyan-600 fill-cyan-400",
-                            index === 3 && "dark:fill-cyan-700 fill-cyan-300",
-                            index === 4 && "dark:fill-cyan-800 fill-cyan-200"
-                          )}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)",
-                        borderRadius: '8px',
-                      }}
-                      itemStyle={{
-                        color: "var(--foreground)"
-                      }}
-                    />
-                    <Legend 
-                      formatter={(value) => (
-                        <span className="dark:text-gray-400 text-gray-600">
-                          {value}
-                        </span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
         {/* Monthly Cards Generated Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
-          className="col-span-2 "
+          className="col-span-3 "
         >
           <Card className={cn(
             "backdrop-blur-sm",
@@ -253,23 +334,24 @@ export default function DashboardPage() {
                 "text-lg font-medium",
                 "dark:text-gray-300 text-gray-600"
               )}>
-                Cartes Générées
+                Nombre de Commerçants par Zone
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyCards}>
+                  <BarChart data={detailedStatistics.merchants_by_address}>
                     <CartesianGrid 
                       strokeDasharray="3 3" 
                       className="dark:stroke-gray-700 stroke-gray-200" 
                     />
                     <XAxis 
-                      dataKey="month" 
+                      dataKey="address_name" 
                       className="dark:fill-gray-400 fill-gray-600"
                     />
                     <YAxis 
                       className="dark:fill-gray-400 fill-gray-600"
+                      allowDecimals={false}
                     />
                     <Tooltip 
                       contentStyle={{ 
@@ -283,8 +365,8 @@ export default function DashboardPage() {
                     />
                     <Legend />
                     <Bar 
-                      dataKey="cards" 
-                      name="Cartes"
+                      dataKey="total_merchants" 
+                      name="Commerçants"
                       className="dark:fill-cyan-400/80 fill-cyan-600/80"
                     />
                   </BarChart>
@@ -316,7 +398,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyPayments}>
+                  <LineChart data={detailedStatistics.payments_by_month}>
                     <CartesianGrid 
                       strokeDasharray="3 3" 
                       className="dark:stroke-gray-700 stroke-gray-200" 
@@ -327,7 +409,8 @@ export default function DashboardPage() {
                     />
                     <YAxis 
                       className="dark:fill-gray-400 fill-gray-600"
-                      tickFormatter={(value) => `${value / 1000}M`}
+                      allowDecimals={false}
+                      tickFormatter={(value) => `${value }FG`}
                     />
                     <Tooltip 
                       contentStyle={{ 
@@ -342,7 +425,7 @@ export default function DashboardPage() {
                     <Legend />
                     <Line 
                       type="monotone" 
-                      dataKey="amount" 
+                      dataKey="total_amount" 
                       className="dark:stroke-cyan-400 stroke-cyan-600"
                       strokeWidth={2}
                       name="Montant (GNF)"
