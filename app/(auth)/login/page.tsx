@@ -51,10 +51,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gray-950">
-      {/* Animated gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-cyan-950 via-cyan-900 to-cyan-950 animate-gradient-slow" />
-      
-      {/* Decorative background elements */}
       <div className="fixed inset-0">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-cyan-800/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
         <div className="absolute top-0 -right-4 w-96 h-96 bg-blue-800/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
@@ -154,6 +151,7 @@ export default function LoginPage() {
                   className='text-center my-2'
                 >
                   <span className="text-xs text-red-400">Identifiant ou Mot de Passe invalide</span>
+                 
                 </motion.div>
               )}
             </form>

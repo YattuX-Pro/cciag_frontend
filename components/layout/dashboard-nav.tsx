@@ -70,48 +70,44 @@ export function DashboardNav({ collapsed = false }: DashboardNavProps) {
     >
       {navigation.map((item, index) => {
         const isActive = pathname === item.href;
-        return (
-          <>
-            {item.role.some((role_) => role_ === role) ? (
-              <motion.div
-                key={item.name}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200',
-                    isActive
-                      ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20'
-                      : 'text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-400',
-                    collapsed && 'justify-center px-2'
-                  )}
-                  title={collapsed ? item.name : undefined}
-                >
-                  <item.icon
-                    className={cn(
-                      'h-5 w-5',
-                      isActive
-                        ? 'text-white'
-                        : 'text-gray-400 group-hover:text-cyan-400',
-                      !collapsed && 'mr-3'
-                    )}
-                  />
-                  {!collapsed && (
-                    <span className={cn(
-                      'transition-all duration-200',
-                      isActive ? 'text-white' : 'text-gray-400 group-hover:text-cyan-400'
-                    )}>
-                      {item.name}
-                    </span>
-                  )}
-                </Link>
-              </motion.div>
-            ) : null}
-          </>
-        );
+        return item.role.some((role_) => role_ === role) ? (
+          <motion.div
+            key={item.name}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Link
+              href={item.href}
+              className={cn(
+                'group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200',
+                isActive
+                  ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20'
+                  : 'text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-400',
+                collapsed && 'justify-center px-2'
+              )}
+              title={collapsed ? item.name : undefined}
+            >
+              <item.icon
+                className={cn(
+                  'h-5 w-5',
+                  isActive
+                    ? 'text-white'
+                    : 'text-gray-400 group-hover:text-cyan-400',
+                  !collapsed && 'mr-3'
+                )}
+              />
+              {!collapsed && (
+                <span className={cn(
+                  'transition-all duration-200',
+                  isActive ? 'text-white' : 'text-gray-400 group-hover:text-cyan-400'
+                )}>
+                  {item.name}
+                </span>
+              )}
+            </Link>
+          </motion.div>
+        ) : null;
       })}
       
       {isLogout ? (

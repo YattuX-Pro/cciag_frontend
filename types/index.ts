@@ -69,7 +69,6 @@ export interface Address {
   created_at: string;
 }
 
-
 export interface MerchantPayment {
   id: number;
   merchant: number;
@@ -80,7 +79,6 @@ export interface MerchantPayment {
   created_at: string;
 }
 
-
 interface UserData {
   first_name: string;
   last_name: string;
@@ -88,29 +86,36 @@ interface UserData {
   phone_number: string | number;
 }
 
-
 export interface MerchantEnrollment {
   id: number;
+  user: User;
   card_number: string;
-  id_card: string;
-  user?: UserData;
+  status: Status;
   profile_photo: string;
   signature_photo: string;
   address: Address;
   address_id: number;
-  status: Status; 
-  created_at: string; 
+  activities: Activity[];
+  entreprise: Entreprise;
+  created_at: string;
   created_by?: UserData;
   submited_by: UserData;
+  submited_at: string;
   validated_by: UserData;
+  validated_at: string;
   printed_by: UserData;
-  submited_by_id: number;
-  validated_by_id: number;
-  printed_by_id: number;
-  payed_by_id: number;
-  suspended_by_id: number;
-  refused_by_id: number;
-  is_active: boolean;
+  printed_at: string;
+  payed_by: UserData;
+  payed_at: string;
+  suspended_by: UserData;
+  suspended_at: string;
+  refused_by: UserData;
+  refused_at: string;
+  expired_at: string;
+  updated_at: string;
+  id_card: string;
+  quartier: string;
+  hasCompany?: boolean;
 }
 
 export enum Status {
@@ -220,4 +225,57 @@ export interface DetailedStatistics {
   payments_by_month: PaymentsByMonth[];
 }
 
+export interface SimpleMerchant {
+  id: number;
+  user: User;
+  card_number: string;
+  status: Status;
+  address: Address;
+  quartier: string;
+  created_at: string;
+}
 
+export interface Activity {
+  id: number;
+  name: string;
+  merchants: SimpleMerchant[];
+  sub_activities: SubActivity[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubActivity {
+  id: number;
+  name: string;
+  activity: number;
+  activity_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Entreprise {
+  id: number;
+  merchant: SimpleMerchant;
+  nom: string;
+  taille: 'TPE' | 'PME' | 'GE';
+  taille_display: string;
+  date_creation: string;
+  nombre_employe: string;
+  nombre_employe_display: string;
+  chiffre_affaire: string;
+  chiffre_affaire_display: string;
+  produits: string;
+  address: Address;
+  address_id: number;
+  logo: string;
+  quitus_fiscal: string;
+  certificat_fiscal: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MerchantEnrollmentSubmission {
+  merchantData: MerchantEnrollment;
+  documentData: DocumentItem[];
+  companyData: Partial<Entreprise>;
+}

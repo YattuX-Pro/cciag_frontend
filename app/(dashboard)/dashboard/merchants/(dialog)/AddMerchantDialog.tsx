@@ -67,7 +67,7 @@ export default function AddMerchantDialog({
       ...merchant,
       user: {
         ...merchant?.user,
-        phone_number: merchant?.user?.phone_number ? Number(merchant.user.phone_number) : ''
+        phone_number: merchant?.user?.phone_number?.toString() || ''
       }
     } : undefined
   });
@@ -89,7 +89,7 @@ export default function AddMerchantDialog({
           ...merchant,
           user: {
             ...merchant?.user,
-            phone_number: merchant?.user?.phone_number ? Number(merchant.user.phone_number) : ''
+            phone_number: merchant?.user?.phone_number?.toString() || ''
           }
         });
       } else {

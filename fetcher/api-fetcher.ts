@@ -1,4 +1,4 @@
-import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics } from "@/types";
+import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission } from "@/types";
 import { deleter, fetcher, poster, updater } from "./fetcher";
 
 interface DjangoPaginatedResponse<T> {
@@ -155,9 +155,68 @@ export const getMerchantDetailedStatistics = async (): Promise<DetailedStatistic
   return response;
 }
 
+export const getActivities = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Activity>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
 
+  const response = await fetcher(`/api/activities/?${queryString}`);
+  return extractPaginationParams(response);
+};
 
+export const getActivityDetail = (id: number): Promise<Activity> => 
+  fetcher(`/api/activities/${id}`);
 
+export const createActivity = (body: Activity): Promise<any> => 
+  poster('/api/activities/', body);
 
+export const updateActivity = (body: Activity, id: number): Promise<any> => 
+  updater(`/api/activities/${id}`, body);
 
+export const getSubActivities = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<SubActivity>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
 
+  const response = await fetcher(`/api/subactivities/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getSubActivityDetail = (id: number): Promise<SubActivity> => 
+  fetcher(`/api/subactivities/${id}`);
+
+export const createSubActivity = (body: SubActivity): Promise<any> => 
+  poster('/api/subactivities/', body);
+
+export const updateSubActivity = (body: SubActivity, id: number): Promise<any> => 
+  updater(`/api/subactivities/${id}`, body);
+
+export const getEntreprises = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Entreprise>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/entreprises/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getEntrepriseDetail = (id: number): Promise<Entreprise> => 
+  fetcher(`/api/entreprises/${id}`);
+
+export const createEntreprise = (body: Entreprise): Promise<any> => 
+  poster('/api/entreprises/', body);
+
+export const updateEntreprise = (body: Entreprise, id: number): Promise<any> => 
+  updater(`/api/entreprises/${id}`, body);
+
+export const createEnrollement = (body: MerchantEnrollmentSubmission): Promise<any> => 
+  poster('/api/merchants/create/', body);

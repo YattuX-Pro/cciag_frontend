@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Search } from 'lucide-react';
-import AddMerchantDialog from './(dialog)/AddMerchantDialog';
+import AddMerchantDocumentDialog from './(dialog)/AddMerchantDocumentDialog';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { columns } from './columns';
@@ -21,7 +21,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { statusMap } from '@/types/const';
 import { MerchantInfoDialog } from './(dialog)/MerchantInfoDialog';
-import AddMerchantDocumentDialog from './(dialog)/AddMerchantDocumentDialog';
 
 export default function MerchantsPage() {
   const [data, setData] = useState<MerchantEnrollment[]>([]);
@@ -69,24 +68,6 @@ export default function MerchantsPage() {
     header: "Actions", 
     cell: (merchant) => (
       <div className="text-right flex gap-2">
-        <AddMerchantDialog
-          onSuccess={() => loadMerchants()}
-          merchant={merchant}
-          trigger={
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "transition-colors duration-200",
-                "dark:text-cyan-400 text-cyan-600",
-                "dark:hover:text-cyan-300 hover:text-cyan-500",
-                "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
-              )}
-            >
-              Edit
-            </Button>
-          }
-        />
         <AddMerchantDocumentDialog 
             merchantId={merchant?.id}
             merchantStatus={merchant?.status}
@@ -135,8 +116,14 @@ export default function MerchantsPage() {
           transition={{ delay: 0.2 }}
           className='flex gap-2'
         >
-          <AddMerchantDialog onSuccess={() => loadMerchants()} />
-          
+          <Button
+            variant="outline"
+            onClick={() => window.location.href = '/dashboard/merchants/enrollment'}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Commencer l&apos;enrollment
+          </Button>
         </motion.div>
       </div>
 

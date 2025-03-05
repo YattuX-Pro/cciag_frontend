@@ -96,3 +96,26 @@ export const getStatusColor = (status: string) => {
     const color = statusColorMap[status as keyof typeof statusColorMap];
     return color || 'dark:bg-gray-500/10 bg-gray-500/20 dark:text-gray-400 text-gray-600';
 };
+
+export const TAILLE_ENTREPRISE = [
+  { value: 'TPE', label: 'Très Petite Entreprise (TPE)' },
+  { value: 'PME', label: 'Petite et Moyenne Entreprise (PME)' },
+  { value: 'GE', label: 'Grande Entreprise (GE)' }
+];
+
+export const NOMBRE_EMPLOYE = [
+    { value: '0-5', label: '0 à 5 employés' },
+    { value: '5-10', label: '5 à 10 employés' },
+    { value: '10-20', label: '10 à 20 employés' },
+    { value: '20-50', label: '20 à 50 employés' },
+    { value: '50-100', label: '50 à 100 employés' },
+    { value: '+100', label: 'Plus de 100 employés' },
+  ];
+
+ export const CHIFFRE_AFFAIRE = [
+    { value: '0-100', label: '0 à 100 millions' },
+    { value: '100-250', label: '100 à 250 millions' },
+    { value: '250-500', label: '250 à 500 millions' },
+    { value: '500-2.5', label: '500 millions à 2.5 milliards' },
+    { value: '+2.5', label: 'Plus de 2.5 milliards' },
+  ];
