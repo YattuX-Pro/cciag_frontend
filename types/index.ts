@@ -131,6 +131,7 @@ export interface MerchantEnrollment {
   type_adherent: 'ADHERANT' | 'MEMBRE';
   tarification_adhesion: Tarification;
   tarification_adhesion_id: number;
+  is_active: boolean;
 }
 
 export enum Status {

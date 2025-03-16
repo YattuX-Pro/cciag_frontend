@@ -54,7 +54,7 @@ export default function AddMerchantDocumentDialog({
     reset,
     setValue,
     formState: { errors },
-  } = useForm<MerchantDocument>({
+  } = useForm<any>({
     defaultValues: {
       merchant_id: merchantId,
       documents: [{ name: "", document: "" }],
