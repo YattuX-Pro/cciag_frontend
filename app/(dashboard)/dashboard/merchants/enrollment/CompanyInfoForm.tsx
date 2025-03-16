@@ -12,20 +12,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Entreprise } from "@/types";
-import { CHIFFRE_AFFAIRE, NOMBRE_EMPLOYE, TAILLE_ENTREPRISE } from "@/types/const";
+import { Entreprise, TypeAdhesionData } from "@/types";
+import { CHIFFRE_AFFAIRE, FORME_JURIDIQUE, NOMBRE_EMPLOYE, TAILLE_ENTREPRISE, TYPE_ACTIVITE, TYPE_COMMERCE } from "@/types/const";
 import { Plus, X } from "lucide-react";
+import SearchableSelect from "@/components/SearchableSelect";
+import { getAddresses } from "@/fetcher/api-fetcher";
+import AddAddressDialog from "./(dialog)/AddAddressDialog";
 
 interface CompanyInfoFormProps {
   onSubmit: (data: Partial<Entreprise>) => void;
   onBack: () => void;
   initialData?: Partial<Entreprise> | null;
+  typeAdhesionData: TypeAdhesionData;
 }
 
 export default function CompanyInfoForm({
   onSubmit,
   onBack,
   initialData,
+  typeAdhesionData
 }: CompanyInfoFormProps) {
   const [products, setProducts] = useState<string[]>(
     initialData?.produits ? initialData.produits.split(';').filter(Boolean) : ['']
@@ -40,6 +45,7 @@ export default function CompanyInfoForm({
     setValue,
     control,
     formState: { errors },
+    watch
   } = useForm<Partial<Entreprise>>({
     defaultValues: initialData || undefined
   });
@@ -73,6 +79,16 @@ export default function CompanyInfoForm({
   const handleSelectChange = (field: "nombre_employe" | "chiffre_affaire", value: string) => {
     setValue(field, value);
   };
+
+  const [addresses, setAddresses] = useState([]);
+  const loadAddresses = async () => {
+    const data = await getAddresses({limit:2000});
+    setAddresses(data.results);
+  };
+
+  useEffect(() => {
+    loadAddresses();
+  }, []);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -155,8 +171,10 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Chiffre d&apos;affaires</Label>
           <Select 
-            {...register("chiffre_affaire", { required: "Le chiffre d'affaires est requis" })}
-            onValueChange={(value) => handleSelectChange("chiffre_affaire", value)}
+            value={watch("chiffre_affaire")}
+            onValueChange={(value) => {
+              setValue("chiffre_affaire", value, { shouldValidate: true });
+            }}
           >
             <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
               <SelectValue placeholder="Sélectionnez le chiffre d'affaires" />
@@ -172,6 +190,141 @@ export default function CompanyInfoForm({
           {errors.chiffre_affaire && (
             <p className="text-sm text-red-500">{errors.chiffre_affaire.message}</p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-cyan-700 dark:text-cyan-300">Type d&apos;activité</Label>
+          <Select 
+            value={watch("type_activite")}
+            onValueChange={(value) => {
+              setValue("type_activite", value, { shouldValidate: true });
+            }}
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
+              <SelectValue placeholder="Sélectionnez le type d'activité" />
+            </SelectTrigger>
+            <SelectContent>
+              {TYPE_ACTIVITE.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.type_activite && (
+            <p className="text-sm text-red-500">{errors.type_activite.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-cyan-700 dark:text-cyan-300">Type de commerce</Label>
+          <Select 
+            value={watch("type_commerce")}
+            onValueChange={(value) => {
+              setValue("type_commerce", value, { shouldValidate: true });
+            }}
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
+              <SelectValue placeholder="Sélectionnez le type de commerce" />
+            </SelectTrigger>
+            <SelectContent>
+              {TYPE_COMMERCE.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.type_commerce && (
+            <p className="text-sm text-red-500">{errors.type_commerce.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-cyan-700 dark:text-cyan-300">Forme juridique</Label>
+          <Select 
+            value={watch("forme_juridique")}
+            onValueChange={(value) => {
+              setValue("forme_juridique", value, { shouldValidate: true });
+            }}
+            disabled={!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee}
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
+              <SelectValue placeholder="Sélectionnez la forme juridique" />
+            </SelectTrigger>
+            <SelectContent>
+              {FORME_JURIDIQUE.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.forme_juridique && (
+            <p className="text-sm text-red-500">{errors.forme_juridique.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="numero_rccm" className="text-cyan-700 dark:text-cyan-300">Numéro RCCM</Label>
+          <Input
+            id="numero_rccm"
+            {...register("numero_rccm", { 
+              required: (!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee) ? false : "Le numéro RCCM est requis"
+            })}
+            placeholder="Numéro RCCM"
+            className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
+            disabled={!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee}
+          />
+          {errors.numero_rccm && (
+            <p className="text-sm text-red-500">{errors.numero_rccm.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="numero_nif" className="text-cyan-700 dark:text-cyan-300">Numéro NIF</Label>
+          <Input
+            id="numero_nif"
+            {...register("numero_nif", { 
+              required: (!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee) ? false : "Le numéro NIF est requis"
+            })}
+            placeholder="Numéro NIF"
+            className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
+            disabled={!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee}
+          />
+          {errors.numero_nif && (
+            <p className="text-sm text-red-500">{errors.numero_nif.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-cyan-700 dark:text-cyan-300">
+            Ville <span className="text-red-500">*</span>
+          </Label>
+          <SearchableSelect
+            name="address_id"
+            control={control}
+            rules={{ required: "La ville est requise" }}
+            label=""
+            data={addresses}
+            valueKey="name"
+            placeholder="Sélectionnez la ville"
+            currentValue={watch('address_id')}
+            disabled={false}
+          />
+          {errors.address_id && (
+            <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+              {errors.address_id.message}
+            </p>
+          )}
+          <div className="flex items-center space-x-2 text-sm">
+            <span className="text-gray-500">Ville non trouvée ?</span>
+            <AddAddressDialog 
+              onSuccess={() => {
+                loadAddresses()
+              }}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -217,6 +370,18 @@ export default function CompanyInfoForm({
             <p className="text-sm text-red-500">{errors.produits.message}</p>
           )}
         </div>
+
+        <div className="space-y-2 col-span-2">
+          <Label htmlFor="commentaire" className="text-cyan-700 dark:text-cyan-300">NB:</Label>
+          <textarea
+            id="commentaire"
+            {...register("commentaire")}
+            placeholder="Commentaires (optionnel)"
+            className="w-full h-24 px-3 py-2 rounded-md bg-white dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          />
+        </div>
+
+
       </div>
 
       <div className="space-y-4">
@@ -253,7 +418,7 @@ export default function CompanyInfoForm({
           <Input
             id="certificat_fiscal"
             type="file"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {

@@ -7,8 +7,8 @@ import MerchantInfoForm from "./MerchantInfoForm";
 import MerchantDocumentForm from "./MerchantDocumentForm";
 import CompanyInfoForm from "./CompanyInfoForm";
 import SubmitForm from "./SubmitForm";
-import { MerchantEnrollment, DocumentItem, Entreprise } from "@/types";
-// import { createMerchantEnrollment } from "@/fetcher/api-fetcher";
+import TypeAdhesionForm from "./TypeAdhesionForm";
+import { MerchantEnrollment, DocumentItem, Entreprise, TypeAdhesionData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
@@ -17,66 +17,57 @@ export default function EnrollmentPage() {
   const [merchantData, setMerchantData] = useState<MerchantEnrollment | null>(null);
   const [documentData, setDocumentData] = useState<DocumentItem[]>([]);
   const [companyData, setCompanyData] = useState<Partial<Entreprise> | null>(null);
-  const [hasCompany, setHasCompany] = useState(false);
+  const [typeAdhesionData, setTypeAdhesionData] = useState<TypeAdhesionData | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
   const steps = [
     {
       title: "1",
-      description: "Commerçant"
+      description: "Type Adhésion"
     },
     {
       title: "2",
-      description: "Pièces requises"
+      description: "Commerçant"
     },
     {
       title: "3",
-      description: "Informations Entreprise"
+      description: "Pièces requises"
     },
     {
       title: "4",
+      description: "Informations Entreprise"
+    },
+    {
+      title: "5",
       description: "Finalisation"
     }
   ];
 
   const handleNext = () => {
-    if (activeStep === 1) { // Après l'étape Documents
-      if (hasCompany) {
-        setActiveStep(2); // Aller à l'étape Entreprise
-      } else {
-        setActiveStep(3); // Sauter à l'étape Soumission
-      }
-    } else {
-      setActiveStep((prevStep) => Math.min(prevStep + 1, 3));
-    }
+    setActiveStep((prevStep) => Math.min(prevStep + 1, 4));
   };
 
   const handleBack = () => {
-    if (activeStep === 3 && !hasCompany) { // Si on est à l'étape Soumission et pas d'entreprise
-      setActiveStep(1); // Retourner à l'étape Documents
-    } else {
-      setActiveStep((prevStep) => Math.max(prevStep - 1, 0));
-    }
+    setActiveStep((prevStep) => Math.max(prevStep - 1, 0));
   };
 
   const handleDocumentSubmit = (data: DocumentItem[]) => {
     setDocumentData(data);
-    if (hasCompany) {
-      setActiveStep(2); // Aller à l'étape Entreprise
-    } else {
-      setActiveStep(3); // Sauter à l'étape Soumission
-    }
+    handleNext();
   };
 
-  const handleMerchantSubmit = (data: MerchantEnrollment & { hasCompany?: boolean }) => {
+  const handleMerchantSubmit = (data: MerchantEnrollment) => {
     setMerchantData(data);
-    setHasCompany(!!data.hasCompany);
+    handleNext();
+  };
+
+  const handleTypeAdhesionSubmit = (data: TypeAdhesionData) => {
+    setTypeAdhesionData(data);
     handleNext();
   };
 
   const handleCompanySubmit = async (data: Partial<Entreprise>) => {
-    console.log(data)
     setCompanyData(data);
     handleNext();
   };
@@ -86,11 +77,10 @@ export default function EnrollmentPage() {
       const enrollmentData = {
         merchant: merchantData,
         documents: documentData,
-        company: companyData
+        company: companyData,
+        typeAdhesion: typeAdhesionData
       };
 
-      // await createMerchantEnrollment(enrollmentData);
-      
       toast({
         title: "Succès",
         description: "L'inscription a été enregistrée avec succès.",
@@ -112,13 +102,21 @@ export default function EnrollmentPage() {
     switch (activeStep) {
       case 0:
         return (
+          <TypeAdhesionForm 
+            onSubmit={handleTypeAdhesionSubmit} 
+            initialData={typeAdhesionData} 
+            onBack={handleBack} 
+          />
+        );
+      case 1:
+        return (
           <MerchantInfoForm 
             onSubmit={handleMerchantSubmit} 
             initialData={merchantData} 
             onBack={handleBack} 
           />
         );
-      case 1:
+      case 2:
         return (
           <MerchantDocumentForm 
             onSubmit={handleDocumentSubmit} 
@@ -126,20 +124,22 @@ export default function EnrollmentPage() {
             initialData={documentData} 
           />
         );
-      case 2:
-        return hasCompany ? (
+      case 3:
+        return (
           <CompanyInfoForm 
             onSubmit={handleCompanySubmit} 
             onBack={handleBack} 
-            initialData={companyData} 
+            initialData={companyData}
+            typeAdhesionData={typeAdhesionData!}
           />
-        ) : null;
-      case 3:
+        );
+      case 4:
         return (
           <SubmitForm
             merchantData={merchantData!}
             documentData={documentData}
             companyData={companyData!}
+            typeAdhesionData={typeAdhesionData!}
             onSubmit={handleFinalSubmit}
             onBack={handleBack}
           />
@@ -157,7 +157,7 @@ export default function EnrollmentPage() {
             Inscription de Commerçant
           </h2>
           <p className="text-cyan-600 dark:text-cyan-400">
-            Complétez le formulaire d'inscription en quatre étapes
+            Complétez le formulaire d'inscription en cinq étapes
           </p>
         </div>
       </Card>

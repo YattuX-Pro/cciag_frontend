@@ -68,13 +68,6 @@ export default function MerchantsPage() {
     header: "Actions", 
     cell: (merchant) => (
       <div className="text-right flex gap-2">
-        <AddMerchantDocumentDialog 
-            merchantId={merchant?.id}
-            merchantStatus={merchant?.status}
-            onSuccess={() => {
-              loadMerchants()
-            }}
-          />
         <MerchantInfoDialog merchantData={merchant} onSuccess={() => loadMerchants()} />
       </div>
     ),

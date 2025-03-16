@@ -355,13 +355,15 @@ export default function DashboardPage() {
                     />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)",
+                        backgroundColor: "hsl(var(--background))",
+                        borderColor: "hsl(var(--border))",
                         borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                       }}
                       itemStyle={{
-                        color: "var(--foreground)"
+                        color: "hsl(var(--foreground))"
                       }}
+                      cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
                     />
                     <Legend />
                     <Bar 
@@ -414,13 +416,15 @@ export default function DashboardPage() {
                     />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)",
+                        backgroundColor: "hsl(var(--background))",
+                        borderColor: "hsl(var(--border))",
                         borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                       }}
                       itemStyle={{
-                        color: "var(--foreground)"
+                        color: "hsl(var(--foreground))"
                       }}
+                      cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
                     />
                     <Legend />
                     <Line 

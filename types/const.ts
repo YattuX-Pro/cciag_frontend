@@ -98,10 +98,21 @@ export const getStatusColor = (status: string) => {
 };
 
 export const TAILLE_ENTREPRISE = [
-  { value: 'TPE', label: 'Très Petite Entreprise (TPE)' },
   { value: 'PME', label: 'Petite et Moyenne Entreprise (PME)' },
   { value: 'GE', label: 'Grande Entreprise (GE)' }
 ];
+
+export const TYPE_DEMANDE = [
+  { value: 'NOUVELLE_ADHESION', label: 'Nouvelle adhésion' },
+  { value: 'DUPLICATA', label: 'Duplicata' },
+  { value: 'CHANGEMENT_STATUT', label: 'Changement de statut' }
+];
+
+export const TYPE_DEMANDE_MAP = {
+  NOUVELLE_ADHESION: 'Nouvelle adhésion',
+  DUPLICATA: 'Duplicata',
+  CHANGEMENT_STATUT: 'Changement de statut'
+} as const;
 
 export const NOMBRE_EMPLOYE = [
     { value: '0-5', label: '0 à 5 employés' },
@@ -119,3 +130,25 @@ export const NOMBRE_EMPLOYE = [
     { value: '500-2.5', label: '500 millions à 2.5 milliards' },
     { value: '+2.5', label: 'Plus de 2.5 milliards' },
   ];
+
+  export const TYPE_ACTIVITE = [
+    { value: 'IMPORT', label: 'Import' },
+    { value: 'EXPORT', label: 'Export' },
+  ];
+  
+  export const TYPE_COMMERCE = [
+    { value: 'DETAILLANT', label: 'Détaillant' },
+    { value: 'GROSSISTE', label: 'Grossiste' },
+  ];
+  
+  export const FORME_JURIDIQUE = [
+    { value: 'EI', label: 'Entreprise Individuelle' },
+    { value: 'SARL', label: 'Société à Responsabilité Limitée' },
+    { value: 'SARLU', label: 'SARL Unipersonnelle' },
+    { value: 'SA', label: 'Société Anonyme' },
+    { value: 'SAS', label: 'Société par Actions Simplifiée' },
+    { value: 'SASU', label: 'SAS Unipersonnelle' },
+    { value: 'GIE', label: "Groupement d'Intérêt Économique" },
+    { value: 'SUCC', label: 'Succursale' },
+  ];
+  

@@ -1,4 +1,4 @@
-import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission } from "@/types";
+import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission, Tarification, ITypeAdhesion } from "@/types";
 import { deleter, fetcher, poster, updater } from "./fetcher";
 
 interface DjangoPaginatedResponse<T> {
@@ -170,7 +170,7 @@ export const getActivities = async (params: Record<string, any> = {}): Promise<D
 export const getActivityDetail = (id: number): Promise<Activity> => 
   fetcher(`/api/activities/${id}`);
 
-export const createActivity = (body: Activity): Promise<any> => 
+export const createActivity = (body: Activity): Promise<Activity> => 
   poster('/api/activities/', body);
 
 export const updateActivity = (body: Activity, id: number): Promise<any> => 
@@ -191,7 +191,7 @@ export const getSubActivities = async (params: Record<string, any> = {}): Promis
 export const getSubActivityDetail = (id: number): Promise<SubActivity> => 
   fetcher(`/api/subactivities/${id}`);
 
-export const createSubActivity = (body: SubActivity): Promise<any> => 
+export const createSubActivity = (body: SubActivity): Promise<SubActivity> => 
   poster('/api/subactivities/', body);
 
 export const updateSubActivity = (body: SubActivity, id: number): Promise<any> => 
@@ -215,8 +215,48 @@ export const getEntrepriseDetail = (id: number): Promise<Entreprise> =>
 export const createEntreprise = (body: Entreprise): Promise<any> => 
   poster('/api/entreprises/', body);
 
-export const updateEntreprise = (body: Entreprise, id: number): Promise<any> => 
+export const updateEntreprise = (body: Entreprise | FormData, id: number): Promise<any> => 
   updater(`/api/entreprises/${id}`, body);
 
 export const createEnrollement = (body: MerchantEnrollmentSubmission): Promise<any> => 
   poster('/api/merchants/create/', body);
+
+export const getTarifications = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Tarification>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/tarifications/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const createTarification = (body: Tarification): Promise<any> => 
+  poster('/api/tarifications/', body);
+
+export const updateTarification = (body: Tarification, id: number): Promise<any> => 
+  updater(`/api/tarifications/${id}`, body);
+
+export const getTarificationDetail = (id: number): Promise<Tarification> => 
+  fetcher(`/api/tarifications/${id}`);
+
+export const deleteTarification = (id: number): Promise<any> => 
+  deleter(`/api/tarifications/${id}`);
+
+// Type Adhesion CRUD operations
+export const getTypeAdhesions = (): Promise<any> =>
+  fetcher('/api/type-adhesions/');
+
+export const getTypeAdhesion = (id: number): Promise<any> =>
+  fetcher(`/api/type-adhesions/${id}/`);
+
+export const createTypeAdhesion = (data: ITypeAdhesion): Promise<any> =>
+  poster('/api/type-adhesions/', data);
+
+export const updateTypeAdhesion = (id: number, data: ITypeAdhesion): Promise<any> =>
+  updater(`/api/type-adhesions/${id}/`, data);
+
+export const deleteTypeAdhesion = (id: number): Promise<any> =>
+  deleter(`/api/type-adhesions/${id}/`);

@@ -96,26 +96,41 @@ export interface MerchantEnrollment {
   address: Address;
   address_id: number;
   activities: Activity[];
+  activity_ids: number[];
+  sub_activities: SubActivity[];
+  sub_activity_ids: number[];
   entreprise: Entreprise;
   created_at: string;
   created_by?: UserData;
   submited_by: UserData;
+  submited_by_id: number;
   submited_at: string;
   validated_by: UserData;
+  validated_by_id: number;
   validated_at: string;
   printed_by: UserData;
+  printed_by_id: number;
   printed_at: string;
   payed_by: UserData;
+  payed_by_id: number;
   payed_at: string;
   suspended_by: UserData;
+  suspended_by_id: number;
   suspended_at: string;
   refused_by: UserData;
+  refused_by_id: number;
   refused_at: string;
   expired_at: string;
   updated_at: string;
   id_card: string;
   quartier: string;
-  hasCompany?: boolean;
+  type_adhesion: ITypeAdhesion;
+  date_naissance: string;
+  genre: 'HOMME' | 'FEMME';
+  fonction: string;
+  type_adherent: 'ADHERANT' | 'MEMBRE';
+  tarification_adhesion: Tarification;
+  tarification_adhesion_id: number;
 }
 
 export enum Status {
@@ -134,6 +149,7 @@ export interface DocumentItem{
   id: number;
   name: string;
   document: string;
+  document_number: string;
   merchant_id: number;
 }
 
@@ -236,21 +252,17 @@ export interface SimpleMerchant {
 }
 
 export interface Activity {
-  id: number;
+  id?: number;
   name: string;
-  merchants: SimpleMerchant[];
-  sub_activities: SubActivity[];
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface SubActivity {
-  id: number;
-  name: string;
-  activity: number;
-  activity_name: string;
-  created_at: string;
-  updated_at: string;
+  id?: number;
+  name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Entreprise {
@@ -270,12 +282,68 @@ export interface Entreprise {
   logo: string;
   quitus_fiscal: string;
   certificat_fiscal: string;
+  type_activite: string;
+  type_commerce: string;
+  forme_juridique: string;
+  numero_rccm: string;
+  numero_nif: string;
+  adresse: string;
+  commentaire: string;
   created_at: string;
   updated_at: string;
+}
+
+export type TypeAdhesion = 'STANDARD' | 'PREMIUM' | 'MEMBRE';
+export type TypeEntreprise = 'PME' | 'GE' | 'DETAILLANT' | 'GROSSISTE';
+
+export interface TarificationAdhesion {
+  id: number;
+  type_adhesion: TypeAdhesion;
+  type_adhesion_display: string;
+  type_entreprise: TypeEntreprise;
+  type_entreprise_display: string;
+  montant: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Tarification {
+  id?: number;
+  type_adhesion: TypeAdhesion;
+  type_adhesion_display: string;
+  type_entreprise: TypeEntreprise;
+  type_entreprise_display: string;
+  montant: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TypeAdhesionData {
+  type_demande: string;
+  typeAdhesion: {
+    standard: boolean;
+    premium: boolean;
+  };
+  typeActivite: {
+    formalisee: boolean;
+    nonFormalisee: boolean;
+  };
+  
+}
+
+export interface ITypeAdhesion {
+    id?: number;
+    type_demande: string;
+    standard: boolean;
+    premium: boolean;
+    formalisee: boolean;
+    non_formalisee: boolean;
+    
 }
 
 export interface MerchantEnrollmentSubmission {
   merchantData: MerchantEnrollment;
   documentData: DocumentItem[];
-  companyData: Partial<Entreprise>;
+  companyData?: Partial<Entreprise>;
+  typeAdhesion: ITypeAdhesion;
 }

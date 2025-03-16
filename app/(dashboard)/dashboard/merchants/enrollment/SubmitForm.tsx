@@ -2,19 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DocumentItem, Entreprise, MerchantEnrollment, MerchantEnrollmentSubmission } from "@/types";
+import { DocumentItem, Entreprise, ITypeAdhesion, MerchantEnrollment, MerchantEnrollmentSubmission, Tarification, TypeAdhesionData } from "@/types";
 import { CHIFFRE_AFFAIRE, NOMBRE_EMPLOYE } from "@/types/const";
 import { motion } from "framer-motion";
 import { Loader } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
-import { createEnrollement } from "@/fetcher/api-fetcher";
+import { createEnrollement, getAddresses, getTarifications } from "@/fetcher/api-fetcher";
 import { useRouter } from "next/navigation";
 
 interface SubmitFormProps {
   merchantData: MerchantEnrollment;
   documentData: DocumentItem[];
   companyData: Partial<Entreprise>;
+  typeAdhesionData: TypeAdhesionData;
   onSubmit: () => Promise<void>;
   onBack: () => void;
 }
@@ -23,35 +24,113 @@ export default function SubmitForm({
   merchantData,
   documentData,
   companyData,
+  typeAdhesionData,
   onSubmit,
   onBack
 }: SubmitFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [tarifications, setTarifications] = useState<Tarification[]>([]);
+  const [selectedTarification, setSelectedTarification] = useState<Tarification | null>(null);
   const router = useRouter();
+
+  const loadAddresses = async () => {
+    try {
+      const data = await getAddresses({ limit: 2000 });
+      setAddresses(data.results);
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+    }
+  };
+
+  const loadTarificationAdhesion = async () => {
+    try {
+      const data = await getTarifications({ limit: 2000 });
+      setTarifications(data.results);
+      let foundTarification: Tarification | undefined;
+
+      if (typeAdhesionData.typeActivite.formalisee) {
+        const adhesionType = typeAdhesionData.typeAdhesion.standard ? 'STANDARD' : typeAdhesionData.typeAdhesion.premium ? 'PREMIUM' : null;
+        const entrepriseSize = companyData.taille as 'TPE' | 'PME' | 'GE';
+
+        foundTarification = data.results.find(t =>
+          t.type_adhesion === adhesionType &&
+          t.type_entreprise === entrepriseSize
+        );
+      } else if (typeAdhesionData.typeActivite.nonFormalisee) {
+        const commerceType = companyData.type_commerce as 'GROSSISTE' | 'DETAILLANT';
+
+        foundTarification = data.results.find(t =>
+          t.type_adhesion === 'MEMBRE' &&
+          t.type_entreprise === commerceType
+        );
+      }
+
+      if (foundTarification) {
+        merchantData.tarification_adhesion_id = foundTarification.id;
+        setSelectedTarification(foundTarification);
+      }
+    } catch (error) {
+      console.error('Error loading tarification :', error);
+    }
+  };
+
+  useEffect(() => {
+    loadAddresses();
+    loadTarificationAdhesion()
+  }, []);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    let typeAdhesion: ITypeAdhesion = {
+      type_demande: typeAdhesionData.type_demande,
+      formalisee: typeAdhesionData.typeActivite.formalisee,
+      non_formalisee: typeAdhesionData.typeActivite.nonFormalisee,
+      premium: typeAdhesionData.typeAdhesion.premium,
+      standard: typeAdhesionData.typeAdhesion.standard,
+    }
+
+
 
     const submissionData: MerchantEnrollmentSubmission = {
       merchantData,
       documentData,
-      companyData
+      typeAdhesion,
+      companyData: {
+        ...companyData,
+        forme_juridique: typeAdhesion.non_formalisee ? null : companyData.forme_juridique,
+        numero_rccm: typeAdhesion.non_formalisee ? null : companyData.numero_rccm,
+        numero_nif: typeAdhesion.non_formalisee ? null : companyData.numero_nif
+      }
     };
 
     try {
-      console.log(submissionData)
-      await createEnrollement(submissionData);
+      const response = await createEnrollement(submissionData);
+
       toast({
         title: "Succès",
         description: "L'inscription a été enregistrée avec succès.",
         variant: "default"
       });
       router.push("/dashboard/merchants");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur:', error);
+
+      const errorMessage = error.response?.data?.message || "Une erreur est survenue lors de l'enregistrement.";
+      const errorType = error.response?.data?.error_type;
+
+      let title = "Erreur";
+      let description = errorMessage;
+
+      if (errorType === 'email_exists') {
+        title = "Email déjà utilisé";
+      } else if (errorType === 'phone_exists') {
+        title = "Numéro de téléphone déjà utilisé";
+      }
+
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'enregistrement.",
+        title: title,
+        description: description,
         variant: "destructive"
       });
     } finally {
@@ -87,7 +166,7 @@ export default function SubmitForm({
               </div>
               <div>
                 <span className="text-gray-500">Ville:</span>
-                <span className="ml-2">{merchantData.address?.name}</span>
+                <span className="ml-2">{addresses.find(addr => addr.id === merchantData.address_id)?.name || '-'}</span>
               </div>
               <div>
                 <span className="text-gray-500">Quartier:</span>
@@ -105,37 +184,53 @@ export default function SubmitForm({
             </ul>
           </div>
 
-          {merchantData.hasCompany && (
-            <div className="space-y-2">
-              <h3 className="font-medium text-cyan-600 dark:text-cyan-400">Informations de l'entreprise</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">Nom de l'entreprise:</span>
-                  <span className="ml-2">{companyData?.nom}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Date de création:</span>
-                  <span className="ml-2">{companyData?.date_creation}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Nombre d'employés:</span>
-                  <span className="ml-2">
-                    {NOMBRE_EMPLOYE.find(opt => opt.value === companyData.nombre_employe?.toString())?.label || '-'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Chiffre d'affaires:</span>
-                  <span className="ml-2">
-                    {CHIFFRE_AFFAIRE.find(opt => opt.value === companyData.chiffre_affaire?.toString())?.label || '-'}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-gray-500">Produits:</span>
-                  <span className="ml-2">{companyData.produits?.split(';').join(', ')}</span>
-                </div>
+          <div className="space-y-2">
+            <h3 className="font-medium text-cyan-600 dark:text-cyan-400">Informations de l'entreprise</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Nom de l'entreprise:</span>
+                <span className="ml-2">{companyData?.nom}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Date de création:</span>
+                <span className="ml-2">{companyData?.date_creation}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Nombre d'employés:</span>
+                <span className="ml-2">
+                  {NOMBRE_EMPLOYE.find(opt => opt.value === companyData.nombre_employe?.toString())?.label || '-'}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">Chiffre d'affaires:</span>
+                <span className="ml-2">
+                  {CHIFFRE_AFFAIRE.find(opt => opt.value === companyData.chiffre_affaire?.toString())?.label || '-'}
+                </span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Produits:</span>
+                <span className="ml-2">{companyData.produits?.split(';').join(', ')}</span>
               </div>
             </div>
-          )}
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-medium text-cyan-600 dark:text-cyan-400">Tarification</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Type d'adhésion:</span>
+                <span className="ml-2">{selectedTarification?.type_adhesion_display || '-'}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Type d'entreprise:</span>
+                <span className="ml-2">{selectedTarification?.type_entreprise_display || '-'}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Prix:</span>
+                <span className="ml-2 font-semibold text-cyan-600">{selectedTarification ? `${selectedTarification.montant.toLocaleString()} GNF` : '-'}</span>
+              </div>
+            </div>
+          </div>
         </CardContent>
         <CardFooter className="flex justify-end space-x-2">
           <Button

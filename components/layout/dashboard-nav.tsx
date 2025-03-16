@@ -69,7 +69,7 @@ export function DashboardNav({ collapsed = false }: DashboardNavProps) {
       className="space-y-1 px-2 py-4 "
     >
       {navigation.map((item, index) => {
-        const isActive = pathname === item.href;
+        let isActive = pathname === item.href || (item.href === '/dashboard/merchants' && pathname.startsWith('/dashboard/merchants'));
         return item.role.some((role_) => role_ === role) ? (
           <motion.div
             key={item.name}

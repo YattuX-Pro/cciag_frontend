@@ -30,7 +30,6 @@ export const columns: Column<MerchantEnrollment>[] = [
       const status = merchant.status;
       const displayStatus = statusMap[status] || status;
       const statusColor = getStatusColor(status);
-      console.log('Classes appliquées:', statusColor);
       
       return (
         <span
