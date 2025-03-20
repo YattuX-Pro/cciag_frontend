@@ -5,16 +5,23 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ConfirmationDialogContent } from "./confirmation-dialog-content";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useState } from "react";
 
+export interface ConfirmationDialogProps {
+  title: string;
+  description?: string;
+  actionType: 'approve' | 'deny';
+  onConfirm: () => void;
+  amount?: number;
+}
+
 export function GlobalConfirmationDialog() {
-  const { isOpen, title, description, actionType, onConfirm, onOpenChange } = useConfirmationDialog();
+  const { isOpen, title, description, actionType, onConfirm, onOpenChange, amount } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -33,27 +40,31 @@ export function GlobalConfirmationDialog() {
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent className={cn(
         "fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]",
-        "dark:bg-gray-900 bg-white",
+        "dark:bg-cyan-950 bg-white",
+        "border-cyan-200 dark:border-cyan-800",
         "max-w-md w-full"
       )}>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            {title}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-            {actionType === 'deny' && (
-              <p className="mt-2 text-red-500">Cette action est irréversible.</p>
-            )}
-          </AlertDialogDescription>
+          <ConfirmationDialogContent
+            title={title}
+            description={description}
+            amount={amount}
+          />
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Annuler</AlertDialogCancel>
+          <AlertDialogCancel 
+            disabled={loading}
+            className="border-cyan-200 dark:border-cyan-800 hover:bg-cyan-50 dark:hover:bg-cyan-900/50"
+          >
+            Annuler
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={loading}
             className={cn(
-              actionType === 'approve' ? 'bg-cyan-500 hover:bg-cyan-600' : 'bg-red-500 hover:bg-red-600',
+              actionType === 'approve' 
+                ? 'bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-700 dark:hover:bg-cyan-800' 
+                : 'bg-red-500 hover:bg-red-600',
               'text-white'
             )}
           >

@@ -69,14 +69,21 @@ export interface Address {
   created_at: string;
 }
 
+export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED';
+export type PaymentType = 'CASH' | 'ORANGE_MONEY';
+
 export interface MerchantPayment {
-  id: number;
-  merchant: number;
-  merchant_details: MerchantEnrollment;
+  id?: number;
+  transaction_id?: string | null;
+  payment_type: PaymentType;
+  merchant_id: number;
+  merchant?: MerchantEnrollment;
   amount: number;
-  payment_date: string;
-  status: string;
-  created_at: string;
+  status?: PaymentStatus;
+  payment_date?: string | null;
+  paid_by?: UserData;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface UserData {

@@ -5,7 +5,7 @@ export const urls = {
     dashboard: '/dashboard',
     users: '/dashboard/users',
     merchants : '/dashboard/merchants',
-    merchants_review : '/dashboard/merchants-review',
+    merchants_review : '/dashboard/review',
     id_cards : '/dashboard/id-cards',
     cards_history : '/dashboard/card-history',
     merchant_payments : '/dashboard/payments',
@@ -75,11 +75,20 @@ export const statusMap = {
   };
 
   export const paymentStatusMap = {
-    'PENDING': 'En Cours',
+    'PENDING': 'En attente',
     'PAID': 'Payé', 
-    'FAILED': 'Échoué',
-    
+    'FAILED': 'Échoué'
+  } as const;
 
+  export const paymentStatusColorMap = {
+    PENDING: 'dark:bg-yellow-500/10 bg-yellow-500/20 dark:text-yellow-400 text-yellow-600',
+    PAID: 'dark:bg-green-500/10 bg-green-500/20 dark:text-green-400 text-green-600',
+    FAILED: 'dark:bg-red-500/10 bg-red-500/20 dark:text-red-400 text-red-600'
+  } as const;
+
+  export const getPaymentStatusColor = (status: string) => {
+    const color = paymentStatusColorMap[status as keyof typeof paymentStatusColorMap];
+    return color || 'dark:bg-gray-500/10 bg-gray-500/20 dark:text-gray-400 text-gray-600';
   };
 
 const statusColorMap = {
@@ -151,4 +160,18 @@ export const NOMBRE_EMPLOYE = [
     { value: 'GIE', label: "Groupement d'Intérêt Économique" },
     { value: 'SUCC', label: 'Succursale' },
   ];
-  
+
+export const paymentTypeMap = {
+  'CASH': 'Espèce',
+  'ORANGE_MONEY': 'Orange Money'
+} as const;
+
+export const paymentTypeColorMap = {
+  'CASH': 'dark:bg-blue-500/10 bg-blue-500/20 dark:text-blue-400 text-blue-600',
+  'ORANGE_MONEY': 'dark:bg-orange-500/10 bg-orange-500/20 dark:text-orange-400 text-orange-600'
+} as const;
+
+export const getPaymentTypeColor = (type: string) => {
+  const color = paymentTypeColorMap[type as keyof typeof paymentTypeColorMap];
+  return color || 'dark:bg-gray-500/10 bg-gray-500/20 dark:text-gray-400 text-gray-600';
+};

@@ -13,16 +13,17 @@ import { motion } from "framer-motion";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getMerchantDocumentByMerchantId, updateMerchant } from "@/fetcher/api-fetcher";
-import { ITypeAdhesion, MerchantEnrollment, Status, DocumentItem } from "@/types";
+import { createMerchantPayment, getMerchantDocumentByMerchantId, updateMerchant } from "@/fetcher/api-fetcher";
+import { ITypeAdhesion, MerchantEnrollment, Status, DocumentItem, MerchantPayment } from "@/types";
 import IFramePdfDialog from "./IFramePdfDialog";
 import { AuthActions } from "@/app/(auth)/utils";
 import { getStatusColor, statusMap, TYPE_DEMANDE_MAP } from "@/types/const";
-import { toast } from "@/hooks/use-toast";
+import { toast, useToast } from "@/hooks/use-toast";
 import EditCompanyDialog from './EditCompanyDialog';
 import AddMerchantDialog from "./AddMerchantDialog";
 import AddMerchantDocumentDialog from "./AddMerchantDocumentDialog";
 import EditTypeAdhesionDialog from './EditTypeAdhesionDialog';
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -52,6 +53,7 @@ interface MerchantInfoDialogProps {
 
 export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDialogProps) {
   const { getUserIdFromToken } = AuthActions();
+  const { showConfirmation } = useConfirmationDialog();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
@@ -108,15 +110,14 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
         ),
         duration: 3000,
       });
-      onSuccess();
+      onSuccess?.();
       setIsOpen(false);
     } catch (error) {
       console.log(error)
       toast({
-        title:"Erreur",
+        title: "Erreur",
         description: "Erreur de soumission de dossier",
         variant: 'destructive',
-        duration: 3000
       })
     } finally {
       setIsLoading(false)
@@ -165,6 +166,42 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
     }
   };
 
+  const handlePaymentClick = () => {
+    showConfirmation({
+      title: "Confirmation de paiement",
+      description: "Voulez-vous effectuer un paiement cash de :",
+      actionType: "approve",
+      onConfirm: handlePaymentConfirm,
+      amount: merchantData.tarification_adhesion.montant,
+    });
+  };
+
+  const handlePaymentConfirm = async () => {
+    try {
+      setIsLoading(true)
+      const payment : MerchantPayment = {
+        merchant_id: merchantData.id,
+        amount: merchantData.tarification_adhesion.montant,
+        payment_type: 'CASH'
+      }
+      await createMerchantPayment(payment)
+      toast({
+        title: "Succès",
+        description: "Le paiement a été effectué avec succès",
+      })
+      onSuccess?.()
+    } catch (error) {
+      let err = error?.response?.data?.merchant
+      toast({
+        title: "Erreur",
+        description: err,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -188,7 +225,8 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
           "dark:bg-gray-900/95 bg-white/95",
           "dark:border-cyan-900/20 border-cyan-600/20",
           "fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]",
-          "max-h-[90vh] overflow-y-auto"
+          "max-h-[90vh] overflow-y-auto",
+          "custom-scrollbar"
         )}
       >
         <DialogHeader>
@@ -730,7 +768,27 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
           />
         )}
       <DialogFooter className="mt-6 flex justify-center">
-        <div className="flex gap-4">
+        <div className="flex gap-4 justify-center w-full">
+          {merchantData.status === Status.A_PAYER && ( 
+            isLoading ? (
+              <span className="flex items-center">
+                <Loader className="animate-spin mr-2" />
+                Traitement...
+              </span>
+            ) : (
+            <Button
+              type="button"
+              onClick={handlePaymentClick}
+              className={cn(
+                "dark:bg-cyan-500/10 bg-cyan-50",
+                "dark:text-cyan-400 text-cyan-600",
+                "hover:bg-cyan-100 dark:hover:bg-cyan-500/20",
+                "transition-colors duration-200"
+              )}
+            >
+              Effectuer un paiement cash
+            </Button>)
+          )}
           {merchantData.status === Status.PAYE
             ? (isLoading ? (
               <span className="flex items-center">
@@ -768,28 +826,6 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                 </span>
               ) : (
                 "Valider"
-              )}
-            </Button>
-          )}
-
-          {merchantData.status === Status.VALIDE && (
-            <Button
-              type="button"
-              onClick={handleTerminate}
-              disabled={isLoading}
-              className={cn(
-                "dark:bg-cyan-500 bg-cyan-600",
-                "dark:hover:bg-cyan-600 hover:bg-cyan-700",
-                "text-white"
-              )}
-            >
-              {isLoading ? (
-                <span className="flex items-center">
-                  <Loader className="animate-spin mr-2" />
-                  Terminaison...
-                </span>
-              ) : (
-                "Terminer"
               )}
             </Button>
           )}

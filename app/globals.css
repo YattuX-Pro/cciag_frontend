@@ -166,6 +166,32 @@
     @apply bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500;
   }
 
+  /* Styles personnalisés pour les barres de défilement */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-cyan-600/30 hover:bg-cyan-600/50 rounded-full transition-colors duration-200;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-cyan-600/70;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-cyan-400/30 hover:bg-cyan-400/50;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-cyan-400/70;
+  }
+
   .animate-gradient-slow {
     animation: gradient 15s ease infinite;
   }
