@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { useEffect, useState } from 'react';
 import { DashboardNav } from '@/components/layout/dashboard-nav';
 import { Button } from '@/components/ui/button';
-import { Menu, Sun, Moon } from 'lucide-react';
+import { Menu, Sun, Moon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,41 +42,72 @@ export default function DashboardLayout({
         )} />
       </div>
 
-      <div className="flex h-screen relative z-10">
+      <div className="flex h-screen">
         {/* Sidebar */}
         <AnimatePresence mode="wait">
           <motion.div 
             className={cn(
-              'fixed md:relative z-30 h-screen',
-              sidebarOpen ? 'w-64' : 'w-0 md:w-16'
+              'h-screen flex-shrink-0',
+              sidebarOpen ? 'w-64' : 'w-16'
             )}
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: 1,
+              width: sidebarOpen ? '16rem' : '4rem'
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ 
+              duration: 0.3,
+              ease: 'easeInOut',
+              width: { duration: 0.3 }
+            }}
           >
             <div className="flex flex-col h-full">
               <div className={cn(
                 "flex flex-col flex-grow pt-5 overflow-y-auto border-r h-full",
                 "dark:bg-gray-900/50 bg-white/50",
                 "dark:border-cyan-900/20 border-cyan-200/20",
-                "backdrop-blur-sm"
+                "backdrop-blur-sm transition-all duration-300"
               )}>
                 <div className={cn(
                   "flex items-center flex-shrink-0 px-4 mb-8",
                   !sidebarOpen && 'md:justify-center'
                 )}>
                   {sidebarOpen && (
-                    <motion.h1 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={cn(
-                        "text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent",
-                        "dark:from-cyan-400 dark:to-cyan-200",
-                        "from-cyan-600 to-cyan-400"
-                      )}
-                    >
-                      CCIAG
-                    </motion.h1>
+                    <div className="flex items-center justify-between w-full">
+                      <motion.h1 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className={cn(
+                          "text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent",
+                          "dark:from-cyan-400 dark:to-cyan-200",
+                          "from-cyan-600 to-cyan-400"
+                        )}
+                      >
+                        CCIAG
+                      </motion.h1>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className={cn(
+                          "transition-colors duration-200",
+                          "dark:text-cyan-400 text-cyan-600",
+                          "dark:hover:text-cyan-300 hover:text-cyan-500",
+                          "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+                        )}
+                      >
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <X className="h-5 w-5" />
+                        </motion.div>
+                      </Button>
+                    </div>
                   )}
                 </div>
                 <div className="flex-grow">
@@ -91,24 +122,33 @@ export default function DashboardLayout({
         <div className="flex flex-col flex-1 overflow-hidden">
           {/* Top bar */}
           <div className={cn(
-            "backdrop-blur-sm border-b h-16 flex items-center justify-between px-4 sticky top-0 z-20",
+            "backdrop-blur-sm border-b h-16 flex items-center px-4 sticky top-0 z-20",
             "dark:bg-gray-900/50 bg-white/50",
             "dark:border-cyan-900/20 border-cyan-200/20"
           )}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={cn(
-                "transition-colors duration-200",
-                "dark:text-cyan-400 text-cyan-600",
-                "dark:hover:text-cyan-300 hover:text-cyan-500",
-                "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+            <div className="flex-1 flex items-center">
+              {!sidebarOpen && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className={cn(
+                    "transition-colors duration-200",
+                    "dark:text-cyan-400 text-cyan-600",
+                    "dark:hover:text-cyan-300 hover:text-cyan-500",
+                    "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+                  )}
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </motion.div>
+                </Button>
               )}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-
+            </div>
             <Button
               variant="ghost"
               size="icon"
