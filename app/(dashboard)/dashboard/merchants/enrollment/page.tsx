@@ -114,6 +114,7 @@ export default function EnrollmentPage() {
             onSubmit={handleMerchantSubmit} 
             initialData={merchantData} 
             onBack={handleBack} 
+            typeAdhesionData={typeAdhesionData!}
           />
         );
       case 2:

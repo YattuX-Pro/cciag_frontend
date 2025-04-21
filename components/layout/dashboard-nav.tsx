@@ -28,6 +28,7 @@ const navigation = [
   { name: 'Dossiers', href: urls.merchants_review, icon: Store, role: [roles.validation, roles.admin]},
   { name: 'Imprimer carte', href: urls.id_cards, icon: CreditCard, role: [roles.impression, roles.admin]},
   { name: 'Historique Impression', href: urls.cards_history, icon: FileText, role: [roles.admin] },
+  { name: 'Configuration', href: '/dashboard/configuration', icon: Settings, role: [roles.admin] },
 ];
 
 interface DashboardNavProps {

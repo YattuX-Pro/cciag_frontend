@@ -20,21 +20,22 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye } from 'lucide-react';
-import { Status, type Merchant, type MerchantEnrollment } from '@/types';
+import { MerchantRefusal, Status, type Merchant, type MerchantEnrollment } from '@/types';
 import { format } from "date-fns";
 import { cn } from '@/lib/utils';
-import { getMerchants, updateMerchant } from '@/fetcher/api-fetcher';
+import { createMerchantRefusal, getMerchants, updateMerchant } from '@/fetcher/api-fetcher';
 import { toast } from '@/hooks/use-toast';
 import { useConfirmationDialog } from '@/hooks/use-confirmation-dialog';
 import { MerchantInfoDialog } from '../merchants/(dialog)/MerchantInfoDialog';
 import { AuthActions } from '@/app/(auth)/utils';
 import { MerchantCardSkeleton } from '@/components/merchant/merchant-card-skeleton';
+import { MerchantRejectDialog } from './(Dialog)/MerchantRejectDialog';
 
 const statusMap = {
   A_VALIDER: 'A Valider',
   VALIDE: 'Accepté',
   REFUSE: 'Reffusé',
-  SUSPENDU: 'SUSPENDU'
+  SUSPENDU: 'Suspendu'
 };
 
 const getStatusColor = (status: string) => {
@@ -58,7 +59,7 @@ export default function MerchantReviewPage() {
   const [previous, setPrevious] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('A_VALIDER');
   const [date, setDate] = useState<Date>();
 
   const { showConfirmation } = useConfirmationDialog();
@@ -124,33 +125,29 @@ export default function MerchantReviewPage() {
     });
   };
 
-  const handleDeny = async (merchant: MerchantEnrollment) => {
-    showConfirmation({
-      title: "Refuser le commerçant",
-      description: `Êtes-vous sûr de vouloir refuser le commerçant ${merchant.id_card} ?`,
-      actionType: 'deny',
-      onConfirm: async () => {
-        try {
-          const user_id = getUserIdFromToken();
-          merchant.status = Status.REFUSE;
-          merchant.refused_by_id = Number(user_id);
-          await updateMerchant(merchant, merchant.id);
-          toast({
-            title: "Succès",
-            description: "Le commerçant a été refusé",
-            variant: "default",
-          });
-          loadMerchants();
-        } catch (err) {
-          console.error(err);
-          toast({
-            title: "Erreur",
-            description: "Impossible de refuser le commerçant",
-            variant: "destructive",
-          });
-        }
-      },
-    });
+  const [denyDialogOpen, setDenyDialogOpen] = useState(false);
+
+  const handleDeny = async (merchant: MerchantEnrollment, reason: string) => {
+    try {
+      await createMerchantRefusal({
+        reason: reason,
+        merchant_enrollment_id: merchant.id
+      });
+
+      toast({
+        title: "Succès",
+        description: "Le commerçant a été refusé",
+        variant: "default",
+      });
+      loadMerchants();
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de refuser le commerçant",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSuspended = (merchant: MerchantEnrollment) => {
@@ -397,10 +394,16 @@ export default function MerchantReviewPage() {
                               variant="ghost"
                               size="sm"
                               className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                              onClick={() => handleDeny(merchant)}
+                              onClick={() => setDenyDialogOpen(true)}
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>
+                            <MerchantRejectDialog
+                              isOpen={denyDialogOpen}
+                              onClose={() => setDenyDialogOpen(false)}
+                              onConfirm={(reason) => handleDeny(merchant, reason)}
+                              merchant={merchant}
+                            />
                             <Button
                               variant="ghost"
                               size="sm"

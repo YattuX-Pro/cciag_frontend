@@ -239,22 +239,24 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
               <DialogTitle className="text-2xl font-semibold dark:text-gray-100">
                 Informations du marchand
               </DialogTitle>
-              <AddMerchantDialog
-                merchant={merchantData}
-                onSuccess={() => {
-                  setIsOpen(false);
-                  onSuccess?.();
-                }}
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="gap-2 dark:border-cyan-800 border-cyan-200 dark:hover:bg-cyan-900/50 hover:bg-cyan-50"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    Modifier
-                  </Button>
-                }
-              />
+              {(merchantData.status === 'A_PAYER' || merchantData.status === 'REFUSE' || merchantData.status === 'PAYE') && (
+                <AddMerchantDialog
+                  merchant={merchantData}
+                  onSuccess={() => {
+                    setIsOpen(false);
+                    onSuccess?.();
+                  }}
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="gap-2 dark:border-cyan-800 border-cyan-200 dark:hover:bg-cyan-900/50 hover:bg-cyan-50"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                      Modifier
+                    </Button>
+                  }
+                />
+              )}
             </div>
             <motion.div
               className="flex flex-col md:flex-row gap-6"
@@ -314,10 +316,6 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                   <p className="text-sm">
                     <span className="dark:text-gray-400 text-gray-500">Ville: </span>
                     <span className="dark:text-gray-100 text-gray-900">{merchantData.address?.name}</span>
-                  </p>
-                  <p className="text-sm">
-                    <span className="dark:text-gray-400 text-gray-500">Quartier: </span>
-                    <span className="dark:text-gray-100 text-gray-900">{merchantData.quartier}</span>
                   </p>
                 </div>
               </motion.div>
@@ -404,20 +402,22 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                 <h3 className="text-lg font-semibold dark:text-gray-100 text-gray-900">
                   Type d'adhésion
                 </h3>
-                <Button
-                  onClick={() => setIsEditTypeAdhesionOpen(true)}
-                  variant="ghost"
-                  className={cn(
-                    "transition-colors duration-200",
-                    "dark:text-cyan-400 text-cyan-600",
-                    "dark:hover:text-cyan-300 hover:text-cyan-500",
-                    "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10",
-                    "space-x-2"
-                  )}
-                >
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Modifier
-                </Button>
+                {(merchantData.status === 'A_PAYER' || merchantData.status === 'REFUSE' || merchantData.status === 'PAYE') && (
+                  <Button
+                    onClick={() => setIsEditTypeAdhesionOpen(true)}
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "transition-colors duration-200",
+                      "dark:text-cyan-400 text-cyan-600",
+                      "dark:hover:text-cyan-300 hover:text-cyan-500",
+                      "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+                    )}
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Modifier
+                  </Button>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                 <div className="space-y-2">
@@ -426,7 +426,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                   </h4>
                   <p className="text-sm font-medium dark:text-gray-100 text-gray-900">
                     {[
-                      TYPE_DEMANDE_MAP[merchantData.type_adhesion.type_demande && merchantData.type_adhesion?.type_demande ],
+                      TYPE_DEMANDE_MAP[merchantData.type_adhesion?.type_demande && merchantData.type_adhesion?.type_demande ],
                     ].filter(Boolean).join(" • ")}
                   </p>
                 </div>
@@ -476,20 +476,22 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                   <h3 className="text-lg font-semibold dark:text-gray-100 text-gray-900">
                     Informations de l'entreprise
                   </h3>
-                  <Button
-                    onClick={() => setIsEditCompanyOpen(true)}
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "transition-colors duration-200",
-                      "dark:text-cyan-400 text-cyan-600",
-                      "dark:hover:text-cyan-300 hover:text-cyan-500",
-                      "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
-                    )}
-                  >
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Modifier
-                  </Button>
+                  {(merchantData.status === 'A_PAYER' || merchantData.status === 'REFUSE' || merchantData.status === 'PAYE') && (
+                    <Button
+                      onClick={() => setIsEditCompanyOpen(true)}
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "transition-colors duration-200",
+                        "dark:text-cyan-400 text-cyan-600",
+                        "dark:hover:text-cyan-300 hover:text-cyan-500",
+                        "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10"
+                      )}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Modifier
+                    </Button>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                   <div className="space-y-2">
@@ -685,14 +687,16 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                 <CardTitle className="text-xl font-semibold dark:text-gray-100">
                   Documents
                 </CardTitle>
-                <AddMerchantDocumentDialog
-                  merchantId={merchantData.id}
-                  merchantStatus={merchantData.status}
-                  onSuccess={() => {
-                    loadDocuments();
-                    onSuccess?.();
-                  }}
-                />
+                {(merchantData.status === 'A_PAYER' || merchantData.status === 'REFUSE' || merchantData.status === 'PAYE') && (
+                  <AddMerchantDocumentDialog
+                    merchantId={merchantData.id}
+                    merchantStatus={merchantData.status}
+                    onSuccess={() => {
+                      loadDocuments();
+                      onSuccess?.();
+                    }}
+                  />
+                )}
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -737,6 +741,72 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
               </div>
             </CardContent>
           </Card>
+        </motion.div>
+
+        <motion.div>
+           {/* Section Historique de refus */}
+           {merchantData.refusals && merchantData.refusals.length > 0 && (
+            <Card
+              className={cn(
+                "overflow-hidden",
+                "dark:bg-gray-800/50 bg-gray-50",
+                "dark:border-cyan-900/20 border-cyan-600/20"
+              )}
+            >
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold dark:text-gray-100">
+                  Historique de refus
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  {merchantData.refusals.map((refusal, index) => (
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={cn(
+                        "p-4 rounded-lg",
+                        "dark:bg-gray-900/50 bg-white/50",
+                        "dark:border-cyan-900/20 border-cyan-600/20 border"
+                      )}
+                    >
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium dark:text-gray-400 text-gray-500">
+                            Motif du refus
+                          </h4>
+                          <p className="text-sm font-medium dark:text-gray-100 text-gray-900">
+                            {refusal.reason}
+                          </p>
+                        </div>
+                        {refusal.created_at && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium dark:text-gray-400 text-gray-500">
+                              Date du refus
+                            </h4>
+                            <p className="text-sm font-medium dark:text-gray-100 text-gray-900">
+                              {new Date(refusal.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        )}
+                        {refusal.refused_by && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium dark:text-gray-400 text-gray-500">
+                              Refusé par
+                            </h4>
+                            <p className="text-sm font-medium dark:text-gray-100 text-gray-900">
+                              {refusal.refused_by.first_name} {refusal.refused_by.last_name}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
 
         {isPdfOpen && (
@@ -835,3 +905,4 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
     </Dialog>
   );
 }
+         

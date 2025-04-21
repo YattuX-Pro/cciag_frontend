@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFormContext } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,16 +44,20 @@ export default function CompanyInfoForm({
     handleSubmit,
     setValue,
     control,
-    formState: { errors },
-    watch
+    formState: { errors, isValid, isDirty },
+    watch,
+    trigger
   } = useForm<Partial<Entreprise>>({
-    defaultValues: initialData || undefined
+    defaultValues: initialData || undefined,
+    mode: "onChange"
   });
 
   useEffect(() => {
     if (initialData) {
       Object.entries(initialData).forEach(([key, value]) => {
-        setValue(key as any, value);
+        if (value !== undefined && value !== null) {
+          setValue(key as any, value);
+        }
       });
     }
   }, [initialData, setValue]);
@@ -67,17 +71,18 @@ export default function CompanyInfoForm({
   const removeProduct = (index: number) => {
     const newProducts = products.filter((_, i) => i !== index);
     setProducts(newProducts.length ? newProducts : ['']);
+    
+    setValue('produits', newProducts.filter(Boolean).join(';'));
+    trigger('produits');
   };
 
   const updateProduct = (index: number, value: string) => {
     const newProducts = [...products];
     newProducts[index] = value;
     setProducts(newProducts);
+    
     setValue('produits', newProducts.filter(Boolean).join(';'));
-  };
-
-  const handleSelectChange = (field: "nombre_employe" | "chiffre_affaire", value: string) => {
-    setValue(field, value);
+    trigger('produits');
   };
 
   const [addresses, setAddresses] = useState([]);
@@ -89,6 +94,15 @@ export default function CompanyInfoForm({
   useEffect(() => {
     loadAddresses();
   }, []);
+
+  useEffect(() => {
+    if (products.some(p => p.trim() !== '')) {
+      setValue('produits', products.filter(p => p.trim() !== '').join(';'));
+    }
+  }, []);
+
+  // Watch all values for debugging
+  const watchedValues = watch();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -109,12 +123,11 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Taille de l&apos;entreprise</Label>
           <Select 
-            {...register("taille", {
-              required: "La taille de l'entreprise est requise"
-            })}
+            value={watch("taille") || ""}
             onValueChange={(value) => {
               setValue("taille", value as 'TPE' | 'PME' | 'GE');
               setValue("taille_display", TAILLE_ENTREPRISE.find(opt => opt.value === value)?.label || '');
+              trigger("taille");
             }}
           >
             <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
@@ -149,8 +162,10 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Nombre d&apos;employés</Label>
           <Select 
-            {...register("nombre_employe", { required: "Le nombre d'employés est requis" })}
-            onValueChange={(value) => handleSelectChange("nombre_employe", value)}
+            value={watch("nombre_employe") || ""}
+            onValueChange={(value) => {
+              setValue("nombre_employe", value, { shouldValidate: true });
+            }}
           >
             <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
               <SelectValue placeholder="Sélectionnez le nombre d'employés" />
@@ -171,7 +186,7 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Chiffre d&apos;affaires</Label>
           <Select 
-            value={watch("chiffre_affaire")}
+            value={watch("chiffre_affaire") || ""}
             onValueChange={(value) => {
               setValue("chiffre_affaire", value, { shouldValidate: true });
             }}
@@ -195,7 +210,7 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Type d&apos;activité</Label>
           <Select 
-            value={watch("type_activite")}
+            value={watch("type_activite") || ""}
             onValueChange={(value) => {
               setValue("type_activite", value, { shouldValidate: true });
             }}
@@ -219,7 +234,7 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Type de commerce</Label>
           <Select 
-            value={watch("type_commerce")}
+            value={watch("type_commerce") || ""}
             onValueChange={(value) => {
               setValue("type_commerce", value, { shouldValidate: true });
             }}
@@ -243,7 +258,7 @@ export default function CompanyInfoForm({
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Forme juridique</Label>
           <Select 
-            value={watch("forme_juridique")}
+            value={watch("forme_juridique") || ""}
             onValueChange={(value) => {
               setValue("forme_juridique", value, { shouldValidate: true });
             }}
@@ -299,7 +314,7 @@ export default function CompanyInfoForm({
 
         <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">
-            Ville <span className="text-red-500">*</span>
+            Addresse <span className="text-red-500">*</span>
           </Label>
           <SearchableSelect
             name="address_id"
@@ -317,14 +332,6 @@ export default function CompanyInfoForm({
               {errors.address_id.message}
             </p>
           )}
-          <div className="flex items-center space-x-2 text-sm">
-            <span className="text-gray-500">Ville non trouvée ?</span>
-            <AddAddressDialog 
-              onSuccess={() => {
-                loadAddresses()
-              }}
-            />
-          </div>
         </div>
 
         <div className="space-y-2">
@@ -336,7 +343,6 @@ export default function CompanyInfoForm({
                   value={product}
                   onChange={(e) => updateProduct(index, e.target.value)}
                   placeholder={`Produit ${index + 1}`}
-                  required={index === 0}
                   className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
                 />
                 {products.length > 1 && (
@@ -365,7 +371,7 @@ export default function CompanyInfoForm({
               </Button>
             )}
           </div>
-          <input type="hidden" {...register("produits", { required: "Les produits sont requis" })} />
+          <input type="hidden" {...register("produits")} />
           {errors.produits && (
             <p className="text-sm text-red-500">{errors.produits.message}</p>
           )}
@@ -380,8 +386,6 @@ export default function CompanyInfoForm({
             className="w-full h-24 px-3 py-2 rounded-md bg-white dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
         </div>
-
-
       </div>
 
       <div className="space-y-4">
@@ -453,6 +457,7 @@ export default function CompanyInfoForm({
         </Button>
         <Button 
           type="submit"
+          disabled={!isValid && isDirty}
           className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-700 dark:hover:bg-cyan-800"
         >
           Terminer

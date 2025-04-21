@@ -17,6 +17,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Image from 'next/image';
 import QRCode from 'react-qr-code';
+import { format } from 'date-fns';
 
 interface BadgeCardDialogProps {
   merchant: MerchantEnrollment;
@@ -147,19 +148,24 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
             )}>
               {/* Front Side */}
               <div id="card-front" className={cn(
-                "absolute inset-0 backface-hidden bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg overflow-hidden",
+                "absolute inset-0 backface-hidden bg-white rounded-lg overflow-hidden border border-gray-200",
                 showBack ? "invisible" : "visible",
                 'w-[85.6mm] h-[54mm]'
               )}>
-                
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <span className="text-4xl font-bold text-gray-800">RECTO</span>
+                </div>
               </div>
 
               {/* Back Side */}
               <div id="card-back" className={cn(
-                "absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-gray-100 to-cyan-300 rounded-lg overflow-hidden",
+                "absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-lg overflow-hidden border border-gray-200",
                 showBack ? "visible" : "invisible",
                 'w-[85.6mm] h-[54mm]'
               )}>
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <span className="text-4xl font-bold text-gray-800">VERSO</span>
+                </div>
               </div>
             </div>
           </div>

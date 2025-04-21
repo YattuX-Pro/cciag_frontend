@@ -90,7 +90,6 @@ export default function AddMerchantDialog({
       date_naissance: merchant?.date_naissance || '',
       genre: merchant?.genre || 'HOMME',
       fonction: merchant?.fonction || '',
-      quartier: merchant?.quartier || '',
       activity_ids: merchant?.activity_ids || [],
       type_adherent: merchant?.type_adherent || 'ADHERANT'
     } : {
@@ -99,7 +98,7 @@ export default function AddMerchantDialog({
         last_name: '',
         email: '',
         phone_number: '',
-        id: '',
+        id: null,
         last_login: '',
         is_superuser: false,
         username: '',
@@ -109,7 +108,6 @@ export default function AddMerchantDialog({
       fonction: '',
       address: null,
       address_id: null,
-      quartier: '',
       activity_ids: [],
       profile_photo: '',
       signature_photo: '',
@@ -610,7 +608,7 @@ export default function AddMerchantDialog({
             )}
           </motion.div>
 
-          {/* Ville et Quartier */}
+          {/* Ville */}
           <div className="space-y-4">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -635,37 +633,6 @@ export default function AddMerchantDialog({
               {errors.address_id && (
                 <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                   {errors.address_id.message}
-                </p>
-              )}
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-2"
-            >
-              <Label className="dark:text-gray-300 text-gray-600">
-                Quartier *
-              </Label>
-              <Input
-                placeholder="Ex: Madina"
-                {...register("quartier", {
-                  required: "Le quartier est requis",
-                })}
-                className={cn(
-                  "w-full",
-                  "transition-colors duration-200",
-                  "dark:bg-gray-800/50 bg-gray-50",
-                  "dark:border-cyan-900/20 border-cyan-600/20",
-                  "dark:text-gray-100 text-gray-900",
-                  "dark:placeholder:text-gray-500 placeholder:text-gray-400",
-                  "dark:focus:border-cyan-500 focus:border-cyan-600",
-                  "dark:focus:ring-cyan-500 focus:ring-cyan-600"
-                )}
-              />
-              {errors.quartier && (
-                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                  {errors.quartier.message}
                 </p>
               )}
             </motion.div>

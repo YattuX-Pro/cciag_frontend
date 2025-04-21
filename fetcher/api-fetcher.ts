@@ -1,4 +1,4 @@
-import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission, Tarification, ITypeAdhesion } from "@/types";
+import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission, Tarification, ITypeAdhesion, WorkPosition, Nationality, MerchantRefusal, Prefecture, SubPrefecture, Region } from "@/types";
 import { deleter, fetcher, poster, updater } from "./fetcher";
 
 interface DjangoPaginatedResponse<T> {
@@ -260,3 +260,146 @@ export const updateTypeAdhesion = (id: number, data: ITypeAdhesion): Promise<any
 
 export const deleteTypeAdhesion = (id: number): Promise<any> =>
   deleter(`/api/type-adhesions/${id}/`);
+
+export const getWorkPositions = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<WorkPosition>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/work-positions/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getWorkPositionDetail = (id: number): Promise<WorkPosition> => 
+  fetcher(`/api/work-positions/${id}`);
+
+export const createWorkPosition = (body: WorkPosition): Promise<any> => 
+  poster('/api/work-positions/', body);
+
+export const updateWorkPosition = (body: WorkPosition, id: number): Promise<any> => 
+  updater(`/api/work-positions/${id}`, body);
+
+export const deleteWorkPosition = (id: number): Promise<any> => 
+  deleter(`/api/work-positions/${id}`);
+
+export const getNationalities = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Nationality>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/nationalities/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getNationalityDetail = (id: number): Promise<Nationality> => 
+  fetcher(`/api/nationalities/${id}`);
+
+export const createNationality = (body: Nationality): Promise<any> => 
+  poster('/api/nationalities/', body);
+
+export const updateNationality = (body: Nationality, id: number): Promise<any> => 
+  updater(`/api/nationalities/${id}`, body);
+
+export const deleteNationality = (id: number): Promise<any> => 
+  deleter(`/api/nationalities/${id}`);
+
+export const getMerchantRefusals = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<MerchantRefusal>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/merchant-refusals/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getMerchantRefusalDetail = (id: number): Promise<MerchantRefusal> => 
+  fetcher(`/api/merchant-refusals/${id}`);
+
+export const createMerchantRefusal = (body: MerchantRefusal): Promise<any> => 
+  poster('/api/merchant-refusals/', body);
+
+export const updateMerchantRefusal = (body: MerchantRefusal, id: number): Promise<any> => 
+  updater(`/api/merchant-refusals/${id}`, body);
+
+export const deleteMerchantRefusal = (id: number): Promise<any> => 
+  deleter(`/api/merchant-refusals/${id}`);
+
+export const getPrefectures = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Prefecture>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/prefectures/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getPrefectureDetail = (id: number): Promise<Prefecture> => 
+  fetcher(`/api/prefectures/${id}`);
+
+export const createPrefecture = (body: Prefecture): Promise<any> => 
+  poster('/api/prefectures/', body);
+
+export const updatePrefecture = (body: Prefecture, id: number): Promise<any> => 
+  updater(`/api/prefectures/${id}`, body);
+
+export const deletePrefecture = (id: number): Promise<any> => 
+  deleter(`/api/prefectures/${id}`);
+
+export const getSubPrefectures = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<SubPrefecture>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/sub-prefectures/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getSubPrefectureDetail = (id: number): Promise<SubPrefecture> => 
+  fetcher(`/api/sub-prefectures/${id}`);
+
+export const createSubPrefecture = (body: SubPrefecture): Promise<any> => 
+  poster('/api/sub-prefectures/', body);
+
+export const updateSubPrefecture = (body: SubPrefecture, id: number): Promise<any> => 
+  updater(`/api/sub-prefectures/${id}`, body);
+
+export const deleteSubPrefecture = (id: number): Promise<any> => 
+  deleter(`/api/sub-prefectures/${id}`);
+
+export const getRegions = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Region>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+  const response = await fetcher(`/api/regions/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const getRegionDetail = (id: number): Promise<Region> => 
+  fetcher(`/api/regions/${id}`);
+
+export const createRegion = (body: Region): Promise<any> => 
+  poster('/api/regions/', body);
+
+export const updateRegion = (body: Region, id: number): Promise<any> => 
+  updater(`/api/regions/${id}`, body);
+
+export const deleteRegion = (id: number): Promise<any> => 
+  deleter(`/api/regions/${id}`);

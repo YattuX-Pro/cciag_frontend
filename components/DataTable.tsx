@@ -30,7 +30,7 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
 }
 
-export function DataTable<T extends { id: string | number }>({
+export function DataTable<T extends { id?: number }>({
   data,
   columns,
   loading,
@@ -93,7 +93,7 @@ export function DataTable<T extends { id: string | number }>({
               </TableRow>
             ) : (
               <AnimatePresence>
-                {data?.map((item, index) => (
+                {Array.isArray(data) && data.map((item, index) => (
                   <motion.tr
                     key={item.id}
                     initial={{ opacity: 0, y: 20 }}

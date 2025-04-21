@@ -9,6 +9,7 @@ export const urls = {
     id_cards : '/dashboard/id-cards',
     cards_history : '/dashboard/card-history',
     merchant_payments : '/dashboard/payments',
+    configuration: '/dashboard/configuration',
 
     login : '/login',
     logout : '/logout',
@@ -49,7 +50,7 @@ export const user_status = {
 }
 
 export const roleBasedRoutes = {
-    admin: [urls.dashboard, urls.cards_history, urls.id_cards, urls.merchants, urls.merchants_review, urls.users, urls.merchant_payments],
+    admin: [urls.dashboard, urls.cards_history, urls.id_cards, urls.merchants, urls.merchants_review, urls.users, urls.merchant_payments, urls.configuration],
     operation: [urls.merchants, urls.dashboard,urls.merchant_payments],
     validation: [urls.merchants_review, urls.dashboard],
     impression: [urls.id_cards, urls.dashboard],

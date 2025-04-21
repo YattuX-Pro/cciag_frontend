@@ -66,12 +66,12 @@ export default function MerchantsPage() {
 
   const actionsColumn = {
     header: "Actions", 
-    cell: (merchant) => (
+    cell: (merchant : MerchantEnrollment) => (
       <div className="text-right flex gap-2">
         <MerchantInfoDialog merchantData={merchant} onSuccess={() => loadMerchants()} />
       </div>
     ),
-    accessorKey: "id",
+    accessorKey: "id" as keyof MerchantEnrollment,
   }
 
   const columnsWithActions = [...columns, actionsColumn];

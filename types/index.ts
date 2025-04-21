@@ -1,18 +1,18 @@
 export interface User {
-  id: string;
-  last_login: string; 
-  is_superuser: boolean;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  email: string;
-  username: string;
-  password: string;
-  role: "administration" | string; 
-  is_active: boolean;
-  is_staff: boolean;
-  groups: number[]; 
-  user_permissions: number[]; 
+  id?: number;
+  last_login?: string; 
+  is_superuser?: boolean;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  email?: string;
+  username?: string;
+  password?: string;
+  role?: "administration" | string; 
+  is_active?: boolean;
+  is_staff?: boolean;
+  groups?: number[]; 
+  user_permissions?: number[]; 
 }
 
 export interface UserRole {
@@ -66,6 +66,8 @@ export interface Column<T> {
 export interface Address {
   id: number;
   name: string;
+  sub_prefecture_id: number;
+  sub_prefecture: SubPrefecture;
   created_at: string;
 }
 
@@ -94,51 +96,53 @@ interface UserData {
 }
 
 export interface MerchantEnrollment {
-  id: number;
-  user: User;
-  card_number: string;
-  status: Status;
-  profile_photo: string;
-  signature_photo: string;
-  address: Address;
-  address_id: number;
-  activities: Activity[];
-  activity_ids: number[];
-  sub_activities: SubActivity[];
-  sub_activity_ids: number[];
-  entreprise: Entreprise;
-  created_at: string;
+  id?: number;
+  user?: User;
+  card_number?: string;
+  status?: Status;
+  profile_photo?: string;
+  signature_photo?: string;
+  address?: Address;
+  address_id?: number;
+  activities?: Activity[];
+  activity_ids?: number[];
+  sub_activities?: SubActivity[];
+  sub_activity_ids?: number[];
+  entreprise?: Entreprise;
+  created_at?: string;
   created_by?: UserData;
-  submited_by: UserData;
-  submited_by_id: number;
-  submited_at: string;
-  validated_by: UserData;
-  validated_by_id: number;
-  validated_at: string;
-  printed_by: UserData;
-  printed_by_id: number;
-  printed_at: string;
-  payed_by: UserData;
-  payed_by_id: number;
-  payed_at: string;
-  suspended_by: UserData;
-  suspended_by_id: number;
-  suspended_at: string;
-  refused_by: UserData;
-  refused_by_id: number;
-  refused_at: string;
-  expired_at: string;
-  updated_at: string;
-  id_card: string;
-  quartier: string;
-  type_adhesion: ITypeAdhesion;
-  date_naissance: string;
-  genre: 'HOMME' | 'FEMME';
-  fonction: string;
-  type_adherent: 'ADHERANT' | 'MEMBRE';
-  tarification_adhesion: Tarification;
-  tarification_adhesion_id: number;
-  is_active: boolean;
+  submited_by?: UserData;
+  submited_by_id?: number;
+  submited_at?: string;
+  validated_by?: UserData;
+  validated_by_id?: number;
+  validated_at?: string;
+  printed_by?: UserData;
+  printed_by_id?: number;
+  printed_at?: string;
+  payed_by?: UserData;
+  payed_by_id?: number;
+  payed_at?: string;
+  suspended_by?: UserData;
+  suspended_by_id?: number;
+  suspended_at?: string;
+  refused_by?: UserData;
+  refused_by_id?: number;
+  refused_at?: string;
+  expired_at?: string;
+  updated_at?: string;
+  id_card?: string;
+  type_adhesion?: ITypeAdhesion;
+  date_naissance?: string;
+  genre?: 'HOMME' | 'FEMME';
+  fonction?: string;
+  type_adherent?: 'ADHERANT' | 'MEMBRE';
+  tarification_adhesion?: Tarification;
+  tarification_adhesion_id?: number;
+  is_active?: boolean;
+  refusals?: MerchantRefusal[];
+  work_position: WorkPosition;
+  nationality: Nationality;
 }
 
 export enum Status {
@@ -255,13 +259,12 @@ export interface SimpleMerchant {
   card_number: string;
   status: Status;
   address: Address;
-  quartier: string;
   created_at: string;
 }
 
 export interface Activity {
   id?: number;
-  name: string;
+  name?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -354,4 +357,69 @@ export interface MerchantEnrollmentSubmission {
   documentData: DocumentItem[];
   companyData?: Partial<Entreprise>;
   typeAdhesion: ITypeAdhesion;
+}
+
+// WorkPosition CRUD operations
+export interface WorkPosition {
+  id?: number;
+  name?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Nationality CRUD operations
+export interface Nationality {
+  id?: number;
+  name?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// MerchantRefusal CRUD operations
+export interface MerchantRefusal {
+  id?: number;
+  reason?: string;
+  merchant_enrollment_id?: number;
+  created_at?: string;
+  updated_at?: string;
+  refused_by?: UserData;
+  refusal_order?: number;
+  is_active?: boolean;
+}
+
+// Prefecture CRUD operations
+export interface Prefecture {
+  id?: number;
+  name: string;
+  region: Region;
+  region_id: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// SubPrefecture CRUD operations
+export interface SubPrefecture {
+  id?: number;
+  name?: string;
+  prefecture?: Prefecture;
+  prefecture_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Region CRUD operations
+export interface Region {
+  id?: number;
+  name?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+declare global {
+  interface Window {
+    STPadServerLibCommons: any;
+    STPadServerLibDefault: any;
+    STPadServerLib: any;
+    STPadServerLibApi: any;
+  }
 }

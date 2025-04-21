@@ -32,6 +32,7 @@ export default function SubmitForm({
   const [addresses, setAddresses] = useState<any[]>([]);
   const [tarifications, setTarifications] = useState<Tarification[]>([]);
   const [selectedTarification, setSelectedTarification] = useState<Tarification | null>(null);
+  const [isLoadingTarification, setIsLoadingTarification] = useState(true);
   const router = useRouter();
 
   const loadAddresses = async () => {
@@ -44,6 +45,7 @@ export default function SubmitForm({
   };
 
   const loadTarificationAdhesion = async () => {
+    setIsLoadingTarification(true);
     try {
       const data = await getTarifications({ limit: 2000 });
       setTarifications(data.results);
@@ -72,12 +74,15 @@ export default function SubmitForm({
       }
     } catch (error) {
       console.error('Error loading tarification :', error);
+    } finally {
+     
+      setIsLoadingTarification(false);
     }
   };
 
   useEffect(() => {
     loadAddresses();
-    loadTarificationAdhesion()
+    loadTarificationAdhesion();
   }, []);
 
   const handleSubmit = async () => {
@@ -89,8 +94,6 @@ export default function SubmitForm({
       premium: typeAdhesionData.typeAdhesion.premium,
       standard: typeAdhesionData.typeAdhesion.standard,
     }
-
-
 
     const submissionData: MerchantEnrollmentSubmission = {
       merchantData,
@@ -126,6 +129,8 @@ export default function SubmitForm({
         title = "Email déjà utilisé";
       } else if (errorType === 'phone_exists') {
         title = "Numéro de téléphone déjà utilisé";
+      }else if ( errorType === 'rccm_exists'){
+        title = "RCCM déjà utilisé"
       }
 
       toast({
@@ -167,10 +172,6 @@ export default function SubmitForm({
               <div>
                 <span className="text-gray-500">Ville:</span>
                 <span className="ml-2">{addresses.find(addr => addr.id === merchantData.address_id)?.name || '-'}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Quartier:</span>
-                <span className="ml-2">{merchantData.quartier}</span>
               </div>
             </div>
           </div>
@@ -241,13 +242,18 @@ export default function SubmitForm({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoadingTarification || !selectedTarification}
             className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
           >
             {isSubmitting ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Soumission en cours...
+              </>
+            ) : isLoadingTarification ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Chargement des tarifications...
               </>
             ) : (
               'Soumettre'

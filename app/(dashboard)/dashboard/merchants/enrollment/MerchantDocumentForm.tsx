@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import the Select component
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Upload, Trash2, FileText } from "lucide-react";
+import { Plus, Upload, Trash2, FileText, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { DocumentItem } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ interface MerchantDocumentFormProps {
 
 // Maximum file size in bytes
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+// Maximum length for displayed filenames
+const MAX_FILENAME_LENGTH = 20;
 
 export default function MerchantDocumentForm({
   onSubmit,
@@ -48,6 +50,44 @@ export default function MerchantDocumentForm({
 
   // Add state to store selected file names
   const [selectedFiles, setSelectedFiles] = useState<{ [key: number]: string }>({});
+
+  // Helper function to truncate filename if too long
+  const truncateFilename = (filename: string): string => {
+    if (filename.length <= MAX_FILENAME_LENGTH) return filename;
+    
+    // Get file extension
+    const lastDotIndex = filename.lastIndexOf('.');
+    const extension = lastDotIndex !== -1 ? filename.slice(lastDotIndex) : '';
+    const name = lastDotIndex !== -1 ? filename.slice(0, lastDotIndex) : filename;
+    
+    // Calculate how many characters we can keep from the name
+    const maxNameLength = MAX_FILENAME_LENGTH - extension.length - 3; // 3 for "..."
+    
+    if (maxNameLength <= 0) {
+      // If extension is too long, truncate everything
+      return filename.slice(0, MAX_FILENAME_LENGTH - 3) + '...';
+    }
+    
+    // Return truncated name + "..." + extension
+    return name.slice(0, maxNameLength) + '...' + extension;
+  };
+
+  // Initialize selectedFiles from initialData
+  useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      const initialFiles: { [key: number]: string } = {};
+      
+      initialData.forEach((doc, index) => {
+        if (doc.document) {
+          // Pour les documents existants, utiliser le type de document comme nom de fichier
+          const docType = doc.name || "Document";
+          initialFiles[index] = `${docType}.pdf`;
+        }
+      });
+      
+      setSelectedFiles(initialFiles);
+    }
+  }, [initialData]);
 
   const handleFileChange = async (
     index: number,
@@ -89,6 +129,14 @@ export default function MerchantDocumentForm({
     }
   };
 
+  const triggerFileInput = (index: number) => {
+    // Find the hidden file input by its id and trigger a click
+    const fileInput = document.getElementById(`file-input-${index}`);
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   const onFormSubmit = (data: { documents: DocumentItem[] }) => {
     console.log("Form data:", data); // Pour déboguer
     // Validate that all documents have both name and file
@@ -105,6 +153,17 @@ export default function MerchantDocumentForm({
     onSubmit(data.documents);
   };
 
+  // Get display filename for a document
+  const getDisplayFilename = (index: number) => {
+    if (selectedFiles[index]) {
+      return truncateFilename(selectedFiles[index]);
+    }
+    if (documents[index]?.name) {
+      return truncateFilename(`${documents[index].name}.pdf`);
+    }
+    return "Document";
+  };
+
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="space-y-6">
@@ -114,8 +173,8 @@ export default function MerchantDocumentForm({
               <div className="space-y-2">
                 <Label className="text-cyan-700 dark:text-cyan-300">Nom du document</Label>
                 <Select 
+                  value={documents[index]?.name || ""}
                   onValueChange={(value) => setValue(`documents.${index}.name`, value)}
-                  defaultValue={documents[index]?.name}
                 >
                   <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
                     <SelectValue placeholder="Sélectionner un document" />
@@ -145,16 +204,49 @@ export default function MerchantDocumentForm({
                 <Label className="text-cyan-700 dark:text-cyan-300">Document</Label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <div className="relative flex items-center">
-                      <FileText className="absolute left-3 z-10 w-4 h-4 text-cyan-500 pointer-events-none" />
-                      <Input
-                        type="file"
-                        accept=".pdf"
-                        onChange={(e) => handleFileChange(index, e)}
-                        className="w-full cursor-pointer bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800 pl-10"
-                        required
-                      />
-                    </div>
+                    {/* Champ caché pour stocker la valeur base64 du document */}
+                    <input
+                      type="hidden"
+                      {...register(`documents.${index}.document`)}
+                    />
+                    
+                    {/* Input file caché */}
+                    <input
+                      id={`file-input-${index}`}
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(index, e)}
+                      className="hidden"
+                    />
+                    
+                    {documents[index]?.document ? (
+                      <div className="flex items-center w-full h-10 px-3 py-2 rounded-md border border-cyan-200 dark:border-cyan-800 bg-white dark:bg-cyan-950">
+                        <div className="flex items-center flex-1 overflow-hidden">
+                          <FileText className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+                          <span className="text-sm text-cyan-700 dark:text-cyan-300">
+                            {getDisplayFilename(index)}
+                          </span>
+                        </div>
+                        
+                        <button 
+                          type="button"
+                          onClick={() => triggerFileInput(index)}
+                          className="ml-2 p-1 text-xs text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-800 rounded-md flex items-center"
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Remplacer
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => triggerFileInput(index)}
+                        className="flex items-center justify-center w-full h-10 px-3 py-2 rounded-md border border-cyan-200 dark:border-cyan-800 bg-white dark:bg-cyan-950 hover:bg-cyan-50 dark:hover:bg-cyan-900"
+                      >
+                        <Upload className="h-4 w-4 mr-2 text-cyan-500" />
+                        <span className="text-cyan-600 dark:text-cyan-400">Choisir un fichier</span>
+                      </button>
+                    )}
                   </div>
                   {fields.length > 1 && (
                     <Button

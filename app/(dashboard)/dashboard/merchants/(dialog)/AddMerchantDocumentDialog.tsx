@@ -115,6 +115,7 @@ export default function AddMerchantDocumentDialog({
     try {
       setIsLoading(true);
       await createMerchantDocument(data);
+      await loadExistingDocuments(); // Refresh the documents list
       toast({
         title: "Documents ajoutés",
         description: "Les documents ont été ajoutés avec succès",
