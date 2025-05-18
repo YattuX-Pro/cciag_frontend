@@ -56,7 +56,7 @@ export default function AddSubActivityDialog({
       if (isEdit && subActivity) {
         await updateSubActivity({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         }, subActivity.id);
         toast({
           title: "Succès",
@@ -65,7 +65,7 @@ export default function AddSubActivityDialog({
       } else {
         await createSubActivity({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",

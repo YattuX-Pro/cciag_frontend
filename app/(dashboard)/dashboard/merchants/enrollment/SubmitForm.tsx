@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DocumentItem, Entreprise, ITypeAdhesion, MerchantEnrollment, MerchantEnrollmentSubmission, Tarification, TypeAdhesionData } from "@/types";
+import { DocumentItem, Entreprise, ITypeAdhesion, MerchantEnrollment, MerchantEnrollmentSubmission, MerchantPayment, Tarification, TypeAdhesionData } from "@/types";
 import { CHIFFRE_AFFAIRE, NOMBRE_EMPLOYE } from "@/types/const";
 import { motion } from "framer-motion";
 import { Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
-import { createEnrollement, getAddresses, getTarifications } from "@/fetcher/api-fetcher";
+import { createEnrollement, createMerchantPayment, getAddresses, getTarifications } from "@/fetcher/api-fetcher";
 import { useRouter } from "next/navigation";
 
 interface SubmitFormProps {
@@ -84,7 +84,7 @@ export default function SubmitForm({
     loadAddresses();
     loadTarificationAdhesion();
   }, []);
-
+    
   const handleSubmit = async () => {
     setIsSubmitting(true);
     let typeAdhesion: ITypeAdhesion = {
@@ -109,7 +109,7 @@ export default function SubmitForm({
 
     try {
       const response = await createEnrollement(submissionData);
-
+      const merchant = response.merchantData;
       toast({
         title: "Succès",
         description: "L'inscription a été enregistrée avec succès.",

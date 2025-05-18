@@ -226,19 +226,8 @@ export default function MerchantReviewPage() {
                         </div>
                       </div>
 
-                      <div className="pt-4 flex justify-between items-center border-t dark:border-cyan-900/20 border-cyan-200/20">
+                      <div className="pt-4 flex justify-center items-center border-t dark:border-cyan-900/20 border-cyan-200/20">
                         <BadgeCardDialog merchant={merchant} />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "dark:text-cyan-400 text-cyan-600",
-                            "dark:hover:text-cyan-300 hover:text-cyan-700",
-                            "dark:hover:bg-cyan-900/20 hover:bg-cyan-100/20"
-                          )}
-                        >
-                          <Printer className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   </CardContent>

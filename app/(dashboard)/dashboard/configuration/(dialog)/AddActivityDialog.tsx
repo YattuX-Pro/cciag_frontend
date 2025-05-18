@@ -57,7 +57,7 @@ export default function AddActivityDialog({
         await updateActivity(
           {
             ...data,
-            name: data.name.charAt(0).toUpperCase(),
+            name: data.name.charAt(0).toUpperCase() + data.name.slice(1) + data.name.slice(1),
           },
           activity.id
         );
@@ -68,7 +68,7 @@ export default function AddActivityDialog({
       } else {
         await createActivity({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1) + data.name.slice(1),
         });
         toast({
           title: "Succès",

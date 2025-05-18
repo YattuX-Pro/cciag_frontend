@@ -30,77 +30,114 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
   const [showBack, setShowBack] = useState(false);
 
   const handlePrint = async () => {
-    const frontCard = document.getElementById('card-front');
-    const backCard = document.getElementById('card-back');
-  
-    if (!frontCard || !backCard) return;
-
     try {
       setIsPrinting(true);
-      // Créer un nouveau document PDF
+      
+      // Créer un nouveau document PDF aux dimensions d'une carte d'identité standard
       const doc = new jsPDF({
         unit: 'mm',
-        format: [85.6, 54],
+        format: [86, 55],  // Format standard d'une carte ID/crédit
         orientation: 'landscape'
       });
-
-      // Configuration commune pour html2canvas
-      const canvasOptions = {
-        scale: 4,
-        useCORS: true,
-        letterRendering: true,
-        backgroundColor: '#ffffff',
-        width: 856, // 85.6mm * 10
-        height: 540, // 54mm * 10
-        onclone: (clonedDoc) => {
-          const elements = clonedDoc.getElementsByClassName('backface-hidden');
-          Array.from(elements).forEach((el: HTMLElement) => {
-            el.style.backfaceVisibility = 'visible';
-            el.style.visibility = 'visible';
-            el.style.transform = 'none';
-          });
-        }
+      
+      // ===== RECTO DE LA CARTE (PAGE 1) =====
+      doc.setFillColor(255, 255, 255); // Fond blanc
+      doc.rect(0, 0, 86, 55, 'F');
+      
+      // Position des éléments
+      const labelX = 43; // Position pour aligner les labels à droite
+      const valueX = 44; // Position de départ des valeurs
+      const startY = 24; // Position Y de départ
+      const lineHeight = 3; // Hauteur entre les lignes
+      
+      // Configuration du texte
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(50, 50, 50); // Gris foncé
+      
+      // Fonction pour ajouter un champ avec label et valeur alignés
+      const addField = (label, value, lineIndex) => {
+        const y = startY + (lineIndex * lineHeight);
+        doc.text(`${label}:`, labelX, y, { align: 'right' }); // Aligne les labels à droite
+        doc.text(value || '', valueX, y); // La valeur commence après les deux points
       };
+      
+      // Ajouter les champs
+      addField('Nom', merchant?.user?.last_name, 0);
+      addField('Prenom', merchant?.user?.first_name, 1);
+      addField('Rôle', merchant?.work_position?.name, 2);
+      addField('Nationalité', merchant?.nationality?.name, 3);
+      addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : '', 4);
+      
+      // Date d'expiration
+      doc.setFontSize(6);
+      doc.text(`Date d'expiration`, 35, 48);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`10.10.2025`, 38, 51);
 
-      // Capture et ajout du recto
-      const frontCanvas = await html2canvas(frontCard, {
-        ...canvasOptions,
-        onclone: (clonedDoc) => {
-          const front = clonedDoc.getElementById('card-front');
-          if (front) {
-            front.style.transform = 'none';
-            front.style.visibility = 'visible';
-            front.style.position = 'static';
-            front.style.width = '856px';
-            front.style.height = '540px';
-          }
+      // Définir les paramètres pour la photo de profil
+      const photoX = 5.7;
+      const photoY = 15.7;
+      const photoW = 19.3;
+      const photoH = 22.5;
+      const photoR = 3; // Rayon des coins arrondis plus léger
+      
+      // Rect pour la signature - sans bordure
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(12, 39, 11, 11, 1, 1, 'F');
+      
+      // Dessiner d'abord le rect arrondi qui servira de masque
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(photoX, photoY, photoW, photoH, photoR, photoR, 'F');
+      
+      // Essayer de charger et d'ajouter la photo de profil si disponible
+      if (merchant?.profile_photo) {
+        try {
+          // Note: Ceci fonctionne uniquement si l'image est accessible et pas protégée par CORS
+          
+          // Approche simple: ajouter l'image telle quelle mais dans un contexte limité
+          doc.saveGraphicsState(); // Sauvegarder l'état graphique
+          
+          // Définir un masque de découpage pour l'image avec le rectangle arrondi
+          // Nous simulons un clip par un moyen détourné en redessinant le rectangle par-dessus
+          
+          // 1. Ajout de l'image à sa position normale
+          doc.addImage(merchant.profile_photo, 'JPEG', photoX, photoY, photoW, photoH);
+          
+          // 2. Dessiner une bordure blanche fine autour pour cacher les coins
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(2.5); // Épaisseur réduite pour un effet plus discret
+          doc.roundedRect(photoX, photoY, photoW, photoH, photoR, photoR, 'S');
+          
+          doc.restoreGraphicsState(); // Restaurer l'état graphique
+        } catch (e) {
+          console.error('Impossible de charger la photo de profil:', e);
         }
-      });
-      const frontImgData = frontCanvas.toDataURL('image/png', 1.0);
-      doc.addImage(frontImgData, 'PNG', 0, 0, 85.6, 54, '', 'FAST');
-
-      // Ajouter une nouvelle page
-      doc.addPage([85.6, 54], 'landscape');
-
-      // Capture et ajout du verso
-      const backCanvas = await html2canvas(backCard, {
-        ...canvasOptions,
-        onclone: (clonedDoc) => {
-          const back = clonedDoc.getElementById('card-back');
-          if (back) {
-            back.style.transform = 'none';
-            back.style.visibility = 'visible';
-            back.style.position = 'static';
-            back.style.width = '856px';
-            back.style.height = '540px';
-          }
+      }
+      
+      // Essayer de charger et d'ajouter la signature si disponible
+      if (merchant?.signature_photo) {
+        try {
+          // Note: Ceci fonctionne uniquement si l'image est accessible et pas protégée par CORS
+          doc.addImage(merchant.signature_photo, 'JPEG', 9, 39, 11, 11);
+        } catch (e) {
+          console.error('Impossible de charger la signature:', e);
         }
-      });
-      const backImgData = backCanvas.toDataURL('image/png', 1.0);
-      doc.addImage(backImgData, 'PNG', 0, 0, 85.6, 54, '', 'FAST');
+      }
+      
+      // ===== VERSO DE LA CARTE (PAGE 2) =====
+      doc.addPage([86, 55], 'landscape');
+      doc.setFillColor(255, 255, 255); // Fond blanc
+      doc.rect(0, 0, 86, 55, 'F');
+      
+      // Ajouter du contenu au verso si nécessaire
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('', 43, 27.5, { align: 'center' });
 
-      // Sauvegarder le PDF
-      doc.save(`badge-${merchant?.id}.pdf`);
+      // Sauvegarder le PDF avec un nom de fichier incluant l'ID du marchand et la date actuelle
+      const dateStr = format(new Date(), 'yyyyMMdd-HHmmss');
+      doc.save(`badge-${merchant?.id || 'unknown'}-${dateStr}.pdf`);
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error);
     } finally {
@@ -116,15 +153,16 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           className={cn(
             "dark:text-cyan-400 text-cyan-600",
             "dark:hover:text-cyan-300 hover:text-cyan-700",
-            "dark:hover:bg-cyan-900/20 hover:bg-cyan-100/20"
+            "dark:hover:bg-cyan-900/20 hover:bg-cyan-100/20",
+            "bg-gray-50 dark:bg-gray-900/50 space-x-2"
           )}
         >
-          <Eye className="h-4 w-4" />
+          <span>View</span> <Eye className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className={cn(
@@ -141,7 +179,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         
         {/* Card Container */}
         <div className="p-6">
-          <div className="relative w-[85.6mm] h-[54mm] mx-auto">
+          <div className="relative w-[85mm] h-[54mm] mx-auto">
             <div className={cn(
               "relative w-full h-full transition-all duration-500 preserve-3d",
               showBack ? "rotate-y-180" : ""
@@ -150,11 +188,40 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
               <div id="card-front" className={cn(
                 "absolute inset-0 backface-hidden bg-white rounded-lg overflow-hidden border border-gray-200",
                 showBack ? "invisible" : "visible",
-                'w-[85.6mm] h-[54mm]'
+                'w-[86mm] h-[55mm]'
               )}>
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <span className="text-4xl font-bold text-gray-800">RECTO</span>
+                <div className="w-[86mm] h-[55mm] relative text-[9px]">
+                  <div className='block top-[20mm] left-[35mm] absolute'>
+                    <span className="font-bold text-gray-800">Nom: {merchant?.user?.last_name}</span>
+                  </div>
+                  <div className='block top-[23mm] left-[35mm] absolute'>
+                    <span className="font-bold text-gray-800">Prenom: {merchant?.user?.first_name}</span>
+                  </div>
+                  <div className='block top-[26mm] left-[35mm] absolute'>
+                    <span className="font-bold text-gray-800">Rôle: {merchant?.work_position?.name}</span>
+                  </div>
+                  <div className='block top-[29mm] left-[35mm] absolute'>
+                    <span className="font-bold text-gray-800">Nationalité: {merchant?.nationality?.name}</span>
+                  </div>
+                  <div className='block top-[32mm] left-[35mm] absolute'>
+                    <span className="font-bold text-gray-800">Activité: {merchant?.activities[0]?.name}</span>
+                  </div>
+                  <div className='block top-[44mm] left-[35mm] absolute text-[7px]'>
+                    <span className="font-bold text-gray-800">Date d'expiration</span>
+                  </div>
+                  <div className='block top-[47mm] left-[38mm] absolute text-[7px] text-black'>
+                    <span>10.10.2025</span>
+                  </div>
+                  <div className='w-[18mm] h-[23mm] bg-gray-200 rounded-md absolute top-[12mm] left-[8mm]'
+                  style={{ backgroundImage: `url(${merchant?.profile_photo})`, backgroundSize: 'cover' }}
+                  >
+                   
+                  </div>
+                  <div className='w-[11mm] h-[11mm] rounded-md absolute bottom-[7mm] left-[12mm]'>
+                   <img src={merchant?.signature_photo} alt="" className='w-full h-full'/>
+                  </div>
                 </div>
+
               </div>
 
               {/* Back Side */}
@@ -164,7 +231,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                 'w-[85.6mm] h-[54mm]'
               )}>
                 <div className="relative w-full h-full flex items-center justify-center">
-                  <span className="text-4xl font-bold text-gray-800">VERSO</span>
+                  <span className="text-4xl font-bold text-gray-800"></span>
                 </div>
               </div>
             </div>

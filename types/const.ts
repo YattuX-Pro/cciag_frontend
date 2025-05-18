@@ -28,7 +28,8 @@ export const roles = {
     client : 'client',
     operation : 'operation',
     validation : 'validation',
-    impression : 'impression'
+    impression : 'impression',
+    payment : 'payment'
 }
 
 export const user_roles = () : UserRole[] => [
@@ -37,6 +38,7 @@ export const user_roles = () : UserRole[] => [
     {name: "Opération", value: roles.operation},
     {name: "Validation", value: roles.validation},
     {name: "Impression", value: roles.impression},
+    {name: "Paiement", value: roles.payment}
 ]
 
 export const user_status_list = () : UserStatus[] => [
@@ -54,7 +56,8 @@ export const roleBasedRoutes = {
     operation: [urls.merchants, urls.dashboard,urls.merchant_payments],
     validation: [urls.merchants_review, urls.dashboard],
     impression: [urls.id_cards, urls.dashboard],
-    client: [urls.espace_client],
+    client: [urls.espace_client], 
+    payment: [urls.merchant_payments, urls.dashboard],
   };
 
 export const protectedRoutes = [urls.dashboard, urls.espace_client]

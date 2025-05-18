@@ -165,6 +165,7 @@ export default function CompanyInfoForm({
             value={watch("nombre_employe") || ""}
             onValueChange={(value) => {
               setValue("nombre_employe", value, { shouldValidate: true });
+              trigger("nombre_employe");
             }}
           >
             <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
@@ -457,7 +458,7 @@ export default function CompanyInfoForm({
         </Button>
         <Button 
           type="submit"
-          disabled={!isValid && isDirty}
+          disabled={(!isValid && isDirty) || !watch("nombre_employe")}
           className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-700 dark:hover:bg-cyan-800"
         >
           Terminer

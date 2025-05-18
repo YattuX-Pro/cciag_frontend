@@ -90,6 +90,7 @@ export default function MerchantInfoForm({
   const [nationalities, setNationalities] = useState<Nationality[]>([]);
   const [subSectors, setSubSectors] = useState<SubActivity[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [sizeError, setSizeError] = useState<string | null>(null);
 
   const loadSectors = async () => {
     try {
@@ -177,8 +178,8 @@ export default function MerchantInfoForm({
       type_adherent: typeAdhesionData.typeActivite?.formalisee
         ? "ADHERANT"
         : "MEMBRE",
-      nationality: null,
-      work_position: null,
+      nationality_id: null,
+      work_position_id: null,
     },
   });
 
@@ -230,6 +231,21 @@ export default function MerchantInfoForm({
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       if (file) {
+        const minSizeInBytes = 5 * 1024 * 1024; // 5Mo en bytes
+
+        if (file.size > minSizeInBytes) {
+          setError("profile_photo", {
+            type: "manual",
+            message: `La taille de l'image doit être d'au moins 5Mo. Taille actuelle: ${(file.size / (1024 * 1024)).toFixed(2)}Mo`,
+          });
+          toast({
+            title: "Erreur",
+            description: `La taille de l'image doit être d'au moins 5Mo. Taille actuelle: ${(file.size / (1024 * 1024)).toFixed(2)}Mo`,
+            variant: "destructive",
+          });
+          return;
+        }
+
         const reader = new FileReader();
         reader.onloadend = () => {
           setProfilePreview(reader.result as string);
@@ -508,19 +524,19 @@ export default function MerchantInfoForm({
               Poste de traivail <span className="text-red-500">*</span>
             </Label>
             <SearchableSelect
-              name="work_position"
+              name="work_position_id"
               control={control}
               rules={{ required: "Le poste de travail est requis" }}
               label=""
               data={workPostions}
               valueKey="name"
               placeholder="Sélectionnez le poste de travail"
-              currentValue={watch("work_position.id")}
+              currentValue={watch("work_position_id")}
               disabled={false}
             />
-            {errors.work_position && (
+            {errors.work_position_id && (
               <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                {errors.work_position.message}
+                {errors.work_position_id.message}
               </p>
             )}
           </div>
@@ -531,19 +547,19 @@ export default function MerchantInfoForm({
               Nationalité <span className="text-red-500">*</span>
             </Label>
             <SearchableSelect
-              name="nationality"
+              name="nationality_id"
               control={control}
               rules={{ required: "La nationalité est requise" }}
               label=""
               data={nationalities}
               valueKey="name"
               placeholder="Sélectionnez la nationalité"
-              currentValue={watch("nationality.id")}
+              currentValue={watch("nationality_id")}
               disabled={false}
             />
-            {errors.nationality && (
+            {errors.nationality_id && (
               <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                {errors.nationality.message}
+                {errors.nationality_id.message}
               </p>
             )}
           </div>
@@ -678,11 +694,11 @@ export default function MerchantInfoForm({
                   isDragActive
                     ? "border-primary bg-primary/10"
                     : errors.profile_photo
-                    ? "border-red-500"
-                    : "border-border hover:border-primary"
+                      ? "border-red-500"
+                      : "border-border hover:border-primary"
                 )}
               >
-                <input {...getInputProps()} required />
+                <input {...getInputProps()} />
                 {profilePreview ? (
                   <div className="relative w-32 h-32 mx-auto">
                     <motion.img
@@ -700,7 +716,7 @@ export default function MerchantInfoForm({
                       Glissez une image ici ou cliquez pour sélectionner
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      PNG, JPG jusqu'à 10MB
+                      PNG, JPG jusqu'à 5MB
                     </p>
                   </div>
                 )}
@@ -824,8 +840,8 @@ export default function MerchantInfoForm({
             )}
           </div>
 
-                    {/* Cinquième ligne - Sous-secteurs */}
-                    <div className="space-y-2">
+          {/* Cinquième ligne - Sous-secteurs */}
+          <div className="space-y-2">
             <Label className="text-cyan-700 dark:text-cyan-300">
               Sous-secteurs d'activité <span className="text-red-500">*</span>
             </Label>

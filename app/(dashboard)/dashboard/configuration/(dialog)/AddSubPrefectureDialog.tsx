@@ -82,7 +82,7 @@ export default function AddSubPrefectureDialog({
       if (isEdit && subPrefecture) {
         await updateSubPrefecture({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         }, subPrefecture.id);
         toast({
           title: "Succès",
@@ -91,7 +91,7 @@ export default function AddSubPrefectureDialog({
       } else {
         await createSubPrefecture({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",

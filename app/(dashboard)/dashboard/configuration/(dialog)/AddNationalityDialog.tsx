@@ -55,7 +55,7 @@ export default function AddNationalityDialog({
       if (isEdit && nationality) {
         await updateNationality({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         }, nationality.id);
         toast({
           title: "Succès",
@@ -64,7 +64,7 @@ export default function AddNationalityDialog({
       } else {
         await createNationality({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",

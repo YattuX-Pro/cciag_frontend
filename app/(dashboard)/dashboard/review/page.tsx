@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye } from 'lucide-react';
+import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye, Building2, Calendar, Users, Briefcase, FileText } from 'lucide-react';
 import { MerchantRefusal, Status, type Merchant, type MerchantEnrollment } from '@/types';
 import { format } from "date-fns";
 import { cn } from '@/lib/utils';
@@ -357,28 +357,44 @@ export default function MerchantReviewPage() {
                         </p>
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                          <Mail className="h-4 w-4 text-cyan-500" />
-                          <span className="truncate">{merchant?.user?.email}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                          <Phone className="h-4 w-4 text-cyan-500" />
-                          <span>{merchant?.user?.phone_number}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                          <MapPin className="h-4 w-4 text-cyan-500" />
-                          <span className="line-clamp-1">{merchant.address.name}</span>
-                        </div>
+                     {/* Informations de l'entreprise */}
+                     <div className="mt-5 space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Informations entreprise</h4>
+                        
+                        {merchant.entreprise && (
+                          <>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Building2 className="h-4 w-4 text-cyan-500" />
+                              <span>{merchant.entreprise.nom}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Calendar className="h-4 w-4 text-cyan-500" />
+                              <span>Créée le {new Date(merchant.entreprise.date_creation).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Users className="h-4 w-4 text-cyan-500" />
+                              <span>{merchant.entreprise.nombre_employe_display}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Briefcase className="h-4 w-4 text-cyan-500" />
+                              <span>{merchant.entreprise.type_commerce}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <FileText className="h-4 w-4 text-cyan-500" />
+                              <span>Nom: {merchant.entreprise.nom}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
+
 
                       {/* Signature */}
                       <div className="mt-4 flex justify-start">
-                        <div className="h-10 w-32">
+                        <div className="h-20 w-20 bg-white rounded-md">
                           <img
                             src={merchant.signature_photo}
                             alt="Signature"
-                            className="object-contain w-full h-full opacity-75 dark:opacity-60"
+                            className="object-contain w-full h-full"
                           />
                         </div>
                       </div>

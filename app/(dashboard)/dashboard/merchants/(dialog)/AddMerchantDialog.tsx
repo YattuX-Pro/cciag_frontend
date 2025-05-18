@@ -71,6 +71,7 @@ export default function AddMerchantDialog({
   const [sectors, setSectors] = useState<Activity[]>([]);
   const [subSectors, setSubSectors] = useState<SubActivity[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [sizeError, setSizeError] = useState<string | null>(null);
 
   const {
     register,
@@ -155,6 +156,16 @@ export default function AddMerchantDialog({
         return;
       }
 
+      if(sizeError){
+        setError('profile_photo', {
+          type: 'manual',
+          message: 'taille de l image doit etre inferieur a 5Mo'
+        })
+        setIsLoading(false);
+        return;
+      }
+        
+
       if (!data.signature_photo) {
         setError('signature_photo', {
           type: 'manual',
@@ -163,6 +174,8 @@ export default function AddMerchantDialog({
         setIsLoading(false);
         return;
       }
+
+     
 
       // Ajout des secteurs et sous-secteurs sélectionnés
       data.activities = selectedSectors;
@@ -222,9 +235,19 @@ export default function AddMerchantDialog({
     }
   };
 
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
+      const minSizeInBytes = 5 * 1024 * 1024; // 5Mo en bytes
+      
+      if (file.size < minSizeInBytes) {
+        setSizeError(`La taille de l'image doit être d'au moins 5Mo. Taille actuelle: ${(file.size / (1024 * 1024)).toFixed(2)}Mo`);
+        return;
+      }
+      
+      setSizeError(null);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePreview(reader.result as string);

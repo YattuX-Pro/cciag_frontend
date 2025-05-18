@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye } from 'lucide-react';
+import { Search, Store, Mail, Phone, MapPin, CheckCircle2, XCircle, Eye, Building2, Calendar, Users, FileText, Briefcase } from 'lucide-react';
 import { Status, type Merchant, type MerchantEnrollment } from '@/types';
 import { format } from "date-fns";
 import { cn } from '@/lib/utils';
@@ -372,6 +372,36 @@ export default function MerchantReviewPage() {
                           <MapPin className="h-4 w-4 text-cyan-500" />
                           <span className="line-clamp-1">{merchant.address.name}</span>
                         </div>
+                      </div>
+
+                      {/* Informations de l'entreprise */}
+                      <div className="mt-5 space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Informations entreprise</h4>
+                        
+                        {merchant.entreprise && (
+                          <>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Building2 className="h-4 w-4 text-cyan-500" />
+                              <span>{merchant.entreprise.nom}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Calendar className="h-4 w-4 text-cyan-500" />
+                              <span>Créée le {new Date(merchant.entreprise.date_creation).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Users className="h-4 w-4 text-cyan-500" />
+                              <span>{merchant.entreprise.nombre_employe_display}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <Briefcase className="h-4 w-4 text-cyan-500" />
+                              <span>{merchant.entreprise.forme_juridique}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                              <FileText className="h-4 w-4 text-cyan-500" />
+                              <span>RCCM: {merchant.entreprise.numero_rccm || 'Non renseigné'}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {/* Signature */}

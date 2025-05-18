@@ -43,13 +43,13 @@ export default function MerchantPaymentPage() {
       const params = url
         ? { url }
         : {
-            search: searchTerm ? searchTerm : ""  ,
+            search: searchTerm ? searchTerm : "",
             status: status ? status : "",
           };
 
       const response = await getMerchantPayments(params);
       setData(response.results);
-      console.log(response);
+      console.log(response.results);
       setNext(response.next);
       setPrevious(response.previous);
       setCount(response.count);

@@ -55,7 +55,7 @@ export default function AddWorkPositionDialog({
       if (isEdit && workPosition) {
         await updateWorkPosition({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         }, workPosition.id);
         toast({
           title: "Succès",
@@ -64,7 +64,7 @@ export default function AddWorkPositionDialog({
       } else {
         await createWorkPosition({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",

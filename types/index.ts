@@ -140,9 +140,11 @@ export interface MerchantEnrollment {
   tarification_adhesion?: Tarification;
   tarification_adhesion_id?: number;
   is_active?: boolean;
-  refusals?: MerchantRefusal[];
+  refusal_list?: MerchantRefusal[];
   work_position: WorkPosition;
   nationality: Nationality;
+  work_position_id?: number;
+  nationality_id?: number;
 }
 
 export enum Status {

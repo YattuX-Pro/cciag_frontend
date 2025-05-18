@@ -82,7 +82,7 @@ export default function AddAddressDialog({
       if (isEdit && address) {
         await updateAddress({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         }, address.id);
         toast({
           title: "Succès",
@@ -91,7 +91,7 @@ export default function AddAddressDialog({
       } else {
         await createAddress({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",

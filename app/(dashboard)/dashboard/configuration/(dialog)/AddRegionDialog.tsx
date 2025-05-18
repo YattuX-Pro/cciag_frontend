@@ -56,7 +56,7 @@ export default function AddRegionDialog({
       if (isEdit && region) {
         await updateRegion({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         }, region.id);
         toast({
           title: "Succès",
@@ -65,7 +65,7 @@ export default function AddRegionDialog({
       } else {
         await createRegion({
           ...data,
-          name: data.name.charAt(0).toUpperCase(),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",

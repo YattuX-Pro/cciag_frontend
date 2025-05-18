@@ -745,7 +745,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
 
         <motion.div>
            {/* Section Historique de refus */}
-           {merchantData.refusals && merchantData.refusals.length > 0 && (
+           {merchantData.refusal_list && merchantData.refusal_list.length > 0 && (
             <Card
               className={cn(
                 "overflow-hidden",
@@ -760,7 +760,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-6">
-                  {merchantData.refusals.map((refusal, index) => (
+                  {merchantData.refusal_list.map((refusal, index) => (
                     <motion.div 
                       key={index}
                       initial={{ opacity: 0, y: 10 }}
@@ -849,6 +849,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
             <Button
               type="button"
               onClick={handlePaymentClick}
+              disabled={true}
               className={cn(
                 "dark:bg-cyan-500/10 bg-cyan-50",
                 "dark:text-cyan-400 text-cyan-600",
@@ -856,7 +857,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                 "transition-colors duration-200"
               )}
             >
-              Effectuer un paiement cash
+              Paiement en attente...
             </Button>)
           )}
           {merchantData.status === Status.PAYE
