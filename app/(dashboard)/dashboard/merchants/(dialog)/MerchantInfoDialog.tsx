@@ -860,7 +860,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
               Paiement en attente...
             </Button>)
           )}
-          {merchantData.status === Status.PAYE
+          {merchantData.status === Status.PAYE || merchantData.status === Status.REFUSE
             ? (isLoading ? (
               <span className="flex items-center">
                 <Loader className="animate-spin mr-2" />
