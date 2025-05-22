@@ -129,11 +129,48 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.addPage([86, 55], 'landscape');
       doc.setFillColor(255, 255, 255); // Fond blanc
       doc.rect(0, 0, 86, 55, 'F');
+
+      
       
       // Ajouter du contenu au verso si nécessaire
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('', 43, 27.5, { align: 'center' });
+
+      // === Signature du président ===
+      // Position et dimensions
+      const sigWidth = 11; // mm
+      const sigHeight = 11; // mm
+      const sigRight = 23; // mm depuis la droite
+      const sigBottom = 1; // mm depuis le bas
+      const cardWidth = 86;
+      const cardHeight = 55;
+      const sigX = cardWidth - sigRight - sigWidth;
+      const sigY = cardHeight - sigBottom - sigHeight;
+      // Fond blanc arrondi
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(sigX, sigY, sigWidth, sigHeight, 2, 2, 'F');
+      // Ajout de l'image de signature (base64)
+      if (window && window.location) {
+        // Charger l'image depuis le dossier public (nécessite une conversion en base64)
+        const img = new window.Image();
+        img.crossOrigin = 'anonymous';
+        img.src = '/images/president_signature.png';
+        await new Promise((resolve, reject) => {
+          img.onload = () => {
+            // Créer un canvas temporaire pour convertir en base64
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            doc.addImage(dataUrl, 'PNG', sigX, sigY, sigWidth, sigHeight);
+            resolve(true);
+          };
+          img.onerror = reject;
+        });
+      }
 
       // Sauvegarder le PDF avec un nom de fichier incluant l'ID du marchand et la date actuelle
       const dateStr = format(new Date(), 'yyyyMMdd-HHmmss');
@@ -231,7 +268,9 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                 'w-[85.6mm] h-[54mm]'
               )}>
                 <div className="relative w-full h-full flex items-center justify-center">
-                  <span className="text-4xl font-bold text-gray-800"></span>
+                <div className='w-[11mm] h-[11mm] rounded-md absolute bottom-[1mm] right-[23mm]'>
+                   <img src='/images/president_signature.png' alt="" className='w-full h-full'/>
+                  </div>
                 </div>
               </div>
             </div>
