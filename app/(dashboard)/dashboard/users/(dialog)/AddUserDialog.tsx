@@ -90,10 +90,10 @@ function AddUserDialog({ afterClose, isEdit = false, user }: Props) {
             title: "Modification Utilisateur",
             description: "Oups, Errreur modification d'utilisateur.",
           });
-        }).finally;
-      {
-        setIsLoading(false);
-      }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     } else {
       createUser(data)
         .then((result) => {
@@ -111,10 +111,10 @@ function AddUserDialog({ afterClose, isEdit = false, user }: Props) {
             title: "Création Utilisateur",
             description: "Oups, Errreur création d'utilisateur.",
           });
-        }).finally;
-      {
-        setIsLoading(false);
-      }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   };
 

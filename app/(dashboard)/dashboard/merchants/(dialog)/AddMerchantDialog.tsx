@@ -62,7 +62,7 @@ export default function AddMerchantDialog({
   const [selectedAddress, setSelectedAddress] = useState(merchant?.address?.id || "");
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [profilePreview, setProfilePreview] = useState<string | null>(merchant?.profile_photo || null);
-  const [signaturePreview, setSignaturePreview] = useState<string | null>(merchant?.signature_photo || null);
+  // const [signaturePreview, setSignaturePreview] = useState<string | null>(merchant?.signature_photo || null);
   const [isSignatureSaved, setIsSignatureSaved] = useState(false);
   const [openSectors, setOpenSectors] = useState(false);
   const [openSubSectors, setOpenSubSectors] = useState(false);
@@ -111,7 +111,7 @@ export default function AddMerchantDialog({
       address_id: null,
       activity_ids: [],
       profile_photo: '',
-      signature_photo: '',
+      // signature_photo: '',
       type_adherent: 'ADHERANT'
     }
   });
@@ -122,7 +122,7 @@ export default function AddMerchantDialog({
     if (!open) {
       reset();
       setProfilePreview(merchant?.profile_photo || null);
-      setSignaturePreview(merchant?.signature_photo || null);
+      // setSignaturePreview(merchant?.signature_photo || null);
       setIsSignatureSaved(false);
       if (signaturePadRef.current) {
         signaturePadRef.current.clear();
@@ -268,7 +268,7 @@ export default function AddMerchantDialog({
   const clearSignature = () => {
     if (signaturePadRef.current) {
       signaturePadRef.current.clear();
-      setSignaturePreview(null);
+      // setSignaturePreview(null);
       setValue('signature_photo', null);
       setIsSignatureSaved(false);
     }
@@ -277,7 +277,7 @@ export default function AddMerchantDialog({
   const saveSignature = () => {
     if (signaturePadRef.current) {
       const signatureData = signaturePadRef.current.toDataURL();
-      setSignaturePreview(signatureData);
+      // setSignaturePreview(signatureData);
       setValue('signature_photo', signatureData as string);
       setIsSignatureSaved(true);
     }
@@ -882,7 +882,7 @@ export default function AddMerchantDialog({
               )}
             </motion.div>
 
-            {/* Signature électronique */}
+            {/* Signature électronique
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -952,7 +952,7 @@ export default function AddMerchantDialog({
                   {errors.signature_photo.message}
                 </p>
               )}
-            </motion.div>
+            </motion.div> */}
           </div>
 
           {/* Footer Buttons */}
