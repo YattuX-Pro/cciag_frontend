@@ -145,6 +145,7 @@ export interface MerchantEnrollment {
   nationality: Nationality;
   work_position_id?: number;
   nationality_id?: number;
+  printed: boolean;
 }
 
 export enum Status {

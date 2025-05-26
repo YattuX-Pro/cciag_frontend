@@ -12,12 +12,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Eye, Printer, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { MerchantEnrollment } from '@/types';
+import { Status, type MerchantEnrollment } from '@/types';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Image from 'next/image';
 import QRCode from 'react-qr-code';
 import { format } from 'date-fns';
+import { updateMerchant } from '@/fetcher/api-fetcher';
+import { toast } from '@/hooks/use-toast';
+import { AuthActions } from '@/app/(auth)/utils';
 
 interface BadgeCardDialogProps {
   merchant: MerchantEnrollment;
@@ -28,6 +31,8 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showBack, setShowBack] = useState(false);
+  const [printed, setPrinted] = useState(false);
+  const { getUserIdFromToken } = AuthActions();
 
   const handlePrint = async () => {
     try {
@@ -141,7 +146,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       // Position et dimensions
       const sigWidth = 11; // mm
       const sigHeight = 11; // mm
-      const sigRight = 23; // mm depuis la droite
+      const sigRight = 26; // mm depuis la droite
       const sigBottom = 1; // mm depuis le bas
       const cardWidth = 86;
       const cardHeight = 55;
@@ -177,9 +182,36 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.save(`badge-${merchant?.id || 'unknown'}-${dateStr}.pdf`);
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error);
-    } finally {
+    } 
+
+    try {
+      const response = await updateMerchant({
+        ...merchant,
+        printed: true,
+        printed_at: new Date().toISOString(),
+        printed_by_id: Number(getUserIdFromToken())
+      }, merchant.id);
+      if (response?.status === "success") {
+        setPrinted(true);
+        const { status, message } = response;
+        toast({
+          title: "Modification Commerçant",
+          description: message || "Opération effectuée avec succès",
+          variant: status === "error" ? "destructive" : "default",
+          className: cn(
+            status === "success" && "bg-green-50 dark:bg-green-900/50 border-green-200 dark:border-green-800",
+            "text-green-600 dark:text-green-400"
+          ),
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du commerçant:', error);
+    }
+    finally {
       setIsPrinting(false);
     }
+
   };
 
   const toggleSide = () => {
@@ -285,7 +317,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
           </Button>
           <Button 
             onClick={handlePrint} 
-            disabled={isLoading || isPrinting}
+            disabled={isLoading || isPrinting || merchant.printed || printed}
             className="relative"
           >
             {isPrinting ? (
