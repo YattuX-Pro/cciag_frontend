@@ -105,6 +105,9 @@ export default function MerchantReviewPage() {
           const user_id = getUserIdFromToken();
           merchant.status = Status.VALIDE;
           merchant.is_active = true;
+          const expirationDate = new Date();
+          expirationDate.setFullYear(expirationDate.getFullYear() + 2);
+          merchant.expired_at = expirationDate.toISOString();
           merchant.validated_by_id = Number(user_id);
           await updateMerchant(merchant, merchant.id);
           toast({

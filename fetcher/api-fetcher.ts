@@ -403,3 +403,37 @@ export const updateRegion = (body: Region, id: number): Promise<any> =>
 
 export const deleteRegion = (id: number): Promise<any> => 
   deleter(`/api/regions/${id}`);
+
+// Statistics Endpoints
+
+export const getFinancialStatistics = (params: Record<string, any> = {}): Promise<any> => {
+  const queryString = generateQueryString(params);
+  return fetcher(`statistics/financial-enrollement-statistics/?${queryString}`);
+};
+
+export const getGeographicStatistics = (params: Record<string, any> = {}): Promise<any> => {
+  const queryString = generateQueryString(params);
+  return fetcher(`statistics/geographic-statistics/?${queryString}`);
+};
+
+export const getActivityStatistics = (params: Record<string, any> = {}): Promise<any> => {
+  const queryString = generateQueryString(params);
+  return fetcher(`statistics/activity-statistics/?${queryString}`);
+};
+
+export const getEnterpriseStatistics = (params: Record<string, any> = {}): Promise<any> => {
+  const queryString = generateQueryString(params);
+  return fetcher(`statistics/enterprise-statistics/?${queryString}`);
+};
+
+export const getStatusStatistics = (params: Record<string, any> = {}): Promise<any> => {
+  const queryString = generateQueryString(params);
+  return fetcher(`statistics/status-statistics/?${queryString}`);
+};
+
+export const getRequestTypeStatistics = (params: Record<string, any> = {}): Promise<any> => {
+  const queryString = generateQueryString(params);
+  return fetcher(`statistics/request-type-statistics/?${queryString}`);
+};
+
+
