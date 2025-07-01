@@ -314,8 +314,8 @@ export interface TarificationAdhesion {
   id: number;
   type_adhesion: TypeAdhesion;
   type_adhesion_display: string;
-  type_entreprise: TypeEntreprise;
-  type_entreprise_display: string;
+  type_activite: string;
+  type_activite_display: string;
   montant: number;
   created_at: string;
   updated_at: string;
@@ -334,22 +334,19 @@ export interface Tarification {
 
 export interface TypeAdhesionData {
   type_demande: string;
-  typeAdhesion: {
-    standard: boolean;
-    premium: boolean;
-  };
+  type_adhesion: string;
+  type_adhesion_display: string;
   typeActivite: {
     formalisee: boolean;
     nonFormalisee: boolean;
   };
-  
 }
 
 export interface ITypeAdhesion {
     id?: number;
     type_demande: string;
-    standard: boolean;
-    premium: boolean;
+    type_adhesion: string;
+    type_adhesion_display?: string;
     formalisee: boolean;
     non_formalisee: boolean;
     

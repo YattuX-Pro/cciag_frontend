@@ -432,12 +432,10 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                 </div>
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium dark:text-gray-400 text-gray-500">
-                    Type d'adhésion
+                    Type activité
                   </h4>
                   <p className="text-sm font-medium dark:text-gray-100 text-gray-900">
                     {[
-                      merchantData.type_adhesion?.standard && "Standard",
-                      merchantData.type_adhesion?.premium && "Premium",
                       merchantData.type_adhesion?.formalisee ? "Formalisée" : "Non formalisée",
                     ].filter(Boolean).join(" • ")}
                   </p>
@@ -447,7 +445,7 @@ export function MerchantInfoDialog({ merchantData, onSuccess }: MerchantInfoDial
                     Type d'entreprise
                   </h4>
                   <p className="text-sm font-medium dark:text-gray-100 text-gray-900">
-                    {merchantData.tarification_adhesion?.type_entreprise_display || "-"}
+                    {merchantData.tarification_adhesion?.type_adhesion_display || "-"}
                   </p>
                 </div>
                 <div className="space-y-2">

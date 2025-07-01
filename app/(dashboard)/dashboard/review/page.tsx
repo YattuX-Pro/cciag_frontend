@@ -107,7 +107,10 @@ export default function MerchantReviewPage() {
           merchant.is_active = true;
           const expirationDate = new Date();
           expirationDate.setFullYear(expirationDate.getFullYear() + 2);
-          merchant.expired_at = expirationDate.toISOString();
+          const year = expirationDate.getFullYear();
+          const month = String(expirationDate.getMonth() + 1).padStart(2, '0'); // Les mois commencent à 0
+          const day = String(expirationDate.getDate()).padStart(2, '0');
+          merchant.expired_at = `${year}-${month}-${day}`;
           merchant.validated_by_id = Number(user_id);
           await updateMerchant(merchant, merchant.id);
           toast({

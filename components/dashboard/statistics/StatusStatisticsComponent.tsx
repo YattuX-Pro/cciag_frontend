@@ -5,7 +5,7 @@ import { Bar, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Toolti
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { StatusStatistics } from '@/types/statistics';
-import { CheckCircle, Clock, XCircle, Users } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Users, FileText, FileCheck, FileX } from 'lucide-react';
 
 interface StatusStatisticsComponentProps {
   statusStatistics: StatusStatistics;
@@ -66,41 +66,173 @@ export function StatusStatisticsComponent({ statusStatistics }: StatusStatistics
       <h2 className="text-2xl font-bold dark:text-white text-gray-900 mb-4">Statistiques des Statuts</h2>
       
       {/* Résumé des statuts */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Toutes les cartes sur une même ligne */}
+      <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+        {/* Carte Total */}
         <motion.div variants={childVariants}>
           <Card className={cn(
             "backdrop-blur-sm transition-colors duration-300",
             "dark:bg-gray-900/50 bg-white/50",
             "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
+            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50",
+            "h-[140px]"
           )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-2">
               <CardTitle className={cn(
                 "text-sm font-medium",
                 "dark:text-gray-300 text-gray-600"
               )}>
-                Dossiers Validés
+                Total
               </CardTitle>
               <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
+                "w-8 h-8 rounded-full flex items-center justify-center",
                 "dark:bg-cyan-500/10 bg-cyan-500/20"
               )}>
-                <CheckCircle className={cn(
-                  "h-5 w-5",
+                <FileText className={cn(
+                  "h-4 w-4",
                   "dark:text-cyan-400 text-cyan-600"
                 )}/>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               <div className={cn(
-                "text-2xl font-bold",
+                "text-xl font-bold",
                 "dark:text-white text-gray-900"
+              )}>
+                {statusStatistics.status_counts?.total || 0}
+              </div>
+              <div className={cn(
+                "flex items-center text-xs mt-0",
+                'dark:text-gray-400 text-gray-600'
+              )}>
+                <span>Total dossiers</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Carte Formalisée */}
+        <motion.div variants={childVariants}>
+          <Card className={cn(
+            "backdrop-blur-sm transition-colors duration-300",
+            "dark:bg-gray-900/50 bg-white/50",
+            "dark:border-cyan-900/20 border-cyan-200/20",
+            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50",
+            "h-[140px]"
+          )}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-2">
+              <CardTitle className={cn(
+                "text-sm font-medium",
+                "dark:text-gray-300 text-gray-600"
+              )}>
+                Formalisés
+              </CardTitle>
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center",
+                "dark:bg-cyan-500/10 bg-cyan-500/20"
+              )}>
+                <FileCheck className={cn(
+                  "h-4 w-4",
+                  "dark:text-cyan-400 text-cyan-600"
+                )}/>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-3">
+              <div className={cn(
+                "text-xl font-bold",
+                "dark:text-white text-gray-900"
+              )}>
+                {statusStatistics.status_counts?.formalisee || 0}
+              </div>
+              <div className={cn(
+                "flex items-center text-xs mt-0",
+                'dark:text-gray-400 text-gray-600'
+              )}>
+                <span>Dossiers formalisés</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
+        {/* Carte Non Formalisée */}
+        <motion.div variants={childVariants}>
+          <Card className={cn(
+            "backdrop-blur-sm transition-colors duration-300",
+            "dark:bg-gray-900/50 bg-white/50",
+            "dark:border-cyan-900/20 border-cyan-200/20",
+            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50",
+            "h-[140px]"
+          )}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-2">
+              <CardTitle className={cn(
+                "text-sm font-medium",
+                "dark:text-gray-300 text-gray-600"
+              )}>
+                Non Formalisés
+              </CardTitle>
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center",
+                "dark:bg-cyan-500/10 bg-cyan-500/20"
+              )}>
+                <FileX className={cn(
+                  "h-4 w-4",
+                  "dark:text-cyan-400 text-cyan-600"
+                )}/>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-3">
+              <div className={cn(
+                "text-xl font-bold",
+                "dark:text-white text-gray-900"
+              )}>
+                {statusStatistics.status_counts?.non_formalisee || 0}
+              </div>
+              <div className={cn(
+                "flex items-center text-xs mt-0",
+                'dark:text-gray-400 text-gray-600'
+              )}>
+                <span>Non formalisés</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      
+        {/* 
+        <motion.div variants={childVariants}>
+          <Card className={cn(
+            "backdrop-blur-sm transition-colors duration-300",
+            "dark:bg-green-900/40 bg-green-50",
+            "dark:border-green-700/30 border-green-300/50",
+            "dark:hover:bg-green-800/40 hover:bg-green-100/70",
+            "h-[140px]"
+          )}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-2">
+              <CardTitle className={cn(
+                "text-sm font-medium",
+                "dark:text-green-200 text-green-700"
+              )}>
+                Validés
+              </CardTitle>
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center",
+                "dark:bg-green-500/20 bg-green-200"
+              )}>
+                <CheckCircle className={cn(
+                  "h-4 w-4",
+                  "dark:text-green-300 text-green-700"
+                )}/>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-3">
+              <div className={cn(
+                "text-xl font-bold",
+                "dark:text-green-100 text-green-800"
               )}>
                 {statusStatistics.status_counts?.valide || 0}
               </div>
               <div className={cn(
-                "flex items-center text-xs mt-1",
-                'dark:text-gray-400 text-gray-600'
+                "flex items-center text-xs mt-0",
+                'dark:text-green-300 text-green-600'
               )}>
                 <span>Dossiers validés</span>
               </div>
@@ -113,37 +245,38 @@ export function StatusStatisticsComponent({ statusStatistics }: StatusStatistics
             "backdrop-blur-sm transition-colors duration-300",
             "dark:bg-gray-900/50 bg-white/50",
             "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
+            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50",
+            "h-[140px]"
           )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-2">
               <CardTitle className={cn(
                 "text-sm font-medium",
                 "dark:text-gray-300 text-gray-600"
               )}>
-                Dossiers en Attente
+                En Attente
               </CardTitle>
               <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
+                "w-8 h-8 rounded-full flex items-center justify-center",
                 "dark:bg-cyan-500/10 bg-cyan-500/20"
               )}>
                 <Clock className={cn(
-                  "h-5 w-5",
+                  "h-4 w-4",
                   "dark:text-cyan-400 text-cyan-600"
                 )}/>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               <div className={cn(
-                "text-2xl font-bold",
+                "text-xl font-bold",
                 "dark:text-white text-gray-900"
               )}>
                 {statusStatistics.status_counts?.a_valider || 0}
               </div>
               <div className={cn(
-                "flex items-center text-xs mt-1",
+                "flex items-center text-xs mt-0",
                 'dark:text-gray-400 text-gray-600'
               )}>
-                <span>Dossiers à valider</span>
+                <span>À valider</span>
               </div>
             </CardContent>
           </Card>
@@ -154,41 +287,42 @@ export function StatusStatisticsComponent({ statusStatistics }: StatusStatistics
             "backdrop-blur-sm transition-colors duration-300",
             "dark:bg-gray-900/50 bg-white/50",
             "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
+            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50",
+            "h-[140px]"
           )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-2">
               <CardTitle className={cn(
                 "text-sm font-medium",
                 "dark:text-gray-300 text-gray-600"
               )}>
-                Dossiers Refusés
+                Refusés
               </CardTitle>
               <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
+                "w-8 h-8 rounded-full flex items-center justify-center",
                 "dark:bg-cyan-500/10 bg-cyan-500/20"
               )}>
                 <XCircle className={cn(
-                  "h-5 w-5",
+                  "h-4 w-4",
                   "dark:text-cyan-400 text-cyan-600"
                 )}/>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               <div className={cn(
-                "text-2xl font-bold",
+                "text-xl font-bold",
                 "dark:text-white text-gray-900"
               )}>
                 {statusStatistics.status_counts?.refuse || 0}
               </div>
               <div className={cn(
-                "flex items-center text-xs mt-1",
+                "flex items-center text-xs mt-0",
                 'dark:text-gray-400 text-gray-600'
               )}>
                 <span>Dossiers refusés</span>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </motion.div>*/}
       </div>
 
       {/* Distribution par statut */}

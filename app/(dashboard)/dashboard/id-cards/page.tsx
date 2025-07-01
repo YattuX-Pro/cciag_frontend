@@ -218,9 +218,9 @@ export default function MerchantReviewPage() {
                             Date Exp
                           </p>
                           <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
+                            <Calendar className="h-4 w-4 dark:text-cyan-400 text-cyan-600" />
                             <span className="text-sm dark:text-gray-300 text-gray-600">
-                              {merchant?.user.phone_number}
+                              {new Date(merchant?.expired_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>

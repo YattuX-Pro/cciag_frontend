@@ -436,4 +436,41 @@ export const getRequestTypeStatistics = (params: Record<string, any> = {}): Prom
   return fetcher(`statistics/request-type-statistics/?${queryString}`);
 };
 
+// Export Data Endpoints
+
+// Note: Enterprise export has been removed as it no longer exists
+
+export const startExportMerchants = (filters: Record<string, any> = {}): Promise<{ task_id: string }> => {
+  const formData = new FormData();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) formData.append(key, value);
+  });
+  return poster('statistics/export/enrollements/start/', formData);
+};
+
+export const checkExportStatus = (taskId: string): Promise<{
+  status: 'processing' | 'complete' | 'error';
+  progress: number;
+  processed: number;
+  total: number;
+  file_url?: string;
+  filename?: string;
+}> => {
+  return fetcher(`statistics/export/enrollements/progress/${taskId}/`);
+};
+
+// This function may need to be updated or removed depending on backend changes
+export const listAvailableExports = (): Promise<any> => {
+  return fetcher('statistics/export/list/');
+};
+
+export const downloadExport = (taskId: string): Promise<any> => {
+  return fetcher(`statistics/export/enrollements/download/${taskId}/`);
+};
+
+// Cette fonction n'est pas nécessaire car downloadExport fait déjà le travail
+// Laissée pour compatibilité si déjà utilisée quelque part
+export const downloadExportAsBlob = (taskId: string): Promise<any> => {
+  return downloadExport(taskId);
+};
 

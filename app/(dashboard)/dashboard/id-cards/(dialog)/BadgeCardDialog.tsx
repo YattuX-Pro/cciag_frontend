@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { updateMerchant } from '@/fetcher/api-fetcher';
 import { toast } from '@/hooks/use-toast';
 import { AuthActions } from '@/app/(auth)/utils';
+import qrcode from 'qrcode-generator';
 
 interface BadgeCardDialogProps {
   merchant: MerchantEnrollment;
@@ -52,7 +53,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       // Position des éléments
       const labelX = 43; // Position pour aligner les labels à droite
       const valueX = 44; // Position de départ des valeurs
-      const startY = 24; // Position Y de départ
+      const startY = 30; // Position Y de départ (ajusté pour laisser de la place au numéro en haut et décalé de 4mm vers le bas)
       const lineHeight = 3; // Hauteur entre les lignes
       
       // Configuration du texte
@@ -67,19 +68,39 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         doc.text(value || '', valueX, y); // La valeur commence après les deux points
       };
       
-      // Ajouter les champs
+      // Ajouter le numéro de carte juste au-dessus du nom
+      doc.setFontSize(9); // Légèrement plus grand que le texte standard
+      doc.setFont('helvetica', 'bold');
+      // Position exactement au-dessus du champ Nom
+      doc.text(`N°:`, labelX, startY - 4, { align: 'right' });
+      doc.text(`${merchant?.card_number || ''}`, valueX, startY - 4);
+      
+      // Remettre la police normale pour les autres champs
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      
+      // Ajouter les autres champs
       addField('Nom', merchant?.user?.last_name, 0);
       addField('Prenom', merchant?.user?.first_name, 1);
       addField('Rôle', merchant?.work_position?.name, 2);
       addField('Nationalité', merchant?.nationality?.name, 3);
       addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : '', 4);
       
-      // Date d'expiration
+      // Dates de délivrance et d'expiration en bas de la carte
       doc.setFontSize(6);
-      doc.text(`Date d'expiration`, 35, 48);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`10.10.2025`, 38, 51);
-
+      
+      // Date de délivrance (aujourd'hui)
+      const currentDate = new Date();
+      const deliveryDate = format(currentDate, 'yyyy-MM-dd');
+      
+      // Positionnement en bas de la carte - un peu plus bas qu'avant
+      const bottomY = 53; // Position Y en bas de la carte (valeur augmentée pour descendre)
+      
+      doc.text(`Délivré le: ${deliveryDate}`, 10, bottomY);
+      
+      // Date d'expiration sur la même ligne
+      doc.text(`Expire le: ${new Date(merchant?.expired_at).toLocaleDateString()}`, 50, bottomY);
+      
       // Définir les paramètres pour la photo de profil
       const photoX = 5.7;
       const photoY = 15.7;
@@ -134,8 +155,26 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.addPage([86, 55], 'landscape');
       doc.setFillColor(255, 255, 255); // Fond blanc
       doc.rect(0, 0, 86, 55, 'F');
-
       
+      // Générer un petit code QR pour le card number en bas à droite du verso
+      if (merchant?.card_number) {
+        try {
+          const qr = qrcode(0, 'L');
+          qr.addData(String(merchant.card_number));
+          qr.make();
+          
+          // Position du QR code (en bas à droite) - plus petit pour le verso
+          const qrSize = 10; // taille réduite en mm
+          const qrX = 86 - qrSize - 3; // 3mm de marge à droite
+          const qrY = 55 - qrSize - 3; // 3mm de marge en bas
+          
+          // Convertir le QR code en image base64 avec une densité plus faible
+          const qrCodeBase64 = qr.createDataURL(1, 0); // réduit la densité des pixels
+          doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
+        } catch (e) {
+          console.error('Erreur lors de la génération du QR code sur le verso:', e);
+        }
+      }
       
       // Ajouter du contenu au verso si nécessaire
       doc.setFont('helvetica', 'bold');
@@ -171,6 +210,12 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
             ctx.drawImage(img, 0, 0);
             const dataUrl = canvas.toDataURL('image/png');
             doc.addImage(dataUrl, 'PNG', sigX, sigY, sigWidth, sigHeight);
+            
+            // Ajouter le nom du président sous la signature
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7);
+            doc.text('El Mamadou Baldé', sigX + (sigWidth / 2), sigY + sigHeight - 1, { align: 'center' }); // Position encore plus haute pour garantir la visibilité
+            
             resolve(true);
           };
           img.onerror = reject;
@@ -261,33 +306,43 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
               )}>
                 <div className="w-[86mm] h-[55mm] relative text-[9px]">
                   <div className='block top-[20mm] left-[35mm] absolute'>
+                    <span className="font-bold text-gray-900 text-[13px]">N°: {merchant?.card_number}</span>
+                  </div>
+                  <div className='block top-[24mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-800">Nom: {merchant?.user?.last_name}</span>
                   </div>
-                  <div className='block top-[23mm] left-[35mm] absolute'>
+                  <div className='block top-[27mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-800">Prenom: {merchant?.user?.first_name}</span>
                   </div>
-                  <div className='block top-[26mm] left-[35mm] absolute'>
+                  <div className='block top-[30mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-800">Rôle: {merchant?.work_position?.name}</span>
                   </div>
-                  <div className='block top-[29mm] left-[35mm] absolute'>
+                  <div className='block top-[33mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-800">Nationalité: {merchant?.nationality?.name}</span>
                   </div>
-                  <div className='block top-[32mm] left-[35mm] absolute'>
+                  <div className='block top-[36mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-800">Activité: {merchant?.activities[0]?.name}</span>
                   </div>
-                  <div className='block top-[44mm] left-[35mm] absolute text-[7px]'>
-                    <span className="font-bold text-gray-800">Date d'expiration</span>
+                  {/* Dates en bas de la carte - position ajustée plus bas */}
+                  <div className='block bottom-[2mm] left-[10mm] absolute text-[7px]'>
+                    <span className="font-bold text-gray-800">Délivré le: {format(new Date(), 'yyyy-MM-dd')}</span>
                   </div>
-                  <div className='block top-[47mm] left-[38mm] absolute text-[7px] text-black'>
-                    <span>10.10.2025</span>
+                  
+                  <div className='block bottom-[2mm] left-[50mm] absolute text-[7px]'>
+                    <span className="font-bold text-gray-800">Expire le: {new Date(merchant?.expired_at).toLocaleDateString()}</span>
                   </div>
+                  
+
+                  
                   <div className='w-[18mm] h-[23mm] bg-gray-200 rounded-md absolute top-[12mm] left-[8mm]'
                   style={{ backgroundImage: `url(${merchant?.profile_photo})`, backgroundSize: 'cover' }}
                   >
                    
                   </div>
-                  <div className='w-[11mm] h-[11mm] rounded-md absolute bottom-[7mm] left-[12mm]'>
-                   <img src={merchant?.signature_photo} alt="" className='w-full h-full'/>
+                  <div className='absolute bottom-[7mm] left-[12mm] w-[11mm]'>
+                    <div className='w-[11mm] h-[11mm] rounded-md'>
+                      <img src={merchant?.signature_photo} alt="Signature du commerçant" className='w-full h-full'/>
+                    </div>
                   </div>
                 </div>
 
@@ -299,9 +354,41 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                 showBack ? "visible" : "invisible",
                 'w-[85.6mm] h-[54mm]'
               )}>
-                <div className="relative w-full h-full flex items-center justify-center">
-                <div className='w-[11mm] h-[11mm] rounded-md absolute bottom-[1mm] right-[23mm]'>
-                   <img src='/images/president_signature.png' alt="" className='w-full h-full'/>
+                {/* Contenu du verso */}
+                <div className="w-full h-full relative">
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">Verso de la carte</p>
+                  </div>
+                  
+                  {/* Code QR en bas à droite du verso - plus petit */}
+                  {merchant?.card_number && (
+                    <div className='w-[10mm] h-[10mm] absolute bottom-[3mm] right-[3mm]'>
+                      <img 
+                        src={(() => {
+                          try {
+                            const qr = qrcode(0, 'L');
+                            qr.addData(String(merchant.card_number));
+                            qr.make();
+                            return qr.createDataURL(1, 0);
+                          } catch(e) {
+                            console.error("Erreur lors de la création du QR code", e);
+                            return '';
+                          }
+                        })()} 
+                        alt="QR Code" 
+                        className="w-full h-full"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Signature du président */}
+                  <div className='absolute bottom-[1mm] right-[26mm] w-[11mm]'>
+                    <div className='w-[11mm] h-[11mm] rounded-md'>
+                      <img src='/images/president_signature.png' alt="Signature du président" className='w-full h-full'/>
+                    </div>
+                    <div className='text-center text-[7px] mt-1 font-bold'>
+                      El Mamadou Baldé
+                    </div>
                   </div>
                 </div>
               </div>

@@ -47,35 +47,29 @@ export default function SubmitForm({
   const loadTarificationAdhesion = async () => {
     setIsLoadingTarification(true);
     try {
-      const data = await getTarifications({ limit: 2000 });
-      setTarifications(data.results);
+      const { results } = await getTarifications({ limit: 2000 });
+      setTarifications(results);
       let foundTarification: Tarification | undefined;
 
-      if (typeAdhesionData.typeActivite.formalisee) {
-        const adhesionType = typeAdhesionData.typeAdhesion.standard ? 'STANDARD' : typeAdhesionData.typeAdhesion.premium ? 'PREMIUM' : null;
-        const entrepriseSize = companyData.taille as 'TPE' | 'PME' | 'GE';
-
-        foundTarification = data.results.find(t =>
-          t.type_adhesion === adhesionType &&
-          t.type_entreprise === entrepriseSize
-        );
-      } else if (typeAdhesionData.typeActivite.nonFormalisee) {
-        const commerceType = companyData.type_commerce as 'GROSSISTE' | 'DETAILLANT';
-
-        foundTarification = data.results.find(t =>
-          t.type_adhesion === 'MEMBRE' &&
-          t.type_entreprise === commerceType
-        );
-      }
-
+      foundTarification = results.find(t => t.type_adhesion === typeAdhesionData.type_adhesion);
+      
       if (foundTarification) {
         merchantData.tarification_adhesion_id = foundTarification.id;
         setSelectedTarification(foundTarification);
+      } else {
+        toast({
+          title: "Attention",
+          description: "Aucune tarification trouvée pour ce type d'adhésion",
+        });
       }
     } catch (error) {
-      console.error('Error loading tarification :', error);
+      console.error('Error loading tarification:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la tarification",
+        variant: "destructive",
+      });
     } finally {
-     
       setIsLoadingTarification(false);
     }
   };
@@ -91,8 +85,7 @@ export default function SubmitForm({
       type_demande: typeAdhesionData.type_demande,
       formalisee: typeAdhesionData.typeActivite.formalisee,
       non_formalisee: typeAdhesionData.typeActivite.nonFormalisee,
-      premium: typeAdhesionData.typeAdhesion.premium,
-      standard: typeAdhesionData.typeAdhesion.standard,
+      type_adhesion: typeAdhesionData.type_adhesion,
     }
 
     const submissionData: MerchantEnrollmentSubmission = {
@@ -221,10 +214,6 @@ export default function SubmitForm({
               <div>
                 <span className="text-gray-500">Type d'adhésion:</span>
                 <span className="ml-2">{selectedTarification?.type_adhesion_display || '-'}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Type d'entreprise:</span>
-                <span className="ml-2">{selectedTarification?.type_entreprise_display || '-'}</span>
               </div>
               <div>
                 <span className="text-gray-500">Prix:</span>

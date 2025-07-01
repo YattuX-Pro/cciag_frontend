@@ -90,6 +90,9 @@ export interface StatusStatistics {
     a_valider: number;
     valide: number;
     refuse: number;
+    total: number;
+    formalisee: number;
+    non_formalisee: number;
   };
   stats_by_creator: {
     created_by__first_name: string;
