@@ -66,6 +66,11 @@ export const defaultPagination = {
     "limit" : 1,
 }
 
+export enum type_adherent {
+  MEMBRE = 'MEMBRE',
+  ADHERENT = 'ADHERENT'
+}
+
 export const statusMap = {
     'A_PAYER': 'À payer',
     'PAYE': 'Payé', 
@@ -77,6 +82,12 @@ export const statusMap = {
     'REFUSE': 'Refusé'
 
   };
+
+  export enum paymentType {
+    PENDING = 'PENDING',
+    PAID = 'PAID', 
+    FAILED = 'FAILED'
+  }
 
   export const paymentStatusMap = {
     'PENDING': 'En attente',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import { updateMerchant } from '@/fetcher/api-fetcher';
 import { toast } from '@/hooks/use-toast';
 import { AuthActions } from '@/app/(auth)/utils';
 import qrcode from 'qrcode-generator';
+import { type_adherent } from '@/types/const';
 
 interface BadgeCardDialogProps {
   merchant: MerchantEnrollment;
@@ -34,6 +35,10 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
   const [showBack, setShowBack] = useState(false);
   const [printed, setPrinted] = useState(false);
   const { getUserIdFromToken } = AuthActions();
+
+  useEffect(()=>{
+    console.log(merchant)
+  },[])
 
   const handlePrint = async () => {
     try {
@@ -79,17 +84,26 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
       
-      // Ajouter les autres champs
-      addField('Nom', merchant?.user?.last_name, 0);
-      addField('Prenom', merchant?.user?.first_name, 1);
-      addField('Rôle', merchant?.work_position?.name, 2);
-      addField('Nationalité', merchant?.nationality?.name, 3);
-      addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : '', 4);
+
+      if (merchant?.type_adherent === type_adherent.MEMBRE) {
+        addField('Nom', merchant?.user?.last_name, 0);
+        addField('Prenom', merchant?.user?.first_name, 1);
+        addField('Nationalité', merchant?.nationality?.name, 2);
+        addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : '', 3);
+        addField('Adresse', merchant?.address?.name || 'N/A', 4);
+        addField('Telephone', merchant?.user?.phone_number || 'N/A', 5);
+      }else{
+        addField('Raison sociale', merchant?.entreprise?.nom || 'N/A', 0);
+        addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : 'N/A', 1);
+        addField('Adresse', merchant?.address?.name || 'N/A', 2);
+        addField('Telephone', merchant?.user?.phone_number || 'N/A', 3);
+        addField('Nom du representant', merchant?.user?.last_name || 'N/A', 4);
+        addField('Nationalité', merchant?.nationality?.name || 'N/A', 5);
+      }
+    
       
-      // Dates de délivrance et d'expiration en bas de la carte
       doc.setFontSize(6);
       
-      // Date de délivrance (aujourd'hui)
       const currentDate = new Date();
       const deliveryDate = format(currentDate, 'yyyy-MM-dd');
       
@@ -202,7 +216,6 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         img.src = '/images/president_signature.png';
         await new Promise((resolve, reject) => {
           img.onload = () => {
-            // Créer un canvas temporaire pour convertir en base64
             const canvas = document.createElement('canvas');
             canvas.width = img.width;
             canvas.height = img.height;
@@ -211,10 +224,9 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
             const dataUrl = canvas.toDataURL('image/png');
             doc.addImage(dataUrl, 'PNG', sigX, sigY, sigWidth, sigHeight);
             
-            // Ajouter le nom du président sous la signature
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(7);
-            doc.text('El Mamadou Baldé', sigX + (sigWidth / 2), sigY + sigHeight - 1, { align: 'center' }); // Position encore plus haute pour garantir la visibilité
+            doc.text('Mamadou BALDE', sigX + (sigWidth / 2), sigY + sigHeight - 1, { align: 'center' }); // Position encore plus haute pour garantir la visibilité
             
             resolve(true);
           };
@@ -234,6 +246,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         ...merchant,
         printed: true,
         printed_at: new Date().toISOString(),
+        expired_at: new Date().toISOString(),
         printed_by_id: Number(getUserIdFromToken())
       }, merchant.id);
       if (response?.status === "success") {
@@ -308,21 +321,49 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                   <div className='block top-[20mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-900 text-[13px]">N°: {merchant?.card_number}</span>
                   </div>
-                  <div className='block top-[24mm] left-[35mm] absolute'>
-                    <span className="font-bold text-gray-800">Nom: {merchant?.user?.last_name}</span>
-                  </div>
-                  <div className='block top-[27mm] left-[35mm] absolute'>
-                    <span className="font-bold text-gray-800">Prenom: {merchant?.user?.first_name}</span>
-                  </div>
-                  <div className='block top-[30mm] left-[35mm] absolute'>
-                    <span className="font-bold text-gray-800">Rôle: {merchant?.work_position?.name}</span>
-                  </div>
-                  <div className='block top-[33mm] left-[35mm] absolute'>
-                    <span className="font-bold text-gray-800">Nationalité: {merchant?.nationality?.name}</span>
-                  </div>
-                  <div className='block top-[36mm] left-[35mm] absolute'>
-                    <span className="font-bold text-gray-800">Activité: {merchant?.activities[0]?.name}</span>
-                  </div>
+                  {merchant?.type_adherent === type_adherent.MEMBRE ? (
+                    <>
+                      <div className='block top-[24mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Nom: {merchant?.user?.last_name}</span>
+                      </div>
+                      <div className='block top-[27mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Prenom: {merchant?.user?.first_name}</span>
+                      </div>
+                      <div className='block top-[30mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Nationalité: {merchant?.nationality?.name}</span>
+                      </div>
+                      <div className='block top-[33mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Secteur d'activité: {merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : ''}</span>
+                      </div>
+                      <div className='block top-[36mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Adresse: {merchant?.address?.name || ''}</span>
+                      </div>
+                      <div className='block top-[39mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Telephone: {merchant?.user?.phone_number || ''}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className='block top-[24mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Raison sociale: {merchant?.entreprise?.nom || ''}</span>
+                      </div>
+                      <div className='block top-[27mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Secteur d'activité: {merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : ''}</span>
+                      </div>
+                      <div className='block top-[30mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Adresse: {merchant?.address?.name || ''}</span>
+                      </div>
+                      <div className='block top-[33mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Telephone: {merchant?.user?.phone_number || ''}</span>
+                      </div>
+                      <div className='block top-[36mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Nom du representant: {merchant?.user?.last_name || ''}</span>
+                      </div>
+                      <div className='block top-[39mm] left-[35mm] absolute'>
+                        <span className="font-bold text-gray-800">Nationalité: {merchant?.nationality?.name || ''}</span>
+                      </div>
+                    </>
+                  )}
                   {/* Dates en bas de la carte - position ajustée plus bas */}
                   <div className='block bottom-[2mm] left-[10mm] absolute text-[7px]'>
                     <span className="font-bold text-gray-800">Délivré le: {format(new Date(), 'yyyy-MM-dd')}</span>
@@ -331,8 +372,6 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                   <div className='block bottom-[2mm] left-[50mm] absolute text-[7px]'>
                     <span className="font-bold text-gray-800">Expire le: {new Date(merchant?.expired_at).toLocaleDateString()}</span>
                   </div>
-                  
-
                   
                   <div className='w-[18mm] h-[23mm] bg-gray-200 rounded-md absolute top-[12mm] left-[8mm]'
                   style={{ backgroundImage: `url(${merchant?.profile_photo})`, backgroundSize: 'cover' }}
@@ -387,7 +426,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                       <img src='/images/president_signature.png' alt="Signature du président" className='w-full h-full'/>
                     </div>
                     <div className='text-center text-[7px] mt-1 font-bold'>
-                      El Mamadou Baldé
+                      Mamadou BALDE
                     </div>
                   </div>
                 </div>

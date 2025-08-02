@@ -1,12 +1,11 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Bar, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, Treemap, LabelList } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Bar, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, LabelList } from 'recharts';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { EnterpriseStatistics } from '@/types/statistics';
-import { Building, Users, Briefcase, BarChart2, LineChart, TrendingUp } from 'lucide-react';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { Building2, Users, Briefcase, BarChart3, TrendingUp, DollarSign } from 'lucide-react';
 import React from 'react';
 
 interface EnterpriseStatisticsComponentProps {
@@ -14,20 +13,12 @@ interface EnterpriseStatisticsComponentProps {
 }
 
 export default function EnterpriseStatisticsComponent({ enterpriseStatistics }: EnterpriseStatisticsComponentProps) {
-  // Colors for charts
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28BFC', '#FF6B6B', '#4ECDC4'];
-  
-  // Chart config for the modern chart components
-  const chartConfig: ChartConfig = {
-    company: {
-      label: "Taille d'Entreprise",
-      color: "var(--chart-1)",
-    },
-    commerce: {
-      label: "Type de Commerce",
-      color: "var(--chart-2)",
-    },
-  };
+  // Modern color schemes for different chart types
+  const ACTIVITY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'];
+  const SIZE_COLORS = ['#1e40af', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd'];
+  const COMMERCE_COLORS = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
+  const TURNOVER_COLORS = ['#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'];
+  const EMPLOYEE_COLORS = ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca', '#fee2e2'];
   
   // Formattage des nombres d'employés
   const formatEmployeeCount = (code: string) => {
@@ -53,60 +44,131 @@ export default function EnterpriseStatisticsComponent({ enterpriseStatistics }: 
     };
     return turnoverMap[code] || code;
   };
-  
-  // Définition des variables CSS pour les couleurs des graphiques
-  React.useEffect(() => {
-    document.documentElement.style.setProperty('--color-company', '#0088FE');
-    document.documentElement.style.setProperty('--color-commerce', '#00C49F');
-  }, []);
-  
-  // Variable pour la couleur du texte adaptée au thème
-  const textColor = "hsl(var(--foreground))";
+
+  // Calculate total enterprises
+  const totalEnterprises = enterpriseStatistics.stats_by_activity_type?.reduce((sum, item) => sum + item.total, 0) || 0;
 
   return (
-    <div className="space-y-6">
-      <h2 className={cn(
-        "text-2xl font-bold mb-4",
-        "dark:text-white text-gray-900"
-      )}>
-        Statistiques d'Entreprise
-      </h2>
-      
-      {/* Type d'Activité - occupant une ligne complète */}
-      <div className="grid gap-6 grid-cols-1 mb-6">
-        {/* Type d'Activité */}
+    <div className="space-y-8">
+      {/* Modern Gradient Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-8 shadow-2xl"
+      >
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+            <Building2 className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-white">Statistiques d'Entreprise</h2>
+            <p className="text-white/80 text-lg">Analyse détaillée des profils d'entreprises</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Summary Cards */}
+      <div className="grid gap-6 md:grid-cols-3 grid-cols-1">
+        {/* Total Enterprises Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.1, type: "spring", stiffness: 100 }}
+          className="group"
         >
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle className={cn(
-                  "text-lg font-medium",
-                  "dark:text-gray-300 text-gray-600"
-                )}>
-                  Type d'Activité
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">Répartition par secteur d'activité</CardDescription>
+          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative z-10 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="rounded-lg bg-white/20 p-2 backdrop-blur-sm">
+                  <Building2 className="h-6 w-6 text-white" />
+                </div>
+                <TrendingUp className="h-5 w-5 text-white/70" />
               </div>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-emerald-500/10 bg-emerald-500/20"
-              )}>
-                <Briefcase className={cn(
-                  "h-5 w-5",
-                  "dark:text-emerald-400 text-emerald-600"
-                )}/>
+              <CardTitle className="text-white text-lg font-semibold">Total Entreprises</CardTitle>
+            </CardHeader>
+            <CardContent className="relative z-10 pt-0">
+              <div className="text-3xl font-bold text-white mb-2">{totalEnterprises.toLocaleString()}</div>
+              <p className="text-white/80 text-sm">Entreprises enregistrées</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Activity Types Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
+          className="group"
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative z-10 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="rounded-lg bg-white/20 p-2 backdrop-blur-sm">
+                  <Briefcase className="h-6 w-6 text-white" />
+                </div>
+                <BarChart3 className="h-5 w-5 text-white/70" />
+              </div>
+              <CardTitle className="text-white text-lg font-semibold">Secteurs d'Activité</CardTitle>
+            </CardHeader>
+            <CardContent className="relative z-10 pt-0">
+              <div className="text-3xl font-bold text-white mb-2">{enterpriseStatistics.stats_by_activity_type?.length || 0}</div>
+              <p className="text-white/80 text-sm">Types d'activités</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Commerce Types Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 100 }}
+          className="group"
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative z-10 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="rounded-lg bg-white/20 p-2 backdrop-blur-sm">
+                  <DollarSign className="h-6 w-6 text-white" />
+                </div>
+                <Users className="h-5 w-5 text-white/70" />
+              </div>
+              <CardTitle className="text-white text-lg font-semibold">Types de Commerce</CardTitle>
+            </CardHeader>
+            <CardContent className="relative z-10 pt-0">
+              <div className="text-3xl font-bold text-white mb-2">{enterpriseStatistics.stats_by_commerce_type?.length || 0}</div>
+              <p className="text-white/80 text-sm">Catégories commerciales</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Charts Section - Side by Side */}
+      <div className="grid gap-8 lg:grid-cols-2 grid-cols-1">
+        {/* Activity Type Chart */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.4, type: "spring", stiffness: 100 }}
+        >
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-2">
+                  <Briefcase className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Types d'Activité</CardTitle>
+                  <CardDescription className="text-sm">Répartition par secteur d'activité</CardDescription>
+                </div>
               </div>
             </CardHeader>
-            <CardContent className="pb-0">
-              <div className="h-[250px]">
+            <CardContent>
+              <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
                   {enterpriseStatistics.stats_by_activity_type ? (
                     <PieChart>
@@ -116,39 +178,133 @@ export default function EnterpriseStatisticsComponent({ enterpriseStatistics }: 
                         nameKey="type_activite"
                         cx="50%"
                         cy="50%"
-                        outerRadius={80}
-                        innerRadius={40}
-                        paddingAngle={5}
+                        outerRadius={120}
+                        innerRadius={60}
+                        paddingAngle={3}
                       >
                         {enterpriseStatistics.stats_by_activity_type.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={ACTIVITY_COLORS[index % ACTIVITY_COLORS.length]} />
                         ))}
-                        <LabelList 
-                          dataKey="type_activite" 
-                          position="outside"
-                          fill="hsl(var(--foreground))"
-                          stroke="none"
-                          fontSize={12}
-                          formatter={(value: string) => value}
-                        />
                       </Pie>
                       <Tooltip
-                        formatter={(value: any) => [`${value} entreprises`, '']}
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} entreprises`,
+                          props.payload?.type_activite || name
+                        ]}
+                        labelFormatter={(label: any) => ``}
                         cursor={false}
                         contentStyle={{ 
                           backgroundColor: "hsl(var(--background))",
                           borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          color: "hsl(var(--foreground))"
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
                         }}
-                        labelStyle={{ color: "hsl(var(--foreground))" }}
-                        itemStyle={{ color: "hsl(var(--foreground))" }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
                       />
-                      <Legend layout="vertical" verticalAlign="middle" align="right" />
                     </PieChart>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      Chargement des données...
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée disponible</p>
+                      </div>
+                    </div>
+                  )}
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Company Size Chart */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.5, type: "spring", stiffness: 100 }}
+        >
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 p-2">
+                  <Building2 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Taille d'Entreprise</CardTitle>
+                  <CardDescription className="text-sm">Répartition par nombre d'employés</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  {enterpriseStatistics.stats_by_company_size ? (
+                    <BarChart
+                      data={enterpriseStatistics.stats_by_company_size}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis 
+                        dataKey="taille" 
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} entreprises`,
+                          formatEmployeeCount(props.payload?.taille || name)
+                        ]}
+                        labelFormatter={(label: any) => formatEmployeeCount(label)}
+                        cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                        contentStyle={{ 
+                          backgroundColor: "hsl(var(--background))",
+                          borderColor: "hsl(var(--border))",
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
+                      />
+                      <Bar 
+                        dataKey="total" 
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {enterpriseStatistics.stats_by_company_size.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={SIZE_COLORS[index % SIZE_COLORS.length]} />
+                        ))}
+                        <LabelList
+                          dataKey="total"
+                          position="top"
+                          fill="hsl(var(--foreground))"
+                          fontSize={12}
+                          fontWeight="bold"
+                        />
+                      </Bar>
+                    </BarChart>
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée disponible</p>
+                      </div>
                     </div>
                   )}
                 </ResponsiveContainer>
@@ -157,213 +313,29 @@ export default function EnterpriseStatisticsComponent({ enterpriseStatistics }: 
           </Card>
         </motion.div>
       </div>
-      
-      <div className="grid gap-6 md:grid-cols-2 grid-cols-1">
-        {/* Taille d'Entreprise */}
+
+      {/* Bottom Charts - Side by Side */}
+      <div className="grid gap-8 lg:grid-cols-2 grid-cols-1">
+        {/* Turnover Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 100 }}
         >
-          <Card className={cn(
-            "backdrop-blur-sm transition-colors duration-300",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className={cn(
-                  "text-sm font-medium",
-                  "dark:text-gray-300 text-gray-600"
-                )}>
-                  Taille d'Entreprise
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">Répartition par taille</CardDescription>
-              </div>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-cyan-500/10 bg-cyan-500/20"
-              )}>
-                <Building className={cn(
-                  "h-5 w-5",
-                  "dark:text-cyan-400 text-cyan-600"
-                )}/>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 p-2">
+                  <DollarSign className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Chiffre d'Affaires</CardTitle>
+                  <CardDescription className="text-sm">Tranches en millions GNF</CardDescription>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[250px]">
-                {enterpriseStatistics.stats_by_company_size ? (
-                  <ChartContainer config={chartConfig}>
-                    <BarChart
-                      accessibilityLayer
-                      data={enterpriseStatistics.stats_by_company_size}
-                      margin={{ top: 20, right: 20, bottom: 10, left: 20 }}
-                    >
-                      <CartesianGrid vertical={false} stroke="#0e7490" strokeOpacity={0.15} strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="taille" 
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        tick={{ fill: "var(--foreground)" }}
-                      />
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent formatter={(value: any) => `${value} entreprises`} />}
-                      />
-                      <Bar 
-                        dataKey="total" 
-                        fill="#0088FE"
-                        barSize={80}
-                        radius={[4, 4, 0, 0]}
-                        stroke="#0070d8"
-                        strokeWidth={1}
-                      >
-                        <LabelList
-                          position="top"
-                          offset={12}
-                          className="fill-foreground"
-                          fontSize={12}
-                        />
-                      </Bar>
-                    </BarChart>
-                  </ChartContainer>
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                    Chargement des données...
-                  </div>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-              <div className="text-muted-foreground leading-none">
-                Répartition des entreprises par taille
-              </div>
-            </CardFooter>
-          </Card>
-        </motion.div>
-        
-        {/* Type de Commerce */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
-        >
-          <Card className={cn(
-            "backdrop-blur-sm transition-colors duration-300",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className={cn(
-                  "text-sm font-medium",
-                  "dark:text-gray-300 text-gray-600"
-                )}>
-                  Type de Commerce
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">Répartition par type</CardDescription>
-              </div>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-cyan-500/10 bg-cyan-500/20"
-              )}>
-                <BarChart2 className={cn(
-                  "h-5 w-5",
-                  "dark:text-cyan-400 text-cyan-600"
-                )}/>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[250px]">
-                {enterpriseStatistics.stats_by_commerce_type ? (
-                  <ChartContainer config={chartConfig}>
-                    <BarChart
-                      accessibilityLayer
-                      data={enterpriseStatistics.stats_by_commerce_type}
-                      margin={{ top: 20, right: 20, bottom: 10, left: 20 }}
-                    >
-                      <CartesianGrid vertical={false} stroke="#0e7490" strokeOpacity={0.15} strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="type_commerce" 
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        tick={{ fill: "var(--foreground)" }}
-                      />
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent formatter={(value: any) => `${value} entreprises`} />}
-                      />
-                      <Bar 
-                        dataKey="total" 
-                        fill="#00C49F"
-                        barSize={80}
-                        radius={[4, 4, 0, 0]}
-                        stroke="#00a085"
-                        strokeWidth={1}
-                      >
-                        <LabelList
-                          position="top"
-                          offset={12}
-                          className="fill-foreground"
-                          fontSize={12}
-                        />
-                      </Bar>
-                    </BarChart>
-                  </ChartContainer>
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                    Chargement des données...
-                  </div>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-              <div className="text-muted-foreground leading-none">
-                Répartition des entreprises par type de commerce
-              </div>
-            </CardFooter>
-          </Card>
-        </motion.div>
-      </div>
-      
-      <div className="grid gap-6 grid-cols-1">
-        {/* Chiffre d'Affaires */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.5 }}
-        >
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle className={cn(
-                  "text-lg font-medium",
-                  "dark:text-gray-300 text-gray-600"
-                )}>
-                  Chiffre d'Affaires
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">Tranches en millions GNF</CardDescription>
-              </div>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-purple-500/10 bg-purple-500/20"
-              )}>
-                <LineChart className={cn(
-                  "h-5 w-5",
-                  "dark:text-purple-400 text-purple-600"
-                )}/>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[250px]">
+              <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
                   {enterpriseStatistics.stats_by_turnover ? (
                     <BarChart
@@ -372,98 +344,89 @@ export default function EnterpriseStatisticsComponent({ enterpriseStatistics }: 
                         const order = ['0-100', '100-250', '250-500', '500-2.5', '+2.5'];
                         return order.indexOf(a.chiffre_affaire) - order.indexOf(b.chiffre_affaire);
                       })}
-                      margin={{ left: 20, right: 20, top: 10, bottom: 10 }}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
-                      <CartesianGrid horizontal strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis type="number" hide />
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis type="number" tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }} />
                       <YAxis 
                         dataKey="chiffre_affaire" 
                         type="category" 
-                        tickLine={false}
-                        axisLine={false}
                         tickFormatter={formatTurnover}
-                        tick={{
-                          fontSize: 12,
-                          fill: textColor,
-                        }}
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        width={120}
                       />
                       <Tooltip
-                        formatter={(value: number) => [`${value} entreprises`, '']}
-                        labelFormatter={formatTurnover}
-                        cursor={false}
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} entreprises`,
+                          formatTurnover(props.payload?.chiffre_affaire || name)
+                        ]}
+                        labelFormatter={(label: any) => formatTurnover(label)}
+                        cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
                         contentStyle={{ 
                           backgroundColor: "hsl(var(--background))",
                           borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          color: "hsl(var(--foreground))"
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
                         }}
                       />
                       <Bar 
                         dataKey="total" 
                         radius={[0, 4, 4, 0]}
-                        barSize={30}
                       >
                         {enterpriseStatistics.stats_by_turnover.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={TURNOVER_COLORS[index % TURNOVER_COLORS.length]} />
                         ))}
                         <LabelList 
                           dataKey="total" 
                           position="right" 
-                          formatter={(value: number) => `${value}`}
                           fill="hsl(var(--foreground))"
                           fontSize={12}
+                          fontWeight="bold"
                         />
                       </Bar>
                     </BarChart>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      Chargement des données...
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée disponible</p>
+                      </div>
                     </div>
                   )}
                 </ResponsiveContainer>
               </div>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-xs pt-0">
-              <div className="text-muted-foreground leading-tight">
-                Répartition des entreprises par tranches de chiffre d'affaires
-              </div>
-            </CardFooter>
           </Card>
         </motion.div>
-        
-        {/* Nombre d'Employés */}
+
+        {/* Employee Count Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.7, type: "spring", stiffness: 100 }}
         >
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle className={cn(
-                  "text-lg font-medium",
-                  "dark:text-gray-300 text-gray-600"
-                )}>
-                  Nombre d'Employés
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">Par tranches d'effectifs</CardDescription>
-              </div>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-amber-500/10 bg-amber-500/20"
-              )}>
-                <Users className={cn(
-                  "h-5 w-5",
-                  "dark:text-amber-400 text-amber-600"
-                )}/>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-red-500 to-red-600 p-2">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Nombre d'Employés</CardTitle>
+                  <CardDescription className="text-sm">Par tranches d'effectifs</CardDescription>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[250px] text-foreground">
+              <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
                   {enterpriseStatistics.stats_by_employee_count ? (
                     <BarChart
@@ -472,62 +435,66 @@ export default function EnterpriseStatisticsComponent({ enterpriseStatistics }: 
                         const order = ['0-5', '5-10', '10-20', '20-50', '50-100', '+100'];
                         return order.indexOf(a.nombre_employe) - order.indexOf(b.nombre_employe);
                       })}
-                      margin={{ left: 20, right: 20, top: 10, bottom: 10 }}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
-                      <CartesianGrid horizontal strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis type="number" hide />
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis type="number" tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }} />
                       <YAxis 
                         dataKey="nombre_employe" 
                         type="category" 
-                        tickLine={false}
-                        axisLine={false}
                         tickFormatter={formatEmployeeCount}
-                        tick={{
-                          fontSize: 12,
-                          fill: textColor,
-                        }}
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        width={120}
                       />
                       <Tooltip
-                        formatter={(value: number) => [`${value} entreprises`, '']}
-                        labelFormatter={formatEmployeeCount}
-                        cursor={false}
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} entreprises`,
+                          formatEmployeeCount(props.payload?.nombre_employe || name)
+                        ]}
+                        labelFormatter={(label: any) => formatEmployeeCount(label)}
+                        cursor={{ fill: 'rgba(220, 38, 38, 0.1)' }}
                         contentStyle={{ 
                           backgroundColor: "hsl(var(--background))",
                           borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          color: "hsl(var(--foreground))"
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
                         }}
                       />
                       <Bar 
                         dataKey="total" 
                         radius={[0, 4, 4, 0]}
-                        barSize={30}
                       >
                         {enterpriseStatistics.stats_by_employee_count.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={EMPLOYEE_COLORS[index % EMPLOYEE_COLORS.length]} />
                         ))}
                         <LabelList 
                           dataKey="total" 
                           position="right" 
-                          formatter={(value: number) => `${value}`}
                           fill="hsl(var(--foreground))"
                           fontSize={12}
+                          fontWeight="bold"
                         />
                       </Bar>
                     </BarChart>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      Chargement des données...
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée disponible</p>
+                      </div>
                     </div>
                   )}
                 </ResponsiveContainer>
               </div>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-xs pt-0">
-              <div className="text-muted-foreground leading-tight">
-                Répartition des entreprises par nombre d'employés
-              </div>
-            </CardFooter>
           </Card>
         </motion.div>
       </div>

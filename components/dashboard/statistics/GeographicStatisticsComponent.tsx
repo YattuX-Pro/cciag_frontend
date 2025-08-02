@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bar, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Bar, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, LabelList } from 'recharts';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Globe, MapPin, Users, FileText } from 'lucide-react';
+import { Globe, MapPin, Users, FileText, TrendingUp, Map } from 'lucide-react';
 
 interface GeographicStatistics {
   stats_by_nationality: {
@@ -32,32 +32,11 @@ interface GeographicStatisticsComponentProps {
 }
 
 export function GeographicStatisticsComponent({ geographicStatistics }: GeographicStatisticsComponentProps) {
-  // Couleurs pour les graphiques
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
-  
-  // Animation des cartes
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const childVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 100, 
-        damping: 12
-      }
-    }
-  };
+  // Modern color schemes for different chart types
+  const NATIONALITY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'];
+  const REGION_COLORS = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'];
+  const PREFECTURE_COLORS = ['#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'];
+  const REQUEST_COLORS = ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca'];
 
   // Formatter les données pour une meilleure lisibilité
   const formatRegionName = (region: string | null) => {
@@ -87,11 +66,17 @@ export function GeographicStatisticsComponent({ geographicStatistics }: Geograph
     return typeMap[type] || type;
   };
 
+  // Calculate totals
+  const totalNationalities = geographicStatistics.stats_by_nationality.length;
+  const totalRegions = geographicStatistics.stats_by_region.filter(r => r.region).length;
+  const totalPrefectures = geographicStatistics.stats_by_prefecture.filter(p => p.prefecture).length;
+  const totalRequestTypes = geographicStatistics.stats_by_request_type.filter(r => r.type_demande).length;
+
   // Préparation des données pour les graphiques
   const prepareNationalityData = () => {
-    return geographicStatistics.stats_by_nationality.map((item, index) => ({
-      ...item,
-      fill: COLORS[index % COLORS.length]
+    return geographicStatistics.stats_by_nationality.map((item) => ({
+      name: formatNationalityName(item.nationality),
+      total: item.total
     }));
   };
 
@@ -103,11 +88,13 @@ export function GeographicStatisticsComponent({ geographicStatistics }: Geograph
   };
 
   const preparePrefectureData = () => {
-    return geographicStatistics.stats_by_prefecture.map(item => ({
-      name: formatPrefectureName(item.prefecture),
-      region: formatRegionName(item.region),
-      total: item.total
-    }));
+    return geographicStatistics.stats_by_prefecture
+      .slice(0, 10) // Limit to top 10 for better readability
+      .map(item => ({
+        name: formatPrefectureName(item.prefecture),
+        region: formatRegionName(item.region),
+        total: item.total
+      }));
   };
 
   const prepareRequestTypeData = () => {
@@ -118,280 +105,182 @@ export function GeographicStatisticsComponent({ geographicStatistics }: Geograph
   };
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
-      <h2 className="text-2xl font-bold dark:text-white text-gray-900 mb-4">Statistiques Géographiques</h2>
-      
-      {/* Carte de résumé des nationalités */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <motion.div variants={childVariants}>
-          <Card className={cn(
-            "backdrop-blur-sm transition-colors duration-300",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={cn(
-                "text-sm font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Nationalités
-              </CardTitle>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-cyan-500/10 bg-cyan-500/20"
-              )}>
-                <Globe className={cn(
-                  "h-5 w-5",
-                  "dark:text-cyan-400 text-cyan-600"
-                )}/>
+    <div className="space-y-8">
+      {/* Modern Gradient Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 p-8 shadow-2xl"
+      >
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+            <Globe className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-white">Statistiques Géographiques</h2>
+            <p className="text-white/80 text-lg">Répartition territoriale et démographique</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Summary Cards */}
+      <div className="grid gap-6 md:grid-cols-3 grid-cols-1">
+        {/* Nationalities Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, type: "spring", stiffness: 100 }}
+          className="group"
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative z-10 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="rounded-lg bg-white/20 p-2 backdrop-blur-sm">
+                  <Globe className="h-6 w-6 text-white" />
+                </div>
+                <TrendingUp className="h-5 w-5 text-white/70" />
               </div>
+              <CardTitle className="text-white text-lg font-semibold">Nationalités</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className={cn(
-                "text-2xl font-bold",
-                "dark:text-white text-gray-900"
-              )}>
-                {geographicStatistics.stats_by_nationality.length}
-              </div>
-              <div className={cn(
-                "flex items-center text-xs mt-1",
-                'dark:text-gray-400 text-gray-600'
-              )}>
-                <span>Types de nationalités</span>
-              </div>
+            <CardContent className="relative z-10 pt-0">
+              <div className="text-3xl font-bold text-white mb-2">{totalNationalities}</div>
+              <p className="text-white/80 text-sm">Types de nationalités</p>
             </CardContent>
           </Card>
         </motion.div>
-        
-        <motion.div variants={childVariants}>
-          <Card className={cn(
-            "backdrop-blur-sm transition-colors duration-300",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={cn(
-                "text-sm font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Régions
-              </CardTitle>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-emerald-500/10 bg-emerald-500/20"
-              )}>
-                <MapPin className={cn(
-                  "h-5 w-5",
-                  "dark:text-emerald-400 text-emerald-600"
-                )}/>
+
+        {/* Regions Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
+          className="group"
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative z-10 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="rounded-lg bg-white/20 p-2 backdrop-blur-sm">
+                  <MapPin className="h-6 w-6 text-white" />
+                </div>
+                <Map className="h-5 w-5 text-white/70" />
               </div>
+              <CardTitle className="text-white text-lg font-semibold">Régions</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className={cn(
-                "text-2xl font-bold",
-                "dark:text-white text-gray-900"
-              )}>
-                {geographicStatistics.stats_by_region.filter(r => r.region).length}
-              </div>
-              <div className={cn(
-                "flex items-center text-xs mt-1",
-                'dark:text-gray-400 text-gray-600'
-              )}>
-                <span>Régions représentées</span>
-              </div>
+            <CardContent className="relative z-10 pt-0">
+              <div className="text-3xl font-bold text-white mb-2">{totalRegions}</div>
+              <p className="text-white/80 text-sm">Régions représentées</p>
             </CardContent>
           </Card>
         </motion.div>
-        
-        <motion.div variants={childVariants}>
-          <Card className={cn(
-            "backdrop-blur-sm transition-colors duration-300",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20",
-            "dark:hover:bg-gray-800/50 hover:bg-gray-50/50"
-          )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={cn(
-                "text-sm font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Types de demandes
-              </CardTitle>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                "dark:bg-purple-500/10 bg-purple-500/20"
-              )}>
-                <FileText className={cn(
-                  "h-5 w-5",
-                  "dark:text-purple-400 text-purple-600"
-                )}/>
+
+        {/* Prefectures Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 100 }}
+          className="group"
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative z-10 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="rounded-lg bg-white/20 p-2 backdrop-blur-sm">
+                  <Map className="h-6 w-6 text-white" />
+                </div>
+                <Users className="h-5 w-5 text-white/70" />
               </div>
+              <CardTitle className="text-white text-lg font-semibold">Préfectures</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className={cn(
-                "text-2xl font-bold",
-                "dark:text-white text-gray-900"
-              )}>
-                {geographicStatistics.stats_by_request_type.filter(r => r.type_demande).length}
-              </div>
-              <div className={cn(
-                "flex items-center text-xs mt-1",
-                'dark:text-gray-400 text-gray-600'
-              )}>
-                <span>Types de demandes</span>
-              </div>
+            <CardContent className="relative z-10 pt-0">
+              <div className="text-3xl font-bold text-white mb-2">{totalPrefectures}</div>
+              <p className="text-white/80 text-sm">Préfectures actives</p>
             </CardContent>
           </Card>
         </motion.div>
+
+
       </div>
-      
-      {/* Graphiques détaillés */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Nationalités */}
-        <motion.div variants={childVariants} className="col-span-1">
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader>
-              <CardTitle className={cn(
-                "text-lg font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Répartition par Nationalité
-              </CardTitle>
+
+      {/* Charts Section - Top Row */}
+      <div className="grid gap-8 lg:grid-cols-2 grid-cols-1">
+        {/* Nationality Chart */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.5, type: "spring", stiffness: 100 }}
+        >
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-2">
+                  <Globe className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Répartition par Nationalité</CardTitle>
+                  <CardDescription className="text-sm">Distribution des nationalités</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
+              <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  {geographicStatistics.stats_by_nationality && geographicStatistics.stats_by_nationality.length > 0 ? (
+                  {geographicStatistics.stats_by_nationality.length > 0 ? (
                     <PieChart>
                       <Pie
                         data={prepareNationalityData()}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        paddingAngle={5}
-                        dataKey="total"
-                        nameKey="nationality"
-                        label={({ nationality, total, percent }) => 
-                          `${formatNationalityName(nationality)} (${(percent * 100).toFixed(0)}%)`
-                        }
-                      >
-                        {prepareNationalityData().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: any) => [`${value} dossiers`, '']}
-                        contentStyle={{ 
-                          backgroundColor: "hsl(var(--background))",
-                          borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
-                        itemStyle={{ color: 'var(--foreground)' }}
-                        labelStyle={{ color: 'var(--foreground)' }}
-                      />
-                      <Legend 
-                        formatter={(value) => formatNationalityName(value)} 
-                        layout="vertical"
-                        verticalAlign="middle"
-                        align="right"
-                        wrapperStyle={{
-                          fontSize: '12px',
-                          color: 'var(--foreground)'
-                        }}
-                      />
-                    </PieChart>
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      {geographicStatistics.stats_by_nationality?.length === 0 
-                        ? "Aucune donnée disponible" 
-                        : "Chargement des données..."}
-                    </div>
-                  )}
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-             {/* Types de demandes */}
-             <motion.div variants={childVariants} className="col-span-1">
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader>
-              <CardTitle className={cn(
-                "text-lg font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Répartition par Type de Demande
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  {geographicStatistics.stats_by_request_type && geographicStatistics.stats_by_request_type.length > 0 ? (
-                    <PieChart>
-                      <Pie
-                        data={prepareRequestTypeData()}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        paddingAngle={5}
                         dataKey="total"
                         nameKey="name"
-                        label={({ name, total, percent }) => 
-                          `${name} (${(percent * 100).toFixed(0)}%)`
-                        }
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        innerRadius={60}
+                        paddingAngle={3}
                       >
-                        {prepareRequestTypeData().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {prepareNationalityData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={NATIONALITY_COLORS[index % NATIONALITY_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        formatter={(value: any) => [`${value} dossiers`, '']}
+                      <Tooltip
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} personnes`,
+                          props.payload?.name || name
+                        ]}
+                        labelFormatter={(label: any) => ``}
+                        cursor={false}
                         contentStyle={{ 
                           backgroundColor: "hsl(var(--background))",
                           borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
                         }}
-                        itemStyle={{ color: 'var(--foreground)' }}
-                        labelStyle={{ color: 'var(--foreground)' }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
                       />
                       <Legend 
-                        formatter={(value) => value} 
-                        layout="vertical"
-                        verticalAlign="middle"
-                        align="right"
+                        verticalAlign="bottom" 
+                        height={36}
                         wrapperStyle={{
-                          fontSize: '12px',
-                          color: 'var(--foreground)'
+                          paddingTop: '20px',
+                          fontSize: '14px'
                         }}
                       />
                     </PieChart>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      {geographicStatistics.stats_by_request_type?.length === 0 
-                        ? "Aucune donnée disponible" 
-                        : "Chargement des données..."}
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée de nationalité disponible</p>
+                      </div>
                     </div>
                   )}
                 </ResponsiveContainer>
@@ -400,68 +289,91 @@ export function GeographicStatisticsComponent({ geographicStatistics }: Geograph
           </Card>
         </motion.div>
 
-        {/* Régions */}
-        <motion.div variants={childVariants} className="col-span-1">
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader>
-              <CardTitle className={cn(
-                "text-lg font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Répartition par Région
-              </CardTitle>
+        {/* Region Chart */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 100 }}
+        >
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 p-2">
+                  <MapPin className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Répartition par Région</CardTitle>
+                  <CardDescription className="text-sm">Distribution géographique</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
+              <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  {geographicStatistics.stats_by_region && geographicStatistics.stats_by_region.length > 0 ? (
-                    <BarChart 
+                  {geographicStatistics.stats_by_region.length > 0 ? (
+                    <BarChart
                       data={prepareRegionData()}
-                      layout="vertical"
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
-                      <CartesianGrid 
-                        strokeDasharray="3 3" 
-                        className="dark:stroke-gray-700 stroke-gray-200" 
-                      />
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                       <XAxis 
-                        type="number"
-                        className="dark:fill-gray-400 fill-gray-600"
+                        dataKey="name" 
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        tickLine={false}
+                        axisLine={false}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
                       />
                       <YAxis 
-                        dataKey="name" 
-                        type="category"
-                        className="dark:fill-gray-400 fill-gray-600"
-                        width={120}
-                        tick={{ fontSize: 12 }}
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        tickLine={false}
+                        axisLine={false}
                       />
-                      <Tooltip 
-                        formatter={(value: any) => [`${value} dossiers`, 'Total']}
+                      <Tooltip
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} personnes`,
+                          props.payload?.name || name
+                        ]}
+                        labelFormatter={(label: any) => label}
+                        cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
                         contentStyle={{ 
                           backgroundColor: "hsl(var(--background))",
                           borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
                         }}
-                        cursor={false}
-                        itemStyle={{ color: 'var(--foreground)' }}
-                        labelStyle={{ color: 'var(--foreground)' }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
                       />
-                      <Legend />
                       <Bar 
                         dataKey="total" 
-                        name="Nombre de dossiers" 
-                        className="dark:fill-emerald-400 fill-emerald-600" 
-                      />
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {prepareRegionData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={REGION_COLORS[index % REGION_COLORS.length]} />
+                        ))}
+                        <LabelList
+                          dataKey="total"
+                          position="top"
+                          fill="hsl(var(--foreground))"
+                          fontSize={12}
+                          fontWeight="bold"
+                        />
+                      </Bar>
                     </BarChart>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      {geographicStatistics.stats_by_region?.length === 0 
-                        ? "Aucune donnée disponible" 
-                        : "Chargement des données..."}
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée de région disponible</p>
+                      </div>
                     </div>
                   )}
                 </ResponsiveContainer>
@@ -469,69 +381,89 @@ export function GeographicStatisticsComponent({ geographicStatistics }: Geograph
             </CardContent>
           </Card>
         </motion.div>
+      </div>
 
-        {/* Préfectures */}
-        <motion.div variants={childVariants} className="col-span-1">
-          <Card className={cn(
-            "backdrop-blur-sm",
-            "dark:bg-gray-900/50 bg-white/50",
-            "dark:border-cyan-900/20 border-cyan-200/20"
-          )}>
-            <CardHeader>
-              <CardTitle className={cn(
-                "text-lg font-medium",
-                "dark:text-gray-300 text-gray-600"
-              )}>
-                Répartition par Préfecture
-              </CardTitle>
+      {/* Charts Section - Bottom Row */}
+      <div className="grid gap-8 lg:grid-cols-1 grid-cols-1">
+        {/* Prefecture Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7, type: "spring", stiffness: 100 }}
+        >
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 p-2">
+                  <Map className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Top Préfectures</CardTitle>
+                  <CardDescription className="text-sm">Les préfectures les plus représentées</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
+              <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  {geographicStatistics.stats_by_prefecture && geographicStatistics.stats_by_prefecture.length > 0 ? (
-                    <BarChart 
-                      data={preparePrefectureData()}
+                  {geographicStatistics.stats_by_prefecture.length > 0 ? (
+                    <BarChart
                       layout="vertical"
+                      data={preparePrefectureData()}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
-                      <CartesianGrid 
-                        strokeDasharray="3 3" 
-                        className="dark:stroke-gray-700 stroke-gray-200" 
-                      />
-                      <XAxis 
-                        type="number"
-                        className="dark:fill-gray-400 fill-gray-600"
-                      />
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis type="number" tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }} />
                       <YAxis 
                         dataKey="name" 
-                        type="category"
-                        className="dark:fill-gray-400 fill-gray-600"
+                        type="category" 
+                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
                         width={120}
-                        tick={{ fontSize: 12 }}
                       />
-                      <Tooltip 
-                        formatter={(value: any) => [`${value} dossiers`, 'Total']}
+                      <Tooltip
+                        formatter={(value: any, name: any, props: any) => [
+                          `${value} personnes`,
+                          props.payload?.name || name
+                        ]}
+                        labelFormatter={(label: any) => label}
+                        cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
                         contentStyle={{ 
                           backgroundColor: "hsl(var(--background))",
                           borderColor: "hsl(var(--border))",
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '500'
                         }}
-                        cursor={false}
-                        itemStyle={{ color: 'var(--foreground)' }}
-                        labelStyle={{ color: 'var(--foreground)' }}
+                        itemStyle={{
+                          color: "hsl(var(--foreground))",
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
                       />
-                      <Legend />
                       <Bar 
                         dataKey="total" 
-                        name="Nombre de dossiers" 
-                        className="dark:fill-blue-400 fill-blue-600" 
-                      />
+                        radius={[0, 4, 4, 0]}
+                      >
+                        {preparePrefectureData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PREFECTURE_COLORS[index % PREFECTURE_COLORS.length]} />
+                        ))}
+                        <LabelList 
+                          dataKey="total" 
+                          position="right" 
+                          fill="hsl(var(--foreground))"
+                          fontSize={12}
+                          fontWeight="bold"
+                        />
+                      </Bar>
                     </BarChart>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
-                      {geographicStatistics.stats_by_prefecture?.length === 0 
-                        ? "Aucune donnée disponible" 
-                        : "Chargement des données..."}
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="text-center">
+                        <Map className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Aucune donnée de préfecture disponible</p>
+                      </div>
                     </div>
                   )}
                 </ResponsiveContainer>
@@ -540,8 +472,8 @@ export function GeographicStatisticsComponent({ geographicStatistics }: Geograph
           </Card>
         </motion.div>
 
-   
+
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -13,9 +13,9 @@ import { FileText, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import type { MerchantEnrollementHistory, UserDataForStatistic } from "@/types";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import IFramePdfDialog from "../merchants/(dialog)/IFramePdfDialog";
-import { getStatusColor, statusMap } from "@/types/const";
+import { getStatusColor, paymentStatusMap, paymentType, statusMap } from "@/types/const";
 
 interface InfoDialogProps {
   merchant: MerchantEnrollementHistory;
@@ -34,6 +34,10 @@ export function InfoDialog({ merchant }: InfoDialogProps) {
     setSelectedDoc(document);
     setIsPdfOpen(true);
   };
+
+  useEffect(()=>{
+    console.log(merchant)
+  })
 
   return (
     <Dialog>
@@ -125,8 +129,7 @@ export function InfoDialog({ merchant }: InfoDialogProps) {
               )}>
                 <h4 className="font-semibold mb-3 text-lg dark:text-cyan-400 text-cyan-600">Historique des actions</h4>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Créé par:</span> {renderUserInfo(merchant.created_by)}</p>
-                  <p><span className="font-medium">Soumis par:</span> {renderUserInfo(merchant.submited_by)}</p>
+                  <p><span className="font-medium">Soumis par:</span> {renderUserInfo(merchant.created_by)}</p>
                   <p><span className="font-medium">Validé par:</span> {renderUserInfo(merchant.validated_by)}</p>
                   <p><span className="font-medium">Imprimé par:</span> {renderUserInfo(merchant.printed_by)}</p>
                   <p><span className="font-medium">Payé par:</span> {renderUserInfo(merchant.payed_by)}</p>
@@ -146,7 +149,7 @@ export function InfoDialog({ merchant }: InfoDialogProps) {
             <div className="space-y-2">
               {merchant.payments && merchant.payments.length > 0 ? (
                 merchant.payments.map((payment, index) => (
-                  <p key={index}><span className="font-medium">Statut du paiement {index + 1}:</span> {payment.status}</p>
+                  <p key={index}><span className="font-medium">{index + 1} - Statut du paiement :</span> { paymentStatusMap[payment.status] || payment.status} {payment.status === paymentType.PAID ? 'le ' + new Date(payment.created_at).toLocaleDateString() : null} </p>
                 ))
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 italic">Aucun paiement enregistré</p>
