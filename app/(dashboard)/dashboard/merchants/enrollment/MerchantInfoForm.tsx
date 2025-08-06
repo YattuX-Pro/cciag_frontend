@@ -58,6 +58,7 @@ import AddSubSectorDialog from "./(dialog)/AddSubSectorDialog";
 import AddAddressDialog from "./(dialog)/AddAddressDialog";
 import Signature from "./(component)/Signature";
 import WebcamCapture from "./(component)/WebcamCapture";
+import { DEFAULT_AVATAR, DEFAULT_SIGNATURE } from "@/types/const";
 
 interface MerchantInfoFormProps {
   onSubmit: (data: MerchantEnrollment) => void;
@@ -78,6 +79,8 @@ export default function MerchantInfoForm({
   const [showWebcam, setShowWebcam] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [isSignatureSaved, setIsSignatureSaved] = useState(false);
+
+  // Images par défaut
   const signaturePadRef = useRef<SignatureCanvas>(null);
   const [openSectors, setOpenSectors] = useState(false);
   const [openSubSectors, setOpenSubSectors] = useState(false);
@@ -292,21 +295,21 @@ export default function MerchantInfoForm({
   const handleFormSubmit = async (data: MerchantEnrollment) => {
     let hasError = false;
 
-    if (!profilePreview) {
-      setError("profile_photo", {
-        type: "manual",
-        message: "La photo de profil est requise",
-      });
-      hasError = true;
-    }
+    // if (!profilePreview) {
+    //   setError("profile_photo", {
+    //     type: "manual",
+    //     message: "La photo de profil est requise",
+    //   });
+    //   hasError = true;
+    // }
 
-    if (!isSignatureSaved) {
-      setError("signature_photo", {
-        type: "manual",
-        message: "La signature est requise",
-      });
-      hasError = true;
-    }
+    // if (!isSignatureSaved) {
+    //   setError("signature_photo", {
+    //     type: "manual",
+    //     message: "La signature est requise",
+    //   });
+    //   hasError = true;
+    // }
 
     if (!selectedSectors.length) {
       setError("activities", {
@@ -413,8 +416,8 @@ export default function MerchantInfoForm({
 
     const formData = {
       ...getValues(),
-      profile_photo: profilePreview,
-      signature_photo: signaturePreview,
+      profile_photo: profilePreview || DEFAULT_AVATAR,
+      signature_photo: signaturePreview || DEFAULT_SIGNATURE,
       activities: selectedSectors,
       sub_activities: selectedSubSectors,
     };
@@ -711,12 +714,19 @@ export default function MerchantInfoForm({
                   </div>
                 ) : (
                   <div className="space-y-2">
+                    <div className="relative w-32 h-32 mx-auto mb-2">
+                      <img
+                        src={DEFAULT_AVATAR}
+                        alt="Avatar par défaut"
+                        className="w-full h-full object-cover rounded-lg opacity-50"
+                      />
+                    </div>
                     <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
                       Glissez une image ici ou cliquez pour sélectionner
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      PNG, JPG jusqu'à 5MB
+                      PNG, JPG jusqu'à 5MB (Avatar par défaut utilisé si aucune image)
                     </p>
                   </div>
                 )}
@@ -943,6 +953,19 @@ export default function MerchantInfoForm({
               }
             }}
           />
+          
+          {!signaturePreview && !isSignatureSaved && (
+            <div className="mt-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+              <img
+                src={DEFAULT_SIGNATURE}
+                alt="Signature par défaut"
+                className="w-full h-24 object-contain opacity-50"
+              />
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Signature par défaut utilisée si aucune signature n'est fournie
+              </p>
+            </div>
+          )}
 
           {errors.signature_photo && (
             <p className="text-sm text-red-500">
@@ -965,7 +988,7 @@ export default function MerchantInfoForm({
         <Button
           type="submit"
           disabled={
-            !profilePreview || !isSignatureSaved || isSubmitting || !isValid
+            isSubmitting || !isValid
           }
           className="bg-cyan-600 hover:bg-cyan-700"
         >
