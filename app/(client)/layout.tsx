@@ -86,7 +86,7 @@ export default function DashboardLayout({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className={cn(
-                "text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent",
+                "text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent",
                 "dark:from-cyan-400 dark:to-cyan-200",
                 "from-cyan-600 to-cyan-400",
               )}
