@@ -93,7 +93,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         addField('Adresse', merchant?.address?.name || 'N/A', 4);
         addField('Telephone', merchant?.user?.phone_number || 'N/A', 5);
       }else{
-        addField('Raison sociale', merchant?.entreprise?.sigle || 'N/A', 0);
+        addField('Raison sociale', merchant?.entreprise?.sigle || merchant?.entreprise?.nom || 'N/A', 0);
         addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : 'N/A', 1);
         addField('Adresse', merchant?.address?.name || 'N/A', 2);
         addField('Telephone', merchant?.user?.phone_number || 'N/A', 3);
