@@ -22,7 +22,7 @@ import { motion } from 'framer-motion';
 
 const navigation = [
   
-  { name: 'Dashboard', href: urls.dashboard, icon: AlignEndHorizontal, role: [roles.admin, roles.operation, roles.validation, roles.impression, roles.payment]},
+  { name: 'Dashboard', href: urls.dashboard, icon: AlignEndHorizontal, role: [roles.admin,roles.validation]},
   { name: 'Utilisateurs', href: urls.users, icon: Users, role: [roles.admin]},
   { name: 'Enrollement', href: urls.merchants, icon: Store, role: [roles.operation, roles.admin]},
   { name: 'Paiements', href: urls.merchant_payments, icon: FileSignatureIcon, role: [roles.admin, roles.payment] },

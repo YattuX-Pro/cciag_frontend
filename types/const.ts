@@ -54,7 +54,7 @@ export const user_status = {
 export const roleBasedRoutes = {
     admin: [urls.dashboard, urls.cards_history, urls.id_cards, urls.merchants, urls.merchants_review, urls.users, urls.merchant_payments, urls.configuration],
     operation: [urls.merchants,urls.merchant_payments],
-    validation: [urls.merchants_review, urls.dashboard],
+    validation: [urls.dashboard, urls.merchants_review],
     impression: [urls.id_cards],
     client: [urls.espace_client], 
     payment: [urls.merchant_payments],

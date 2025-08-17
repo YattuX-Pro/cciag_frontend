@@ -172,7 +172,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       
       // Ajouter le type d'adhérent en haut à gauche avec couleur verte
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
+      doc.setFontSize(8);
       doc.setTextColor(17, 152, 111); // Couleur verte #11986f
       const typeAdherentText = merchant?.tarification_adhesion?.type_adhesion_display?.toUpperCase();
       doc.text(typeAdherentText, 3, 3 + 3); // Position: 3mm des bords gauche et haut
