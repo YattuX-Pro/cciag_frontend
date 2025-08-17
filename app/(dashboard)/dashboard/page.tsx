@@ -142,7 +142,7 @@ export default function DashboardPage() {
                 <span className="font-bold">Finance</span>
               </TabsTrigger>
               
-              {role === roles.admin && (<TabsTrigger 
+              <TabsTrigger 
                 value="enterprise" 
                 className="group relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-2xl data-[state=active]:shadow-violet-500/25 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:scale-[1.02]"
               >
@@ -150,7 +150,7 @@ export default function DashboardPage() {
                   <Building2 className="h-4 w-4 text-violet-600 dark:text-violet-400 group-data-[state=active]:text-white" />
                 </div>
                 <span className="font-bold">Entreprise</span>
-              </TabsTrigger>)}
+              </TabsTrigger>
               
               <TabsTrigger 
                 value="geographic" 
