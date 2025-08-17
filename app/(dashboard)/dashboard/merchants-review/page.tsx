@@ -82,7 +82,7 @@ export default function MerchantReviewPage() {
       console.error(err);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les commerçants",
+        description: "Impossible de charger les adhérants",
         variant: "destructive",
       });
     } finally {
@@ -96,8 +96,8 @@ export default function MerchantReviewPage() {
 
   const handleApprove = async (merchant: MerchantEnrollment) => {
     showConfirmation({
-      title: "Approuver le commerçant",
-      description: `Êtes-vous sûr de vouloir approuver le commerçant ${merchant.id_card} ?`,
+      title: "Approuver l'adhérant",
+      description: `Êtes-vous sûr de vouloir approuver l'adhérant ${merchant.id_card} ?`,
       actionType: 'approve',
       onConfirm: async () => {
         try {
@@ -107,7 +107,7 @@ export default function MerchantReviewPage() {
           await updateMerchant(merchant, merchant.id);
           toast({
             title: "Succès",
-            description: "Le commerçant a été approuvé avec succès",
+            description: "L'adhérant a été approuvé avec succès",
             variant: "default",
           });
           loadMerchants();
@@ -115,7 +115,7 @@ export default function MerchantReviewPage() {
           console.error(err);
           toast({
             title: "Erreur",
-            description: "Impossible d'approuver le commerçant",
+            description: "Impossible d'approuver l'adhérant",
             variant: "destructive",
           });
         }
@@ -125,8 +125,8 @@ export default function MerchantReviewPage() {
 
   const handleDeny = async (merchant: MerchantEnrollment) => {
     showConfirmation({
-      title: "Refuser le commerçant",
-      description: `Êtes-vous sûr de vouloir refuser le commerçant ${merchant.id_card} ?`,
+      title: "Refuser l'adhérant",
+      description: `Êtes-vous sûr de vouloir refuser l'adhérant ${merchant.id_card} ?`,
       actionType: 'deny',
       onConfirm: async () => {
         try {
@@ -136,7 +136,7 @@ export default function MerchantReviewPage() {
           await updateMerchant(merchant, merchant.id);
           toast({
             title: "Succès",
-            description: "Le commerçant a été refusé",
+            description: "L'adhérant a été refusé",
             variant: "default",
           });
           loadMerchants();
@@ -144,7 +144,7 @@ export default function MerchantReviewPage() {
           console.error(err);
           toast({
             title: "Erreur",
-            description: "Impossible de refuser le commerçant",
+            description: "Impossible de refuser l'adhérant",
             variant: "destructive",
           });
         }
@@ -154,8 +154,8 @@ export default function MerchantReviewPage() {
 
   const handleSuspended = (merchant: MerchantEnrollment) => {
     showConfirmation({
-      title: "Supendre le commerçant",
-      description: `Êtes-vous sûr de vouloir supendre le commerçant ${merchant.id_card} ?`,
+      title: "Supendre l'adhérant",
+      description: `Êtes-vous sûr de vouloir supendre l'adhérant ${merchant.id_card} ?`,
       actionType: 'deny',
       onConfirm: async () => {
         try {
@@ -165,7 +165,7 @@ export default function MerchantReviewPage() {
           await updateMerchant(merchant, merchant.id);
           toast({
             title: "Succès",
-            description: "Le commerçant a été suspendu",
+            description: "L'adhérant a été suspendu",
             variant: "default",
           });
           loadMerchants();
@@ -173,7 +173,7 @@ export default function MerchantReviewPage() {
           console.error(err);
           toast({
             title: "Erreur",
-            description: "Impossible de suspendre le commerçant",
+            description: "Impossible de suspendre l'adhérant",
             variant: "destructive",
           });
         }
@@ -183,8 +183,8 @@ export default function MerchantReviewPage() {
 
   const handleReactivate = (merchant: MerchantEnrollment) => {
     showConfirmation({
-      title: "Réactiver le commerçant",
-      description: `Êtes-vous sûr de vouloir réativer le commerçant ${merchant.id_card} ?`,
+      title: "Réactiver l'adhérant",
+      description: `Êtes-vous sûr de vouloir réactiver l'adhérant ${merchant.id_card} ?`,
       actionType: 'deny',
       onConfirm: async () => {
         try {
@@ -194,7 +194,7 @@ export default function MerchantReviewPage() {
           await updateMerchant(merchant, merchant.id);
           toast({
             title: "Succès",
-            description: "Le commerçant a été réactivé",
+            description: "L'adhérant a été réactivé",
             variant: "default",
           });
           loadMerchants();
@@ -202,7 +202,7 @@ export default function MerchantReviewPage() {
           console.error(err);
           toast({
             title: "Erreur",
-            description: "Impossible de suspendre le commerçant",
+            description: "Impossible de réactiver l'adhérant",
             variant: "destructive",
           });
         }
@@ -231,7 +231,7 @@ export default function MerchantReviewPage() {
           "dark:from-cyan-400 dark:to-cyan-200",
           "from-cyan-600 to-cyan-400"
         )}>
-          Dossier des Commerçants
+          Dossier des Adhérants
         </h1>
       </div>
 
@@ -293,7 +293,7 @@ export default function MerchantReviewPage() {
                 <MerchantCardSkeleton key={index} />
               ))
             ) : data.length === 0 ? (
-              // Message quand il n'y a pas de commerçants
+              // Message quand il n'y a pas d'adhérants
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
                 <Store className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
@@ -306,7 +306,7 @@ export default function MerchantReviewPage() {
                 </p>
               </div>
             ) : (
-              // Afficher les cartes des commerçants
+              // Afficher les cartes des adhérants
               data.map((merchant) => (
                 <Card key={merchant.id} className={cn(
                   "dark:bg-gray-800/50 bg-white",

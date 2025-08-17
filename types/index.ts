@@ -72,7 +72,7 @@ export interface Address {
 }
 
 export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED';
-export type PaymentType = 'CASH' | 'ORANGE_MONEY';
+export type PaymentType = 'CASH' | 'ORANGE_MONEY' | 'BANK'; 
 
 export interface MerchantPayment {
   id?: number;
@@ -84,6 +84,9 @@ export interface MerchantPayment {
   status?: PaymentStatus;
   payment_date?: string | null;
   paid_by?: UserData;
+  bank?: string;
+  banque_id?: number;
+  banque?: Banque;
   created_at?: string;
   updated_at?: string;
 }
@@ -283,6 +286,7 @@ export interface Entreprise {
   id: number;
   merchant: SimpleMerchant;
   nom: string;
+  sigle?: string;
   taille: 'TPE' | 'PME' | 'GE';
   taille_display: string;
   date_creation: string;
@@ -303,6 +307,14 @@ export interface Entreprise {
   numero_nif: string;
   adresse: string;
   commentaire: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Banque {
+  id: number;
+  nom: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

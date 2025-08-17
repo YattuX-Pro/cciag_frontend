@@ -128,7 +128,7 @@ export default function CardHistoryPage() {
                 )}
               />
               <Input
-                placeholder="Rechercher des commerçants..."
+                placeholder="Rechercher des adhérents..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={cn(

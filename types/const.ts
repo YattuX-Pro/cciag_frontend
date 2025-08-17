@@ -53,11 +53,11 @@ export const user_status = {
 
 export const roleBasedRoutes = {
     admin: [urls.dashboard, urls.cards_history, urls.id_cards, urls.merchants, urls.merchants_review, urls.users, urls.merchant_payments, urls.configuration],
-    operation: [urls.merchants, urls.dashboard,urls.merchant_payments],
+    operation: [urls.merchants,urls.merchant_payments],
     validation: [urls.merchants_review, urls.dashboard],
-    impression: [urls.id_cards, urls.dashboard],
+    impression: [urls.id_cards],
     client: [urls.espace_client], 
-    payment: [urls.merchant_payments, urls.dashboard],
+    payment: [urls.merchant_payments],
   };
 
 export const protectedRoutes = [urls.dashboard, urls.espace_client]

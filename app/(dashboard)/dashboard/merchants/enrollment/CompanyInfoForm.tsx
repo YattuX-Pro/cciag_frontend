@@ -121,6 +121,19 @@ export default function CompanyInfoForm({
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="sigle" className="text-cyan-700 dark:text-cyan-300">Sigle de l&apos;entreprise</Label>
+          <Input
+            id="sigle"
+            {...register("sigle")}
+            placeholder="Sigle ou abréviation (optionnel)"
+            className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Utilisé si le nom de l&apos;entreprise est trop long
+          </p>
+        </div>
+
+        <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Taille de l&apos;entreprise</Label>
           <Select 
             value={watch("taille") || ""}

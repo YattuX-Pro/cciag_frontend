@@ -80,7 +80,7 @@ export default function MerchantReviewPage() {
       console.error(err);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les commerçants",
+        description: "Impossible de charger les adhérents",
         variant: "destructive",
       });
     } finally {

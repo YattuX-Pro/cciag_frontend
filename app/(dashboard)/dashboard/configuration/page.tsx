@@ -26,9 +26,10 @@ import { sousActiviteColumns } from './columns/sous-activite-columns';
 import { regionColumns as baseRegionColumns } from './columns/region-columns';
 import { workPositionColumns } from './columns/work-position-columns';
 import { nationalityColumns } from './columns/nationality-columns';
+import { banqueColumns } from './columns/banque-columns';
 
 // Import types from the central types file
-import { Prefecture, SubPrefecture, Address, Activity, SubActivity, Region, WorkPosition, Nationality } from '@/types';
+import { Prefecture, SubPrefecture, Address, Activity, SubActivity, Region, WorkPosition, Nationality, Banque } from '@/types';
 
 // Import API functions
 import { 
@@ -39,17 +40,19 @@ import {
   getSubActivities, 
   getRegions,
   getWorkPositions,
-  getNationalities
+  getNationalities,
+  getBanques
 } from '@/fetcher/api-fetcher';
 import AddWorkPositionDialog from './(dialog)/AddWorkPositionDialog';
 import AddNationalityDialog from './(dialog)/AddNationalityDialog';
+import AddBanqueDialog from './(dialog)/AddBanqueDialog';
 
 export default function ConfigurationPage() {
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState('region');
+  const [activeTab, setActiveTab] = useState('banque');
 
   // Column definitions with actions
   const prefectureColumnsWithActions = [
@@ -90,6 +93,7 @@ export default function ConfigurationPage() {
   const [regions, setRegions] = useState<Region[]>([]);
   const [workPositions, setWorkPositions] = useState<WorkPosition[]>([]);
   const [nationalities, setNationalities] = useState<Nationality[]>([]);
+  const [banques, setBanques] = useState<Banque[]>([]);
 
   // Loading states
   const [loadingPrefectures, setLoadingPrefectures] = useState(false);
@@ -100,6 +104,7 @@ export default function ConfigurationPage() {
   const [loadingRegions, setLoadingRegions] = useState(false);
   const [loadingWorkPositions, setLoadingWorkPositions] = useState(false);
   const [loadingNationalities, setLoadingNationalities] = useState(false);
+  const [loadingBanques, setLoadingBanques] = useState(false);
 
   // Pagination states
   const [prefecturesCount, setPrefecturesCount] = useState(0);
@@ -133,6 +138,10 @@ export default function ConfigurationPage() {
   const [nationalitiesCount, setNationalitiesCount] = useState(0);
   const [nationalitiesNext, setNationalitiesNext] = useState<string | null>(null);
   const [nationalitiesPrevious, setNationalitiesPrevious] = useState<string | null>(null);
+
+  const [banquesCount, setBanquesCount] = useState(0);
+  const [banquesNext, setBanquesNext] = useState<string | null>(null);
+  const [banquesPrevious, setBanquesPrevious] = useState<string | null>(null);
 
   // Load prefectures
 const loadPrefectures = async (url?: string) => {
@@ -334,6 +343,31 @@ const loadNationalities = async (url?: string) => {
   }
 };
 
+// Load banques
+const loadBanques = async (url?: string) => {
+  setLoadingBanques(true);
+  try {
+    const params = url
+      ? { url }
+      : { search: searchTerm ? searchTerm : "" };
+    
+    const response = await getBanques(params);
+    setBanques(response.results);
+    setBanquesNext(response.next);
+    setBanquesPrevious(response.previous);
+    setBanquesCount(response.count);
+  } catch (err) {
+    console.error(err);
+    toast({
+      title: "Erreur",
+      description: "Impossible de charger les banques",
+      variant: "destructive",
+    });
+  } finally {
+    setLoadingBanques(false);
+  }
+};
+
   // Load data based on active tab
   useEffect(() => {
     switch (activeTab) {
@@ -360,6 +394,9 @@ const loadNationalities = async (url?: string) => {
         break;
       case 'nationality':
         loadNationalities();
+        break;
+      case 'banque':
+        loadBanques();
         break;
     }
   }, [activeTab, searchTerm]);
@@ -412,7 +449,7 @@ const loadNationalities = async (url?: string) => {
         )}>
           <CardContent className="pt-6">
             <Tabs 
-              defaultValue="region" 
+              defaultValue="banque" 
               className="space-y-4"
               onValueChange={(value) => {
                 setActiveTab(value);
@@ -435,6 +472,7 @@ const loadNationalities = async (url?: string) => {
                     <TabsTrigger value="sous-activite" className="flex-1">Sous-activité</TabsTrigger>
                     <TabsTrigger value="work-position" className="flex-1">Poste de travail</TabsTrigger>
                     <TabsTrigger value="nationality" className="flex-1">Nationalité</TabsTrigger>
+                    <TabsTrigger value="banque" className="flex-1">Banque</TabsTrigger>
                   </motion.div>
                 </TabsList>
               </div>
@@ -1099,6 +1137,95 @@ const loadNationalities = async (url?: string) => {
                           next: nationalitiesNext,
                           previous: nationalitiesPrevious,
                           onPageChange: loadNationalities,
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+
+              {/* Banque Tab */}
+              <TabsContent value="banque">
+                <motion.div
+                  variants={tabVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="dark:bg-muted/50">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <CardTitle>Liste des banques</CardTitle>
+                      <AddBanqueDialog 
+                        onSuccess={loadBanques}
+                        trigger={
+                          <Button className="flex items-center gap-2">
+                            <Plus className="w-4 h-4" />
+                            Ajouter une banque
+                          </Button>
+                        }
+                      />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-col md:flex-row gap-4 mb-6">
+                        <div className="flex-1 relative">
+                          <Search
+                            className={cn(
+                              "absolute left-3 top-3 h-4 w-4",
+                              "dark:text-cyan-400 text-cyan-600"
+                            )}
+                          />
+                          <Input
+                            placeholder="Rechercher des banques..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={cn(
+                              "pl-9 transition-colors duration-200",
+                              "dark:bg-gray-800/50 bg-gray-50",
+                              "dark:border-cyan-900/20 border-cyan-200/20",
+                              "dark:focus:border-cyan-500 focus:border-cyan-600",
+                              "dark:focus:ring-cyan-500 focus:ring-cyan-600",
+                              "dark:placeholder-gray-400 placeholder:text-gray-500",
+                              "dark:text-gray-100 text-gray-900"
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <DataTable 
+                        data={banques} 
+                        columns={banqueColumns.filter(col => col.accessorKey !== 'id').concat([
+                          {
+                            header: "Actions",
+                            cell: (banque) => (
+                              <div className="flex justify-end space-x-2">
+                                <AddBanqueDialog
+                                  banque={banque}
+                                  isEdit={true}
+                                  onSuccess={loadBanques}
+                                  trigger={
+                                    <button
+                                      className={cn(
+                                        "px-2 py-1 rounded text-xs",
+                                        "dark:bg-cyan-500/10 bg-cyan-500/20",
+                                        "dark:text-cyan-400 text-cyan-600",
+                                        "hover:bg-cyan-500/30 dark:hover:bg-cyan-500/20"
+                                      )}
+                                    >
+                                      Modifier
+                                    </button>
+                                  }
+                                />
+                              </div>
+                            ),
+                            accessorKey: "id",
+                          },
+                        ])}
+                        loading={loadingBanques}
+                        pagination={{
+                          count: banquesCount,
+                          next: banquesNext,
+                          previous: banquesPrevious,
+                          onPageChange: loadBanques,
                         }}
                       />
                     </CardContent>

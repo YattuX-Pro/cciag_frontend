@@ -488,7 +488,7 @@ export function PaymentDialog({ payment }: InfoDialogProps) {
               </Button>
             ) : null}
 
-          {payment.status === 'PENDING'
+          {payment.status === 'PENDING' || payment.status === 'FAILED'
             ? (
               <Button
                 variant="outline"

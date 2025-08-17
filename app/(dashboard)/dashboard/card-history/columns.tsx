@@ -12,7 +12,7 @@ export const columns: Column<MerchantEnrollementHistory>[] = [
     cell: (merchant) => merchant.id_card
   },
   {
-    header: "Commerçant",
+    header: "Adherent",
     accessorKey: "user",
     cell: (merchant) => `${merchant.user?.last_name} ${merchant.user?.first_name}`,
   },

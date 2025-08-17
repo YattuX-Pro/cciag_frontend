@@ -56,9 +56,9 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.rect(0, 0, 86, 55, 'F');
       
       // Position des éléments
-      const labelX = 43; // Position pour aligner les labels à droite
-      const valueX = 44; // Position de départ des valeurs
-      const startY = 30; // Position Y de départ (ajusté pour laisser de la place au numéro en haut et décalé de 4mm vers le bas)
+      const labelX = 45; // Position pour aligner les labels à droite (déplacé de 3mm vers la gauche)
+      const valueX = 46; // Position de départ des valeurs (déplacé de 3mm vers la gauche)
+      const startY = 26; // Position Y de départ (déplacé de 3mm vers le haut)
       const lineHeight = 3; // Hauteur entre les lignes
       
       // Configuration du texte
@@ -76,9 +76,9 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       // Ajouter le numéro de carte juste au-dessus du nom
       doc.setFontSize(9); // Légèrement plus grand que le texte standard
       doc.setFont('helvetica', 'bold');
-      // Position exactement au-dessus du champ Nom
-      doc.text(`N°:`, labelX, startY - 4, { align: 'right' });
-      doc.text(`${merchant?.card_number || ''}`, valueX, startY - 4);
+      // Position exactement au-dessus du champ Nom (déplacé vers le haut de 4mm pour correspondre à l'HTML)
+      doc.text(`N°:`, labelX, startY - 5, { align: 'right' });
+      doc.text(`${merchant?.card_number || ''}`, valueX, startY - 5);
       
       // Remettre la police normale pour les autres champs
       doc.setFontSize(7);
@@ -93,11 +93,11 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         addField('Adresse', merchant?.address?.name || 'N/A', 4);
         addField('Telephone', merchant?.user?.phone_number || 'N/A', 5);
       }else{
-        addField('Raison sociale', merchant?.entreprise?.nom || 'N/A', 0);
+        addField('Raison sociale', merchant?.entreprise?.sigle || 'N/A', 0);
         addField('Activité', merchant?.activities && merchant.activities.length > 0 ? merchant.activities[0].name : 'N/A', 1);
         addField('Adresse', merchant?.address?.name || 'N/A', 2);
         addField('Telephone', merchant?.user?.phone_number || 'N/A', 3);
-        addField('Nom du representant', merchant?.user?.last_name || 'N/A', 4);
+        addField('Representant', merchant?.user?.last_name + ' ' + merchant?.user?.first_name || 'N/A', 4);
         addField('Nationalité', merchant?.nationality?.name || 'N/A', 5);
       }
     
@@ -105,7 +105,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.setFontSize(6);
       
       const currentDate = new Date();
-      const deliveryDate = format(currentDate, 'yyyy-MM-dd');
+      const deliveryDate = new Date(currentDate).toLocaleDateString();
       
       // Positionnement en bas de la carte - un peu plus bas qu'avant
       const bottomY = 53; // Position Y en bas de la carte (valeur augmentée pour descendre)
@@ -169,6 +169,16 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
       doc.addPage([86, 55], 'landscape');
       doc.setFillColor(255, 255, 255); // Fond blanc
       doc.rect(0, 0, 86, 55, 'F');
+      
+      // Ajouter le type d'adhérent en haut à gauche avec couleur verte
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(17, 152, 111); // Couleur verte #11986f
+      const typeAdherentText = merchant?.tarification_adhesion?.type_adhesion_display?.toUpperCase();
+      doc.text(typeAdherentText, 3, 3 + 3); // Position: 3mm des bords gauche et haut
+      
+      // Remettre la couleur par défaut
+      doc.setTextColor(0, 0, 0);
       
       // Générer un petit code QR pour le card number en bas à droite du verso
       if (merchant?.card_number) {
@@ -242,18 +252,30 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
     } 
 
     try {
+      // Créer une date d'expiration (par exemple, 1 an à partir d'aujourd'hui)
+      const expirationDate = new Date();
+      expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+      
+      // Formater les dates au format YYYY-MM-DD pour Django
+      const formatDateForDjango = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
       const response = await updateMerchant({
         ...merchant,
         printed: true,
-        printed_at: new Date().toISOString(),
-        expired_at: new Date().toISOString(),
+        printed_at: formatDateForDjango(new Date()),
+        expired_at: formatDateForDjango(expirationDate),
         printed_by_id: Number(getUserIdFromToken())
       }, merchant.id);
       if (response?.status === "success") {
         setPrinted(true);
         const { status, message } = response;
         toast({
-          title: "Modification Commerçant",
+          title: "Modification Adhérent",
           description: message || "Opération effectuée avec succès",
           variant: status === "error" ? "destructive" : "default",
           className: cn(
@@ -264,7 +286,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
         });
       }
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du commerçant:', error);
+      console.error('Erreur lors de la mise à jour de l\'adhérent:', error);
     }
     finally {
       setIsPrinting(false);
@@ -318,7 +340,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                 'w-[86mm] h-[55mm]'
               )}>
                 <div className="w-[86mm] h-[55mm] relative text-[9px]">
-                  <div className='block top-[20mm] left-[35mm] absolute'>
+                  <div className='block top-[16mm] left-[35mm] absolute'>
                     <span className="font-bold text-gray-900 text-[13px]">N°: {merchant?.card_number}</span>
                   </div>
                   {merchant?.type_adherent === type_adherent.MEMBRE ? (
@@ -380,7 +402,7 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
                   </div>
                   <div className='absolute bottom-[7mm] left-[12mm] w-[11mm]'>
                     <div className='w-[11mm] h-[11mm] rounded-md'>
-                      <img src={merchant?.signature_photo} alt="Signature du commerçant" className='w-full h-full'/>
+                      <img src={merchant?.signature_photo} alt="Signature de l'adhérent" className='w-full h-full'/>
                     </div>
                   </div>
                 </div>

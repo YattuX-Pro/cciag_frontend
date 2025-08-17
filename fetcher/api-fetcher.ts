@@ -1,4 +1,4 @@
-import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission, Tarification, ITypeAdhesion, WorkPosition, Nationality, MerchantRefusal, Prefecture, SubPrefecture, Region } from "@/types";
+import { Address, MerchantEnrollment, User, MerchantPayment, MerchantDocument, DocumentItem, MerchantEnrollementHistory, EnrollementStatistics, DetailedStatistics, Activity, SubActivity, Entreprise, MerchantEnrollmentSubmission, Tarification, ITypeAdhesion, WorkPosition, Nationality, MerchantRefusal, Prefecture, SubPrefecture, Region, Banque } from "@/types";
 import { deleter, fetcher, poster, updater } from "./fetcher";
 
 interface DjangoPaginatedResponse<T> {
@@ -87,6 +87,96 @@ export const updateMerchantPayment = (body: MerchantPayment, id: number): Promis
 export const getMerchantPaymentDetail = (id: number): Promise<MerchantPayment> => 
   fetcher(`/api/merchants/payments/${id}`);
 
+// Orange Money Payment Functions
+export const initiateOrangeMoneyPayment = (body: {
+  merchant_payment_id: number
+}): Promise<{
+  success: boolean;
+  message: string;
+  payment_id?: number;
+  order_id?: string;
+  payment_url?: string;
+  amount?: number;
+  error?: string;
+}> => poster('/api/orange-money/initiate/', body);
+
+export const checkOrangeMoneyPaymentStatus = (order_id: string): Promise<{
+  success: boolean;
+  order_id: string;
+  status: string;
+  amount: number;
+  initiated_at: string;
+  completed_at: string | null;
+  orange_status: any;
+  error?: string;
+}> => fetcher(`/api/orange-money/status/${order_id}/`);
+
+export const listOrangeMoneyPayments = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<{
+  id: number;
+  merchant_payment: any;
+  merchant_payment_id: number;
+  order_id: string;
+  merchant_transaction_id: string;
+  pay_token: string;
+  payment_url: string;
+  notif_token: string;
+  currency: string;
+  reference: string;
+  status: string;
+  status_display: string;
+  initiated_at: string;
+  completed_at: string | null;
+  return_url: string;
+  cancel_url: string;
+  notif_url: string;
+  orange_response: any;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/orange-money/payments/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const cancelOrangeMoneyPayment = (order_id: string): Promise<{
+  success: boolean;
+  message: string;
+  order_id: string;
+  error?: string;
+}> => poster(`/api/orange-money/cancel/${order_id}/`, {});
+
+// Banque CRUD Functions
+export const getBanques = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Banque>> => {
+  let queryString;
+  if (params.url) {
+    queryString = params.url;
+  } else {
+    queryString = generateQueryString(params);
+  }
+
+  const response = await fetcher(`/api/banques/?${queryString}`);
+  return extractPaginationParams(response);
+};
+
+export const createBanque = (body: Banque): Promise<any> => 
+  poster('/api/banques/', body);
+
+export const updateBanque = (body: Banque, id: number): Promise<any> => 
+  updater(`/api/banques/${id}`, body);
+
+export const getBanqueDetail = (id: number): Promise<Banque> => 
+  fetcher(`/api/banques/${id}`);
+
+export const deleteBanque = (id: number): Promise<any> => 
+  deleter(`/api/banques/${id}`);
+
 export const getAddresses = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Address>> => {
   let queryString;
   if (params.url) {
@@ -154,6 +244,15 @@ export const getMerchantDetailedStatistics = async (): Promise<DetailedStatistic
   const response = await fetcher(`/statistics/detailed-statistics/`);
   return response;
 }
+
+export const getEnrollmentStatistics = (): Promise<Record<string, number>> => 
+  fetcher('/api/statistics/enrollments/');
+
+export const getPaymentStatistics = (): Promise<Record<string, number>> => 
+  fetcher('/api/statistics/payments/');
+
+export const getWorkflowStatistics = (): Promise<Record<string, number>> => 
+  fetcher('/api/statistics/workflow/');
 
 export const getActivities = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<Activity>> => {
   let queryString;
