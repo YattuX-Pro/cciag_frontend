@@ -186,7 +186,7 @@ export function PaymentDialog({ payment }: InfoDialogProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-cyan-600 mb-1">CCIAG</div>
+                  <div className="text-2xl font-bold text-cyan-600 mb-1">FASOSMART-CCIAG</div>
                   <div className="text-base font-bold mb-0.5 text-gray-800">CHAMBRE DE COMMERCE</div>
                   <div className="text-sm font-medium text-gray-700 mb-0.5">D'INDUSTRIE ET D'ARTISANAT</div>
                   <div className="text-sm font-medium text-gray-700">DE GUINÉE</div>
@@ -261,7 +261,7 @@ export function PaymentDialog({ payment }: InfoDialogProps) {
               <div className="p-4 bg-white border-2 border-t-0 border-cyan-600 rounded-b-lg shadow-sm">
                 <div className="grid grid-cols-2 items-center border-b border-gray-100 pb-3 mb-3">
                   <div>
-                    <p className="font-semibold text-sm text-gray-800">Paiement - Adhésion CCIAG</p>
+                    <p className="font-semibold text-sm text-gray-800">Paiement - Adhésion FASOSMART-CCIAG</p>
                     <p className="text-xs text-gray-600 mt-1">Frais d'adhésion à la Chambre de Commerce</p>
                   </div>
                   <p className="text-right font-semibold text-sm">{payment.amount.toLocaleString('fr-FR')} GNF</p>
@@ -286,7 +286,7 @@ export function PaymentDialog({ payment }: InfoDialogProps) {
             <div className="relative z-10 bg-gray-50 p-4 rounded-lg border border-gray-200 mb-24">
               <h3 className="text-sm font-bold text-gray-800 mb-2">Notes</h3>
               <p className="text-xs text-gray-600">
-                Ce document confirme le paiement des frais d'adhésion à la CCIAG.
+                Ce document confirme le paiement des frais d'adhésion à la FASOSMART-CCIAG.
                 Veuillez conserver cette facture comme preuve de paiement.
               </p>
             </div>
@@ -295,7 +295,7 @@ export function PaymentDialog({ payment }: InfoDialogProps) {
             <div className="absolute bottom-0 left-8 right-8 z-10">
               <div className="text-center border-t-2 border-cyan-600 pt-4">
                 <p className="text-base font-medium text-cyan-700 mb-2">Merci pour votre confiance!</p>
-                <p className="text-xs font-medium mb-2">CHAMBRE DE COMMERCE, D'INDUSTRIE ET D'ARTISANAT DE GUINÉE (CCIAG)</p>
+                <p className="text-xs font-medium mb-2">CHAMBRE DE COMMERCE, D'INDUSTRIE ET D'ARTISANAT DE GUINÉE (FASOSMART-CCIAG)</p>
                 <div className="text-center text-xs text-gray-600 mt-2">
                   <p>
                     <span className="inline-block w-3 h-3 bg-cyan-600 rounded-full mr-1"></span>

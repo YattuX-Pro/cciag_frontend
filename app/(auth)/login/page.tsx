@@ -77,7 +77,7 @@ export default function LoginPage() {
               </svg>
             </motion.div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-200 bg-clip-text text-transparent">
-              CCIAG
+            FASOSMART-CCIAG
             </CardTitle>
             <p className="text-sm text-gray-400">
               Merci d'entrer votre email et mot de passe.

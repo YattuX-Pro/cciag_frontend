@@ -58,6 +58,7 @@ export default function MerchantReviewPage() {
   const [previous, setPrevious] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activityType, setActivityType] = useState<string>('all');
 
   const { showConfirmation } = useConfirmationDialog();
 
@@ -69,6 +70,8 @@ export default function MerchantReviewPage() {
         : {
           search: searchTerm ? searchTerm : "",
           status: "VALIDE",
+          ...(activityType === 'formalisee' && { formalisee: 'true' }),
+          ...(activityType === 'non_formalisee' && { non_formalisee: 'true' }),
         };
 
       const response = await getMerchants(params);
@@ -90,7 +93,7 @@ export default function MerchantReviewPage() {
 
   useEffect(() => {
     loadMerchants();
-  }, [searchTerm]);
+  }, [searchTerm, activityType]);
 
 
   return (
@@ -131,14 +134,15 @@ export default function MerchantReviewPage() {
         <CardContent>
           {/* Search and Filter */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
+            {/* Search input */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 dark:text-gray-400 text-gray-500" />
               <Input
-                placeholder="Search..."
+                placeholder="Rechercher un commerçant..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={cn(
-                  "pl-9",
+                  "pl-9 w-full",
                   "transition-colors duration-200",
                   "dark:bg-gray-800/50 bg-gray-50",
                   "dark:border-cyan-900/20 border-cyan-200/20",
@@ -147,6 +151,43 @@ export default function MerchantReviewPage() {
                 )}
               />
             </div>
+            
+            {/* Activity Type filter */}
+            <Select value={activityType} onValueChange={setActivityType}>
+              <SelectTrigger className={cn(
+                "w-full md:w-[200px]",
+                "dark:bg-gray-800/50 bg-gray-50",
+                "dark:border-cyan-900/20 border-cyan-200/20",
+                "dark:text-gray-100 text-gray-900"
+              )}>
+                <SelectValue placeholder="Type d'activité" />
+              </SelectTrigger>
+              <SelectContent className={cn(
+                "dark:bg-gray-800 bg-white",
+                "dark:border-cyan-900/20 border-cyan-200/20"
+              )}>
+                <SelectItem value="all">Tous les types</SelectItem>
+                <SelectItem value="formalisee">Formalisée</SelectItem>
+                <SelectItem value="non_formalisee">Non formalisée</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* Reset filters button */}
+            {(activityType !== 'all') && (
+              <Button
+                variant="outline"
+                onClick={() => setActivityType('all')}
+                className={cn(
+                  "dark:bg-gray-800/50 bg-gray-50",
+                  "dark:border-cyan-900/20 border-cyan-200/20",
+                  "dark:text-gray-100 text-gray-900",
+                  "dark:hover:bg-gray-700/50 hover:bg-gray-100",
+                  "whitespace-nowrap"
+                )}
+              >
+                Réinitialiser
+              </Button>
+            )}
           </div>
 
           {/* Merchant Cards Grid */}

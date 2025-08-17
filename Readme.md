@@ -1,7 +1,7 @@
-# CCIAG - Système de Gestion des Cartes d'Identité
+# FASOSMART-CCIAG - Système de Gestion des Cartes d'Identité
 
 ## Description
-CCIAG est une application web sécurisée de gestion des cartes d'identité, développée avec Next.js 14, TypeScript et Tailwind CSS. Elle permet la gestion des utilisateurs, l'enrôlement des commerçants, la validation des dossiers et l'impression des cartes d'identité.
+FASOSMART-CCIAG est une application web sécurisée de gestion des cartes d'identité, développée avec Next.js 14, TypeScript et Tailwind CSS. Elle permet la gestion des utilisateurs, l'enrôlement des commerçants, la validation des dossiers et l'impression des cartes d'identité.
 
 ## Fonctionnalités Principales
 

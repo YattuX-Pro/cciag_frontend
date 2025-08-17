@@ -91,7 +91,7 @@ export default function DashboardLayout({
                 "from-cyan-600 to-cyan-400",
               )}
             >
-              CCIAG
+              FASOSMART-CCIAG
             </motion.h1>
 
             <div className="flex items-center">
