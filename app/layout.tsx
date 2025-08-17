@@ -10,8 +10,8 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Merchant Management System',
-  description: 'Advanced merchant management dashboard',
+  title: 'FASOSMART-CCIAG',
+  description: 'Gestion d\'adhésion des membres et entreprises',
 };
 
 export const viewport: Viewport = {

@@ -252,9 +252,9 @@ export default function BadgeCardDialog({ merchant }: BadgeCardDialogProps) {
     } 
 
     try {
-      // Créer une date d'expiration (par exemple, 1 an à partir d'aujourd'hui)
+      // Créer une date d'expiration (par exemple, 2 an à partir d'aujourd'hui)
       const expirationDate = new Date();
-      expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+      expirationDate.setFullYear(expirationDate.getFullYear() + 2);
       
       // Formater les dates au format YYYY-MM-DD pour Django
       const formatDateForDjango = (date: Date) => {
