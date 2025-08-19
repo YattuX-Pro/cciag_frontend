@@ -59,7 +59,7 @@ export default function AddSubPrefectureDialog({
       const fetchPrefectures = async () => {
         setLoadingPrefectures(true);
         try {
-          const response = await getPrefectures({ page_size: 100 });
+          const response = await getPrefectures({ limit: 1000 });
           setPrefectures(response.results);
         } catch (error) {
           console.error("Erreur lors du chargement des préfectures:", error);

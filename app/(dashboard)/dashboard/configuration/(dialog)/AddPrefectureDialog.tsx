@@ -59,7 +59,7 @@ export default function AddPrefectureDialog({
       const loadRegions = async () => {
         setLoadingRegions(true);
         try {
-          const response = await getRegions();
+          const response = await getRegions({limit: 1000});
           setRegions(response?.results || []);
         } catch (error) {
           console.error(error);
