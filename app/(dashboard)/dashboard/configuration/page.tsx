@@ -679,7 +679,7 @@ const loadBanques = async (url?: string) => {
                             if (column.header === 'Actions') {
                               return {
                                 ...column,
-                                cell: (adresse) => (
+                                cell: (adresse: Address) => (
                                   <div className="flex justify-end space-x-2">
                                     <AddAddressDialog
                                       address={adresse}
