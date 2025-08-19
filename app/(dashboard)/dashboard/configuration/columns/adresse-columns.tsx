@@ -14,6 +14,20 @@ export const adresseColumns: Column<Address>[] = [
     accessorKey: "name",
   },
   {
+    header: "Sous-préfecture",
+    accessorKey: "sub_prefecture",
+    cell: (adresse) => (
+      <span className="text-sm">
+        {adresse.sub_prefecture?.name || "N/A"}
+        {adresse.sub_prefecture?.prefecture?.name && (
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">
+            ({adresse.sub_prefecture.prefecture.name})
+          </span>
+        )}
+      </span>
+    ),
+  },
+  {
     header: "Date de création",
     accessorKey: "created_at",
     cell: (adresse) => (
