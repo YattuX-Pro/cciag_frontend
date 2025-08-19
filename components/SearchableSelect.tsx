@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useController, Control } from "react-hook-form";
 
@@ -27,6 +27,7 @@ export default function SearchableSelect<T>({
 }: SearchableSelectProps<T>) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const {
     field: { value, onChange },
@@ -59,12 +60,29 @@ export default function SearchableSelect<T>({
     }
   }, [currentValue]);
 
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
   return (
     <div className="flex flex-col space-y-2 w-full">
       <label htmlFor={name} className="text-sm font-medium text-foreground">
         {label}
       </label>
-      <div className="relative">
+      <div className="relative" ref={dropdownRef}>
         <button
           disabled={disabled}
           type="button"
@@ -77,7 +95,7 @@ export default function SearchableSelect<T>({
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
         </button>
         {open && (
-          <div className="absolute left-1/2 -translate-x-1/2 z-10 mt-1 w-2/5 bg-card shadow-lg overflow-hidden rounded-md border border-border">
+          <div className="absolute left-0 right-0 z-50 mt-1 bg-card shadow-lg overflow-hidden rounded-md border border-border">
             <div className="p-2">
               <input
                 type="text"
@@ -87,7 +105,7 @@ export default function SearchableSelect<T>({
                 className="w-full px-3 py-2 text-sm border border-border rounded-md  focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
-            <ul className="max-h-60 overflow-y-auto  divide-y divide-border text-sm">
+            <ul className="max-h-80 overflow-y-auto divide-y divide-border text-sm">
               {filteredData?.length ? (
                 filteredData.map((item) => (
                   <li

@@ -57,7 +57,7 @@ export default function AddActivityDialog({
         await updateActivity(
           {
             ...data,
-            name: data.name.charAt(0).toUpperCase() + data.name.slice(1) + data.name.slice(1),
+            name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
           },
           activity.id
         );
@@ -68,20 +68,22 @@ export default function AddActivityDialog({
       } else {
         await createActivity({
           ...data,
-          name: data.name.charAt(0).toUpperCase() + data.name.slice(1) + data.name.slice(1),
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
         });
         toast({
           title: "Succès",
           description: "L'activité a été ajoutée avec succès.",
         });
-    }
-    setIsOpen(false);
-    reset();
-    onSuccess?.();
+      }
+      setIsOpen(false);
+      reset();
+      onSuccess?.();
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'ajout de l'activité.",
+        description: isEdit
+          ? "Une erreur est survenue lors de la modification de l'activité."
+          : "Une erreur est survenue lors de l'ajout de l'activité.",
         variant: "destructive",
       });
     } finally {
@@ -147,10 +149,10 @@ export default function AddActivityDialog({
               {isLoading ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Ajout en cours...
+                  {isEdit ? "Modification en cours..." : "Ajout en cours..."}
                 </>
               ) : (
-                "Ajouter"
+                isEdit ? "Modifier" : "Ajouter"
               )}
             </Button>
           </DialogFooter>

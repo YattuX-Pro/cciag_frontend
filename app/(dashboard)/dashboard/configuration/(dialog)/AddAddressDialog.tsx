@@ -16,9 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Loader } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Address, SubPrefecture } from "@/types";
-import { createAddress, getSubPrefectures, updateAddress } from "@/fetcher/api-fetcher";
-import SearchableSelect from "@/components/SearchableSelect";
+import { Address } from "@/types";
+import { createAddress, updateAddress } from "@/fetcher/api-fetcher";
 
 interface AddAddressDialogProps {
   onSuccess?: () => void;
@@ -35,46 +34,21 @@ export default function AddAddressDialog({
 }: AddAddressDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [subPrefectures, setSubPrefectures] = useState<SubPrefecture[]>([]);
-  const [loadingSubPrefectures, setLoadingSubPrefectures] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    control,
     setValue,
   } = useForm<Address>();
 
+  // Set form values when address changes or dialog opens
   useEffect(() => {
     if (address && isOpen) {
       setValue("name", address.name);
-      setValue("sub_prefecture_id", address.sub_prefecture_id);
     }
   }, [address, isOpen, setValue]);
-
-  useEffect(() => {
-    if (isOpen) {
-      const fetchSubPrefectures = async () => {
-        setLoadingSubPrefectures(true);
-        try {
-          const response = await getSubPrefectures({ page_size: 100 });
-          setSubPrefectures(response.results);
-        } catch (error) {
-          console.error("Erreur lors du chargement des sous-préfectures:", error);
-          toast({
-            title: "Erreur",
-            description: "Impossible de charger la liste des sous-préfectures.",
-            variant: "destructive",
-          });
-        } finally {
-          setLoadingSubPrefectures(false);
-        }
-      };
-      fetchSubPrefectures();
-    }
-  }, [isOpen]);
 
   const onSubmit = async (data: Address) => {
     try {
@@ -150,31 +124,7 @@ export default function AddAddressDialog({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-cyan-700 dark:text-cyan-300">Sous-préfecture</Label>
-              {loadingSubPrefectures ? (
-                <div className="flex items-center space-x-2">
-                  <Loader className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-gray-500">Chargement des sous-préfectures...</span>
-                </div>
-              ) : (
-                <SearchableSelect
-                  control={control}
-                  name="sub_prefecture_id"
-                  label=""
-                  data={subPrefectures}
-                  valueKey="name"
-                  currentValue={address?.sub_prefecture?.id}
-                  placeholder="Sélectionnez une sous-préfecture"
-                  rules={{ required: "La sous-préfecture est requise" }}
-                />
-              )}
-              {errors.sub_prefecture_id && (
-                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                  {errors.sub_prefecture_id.message}
-                </p>
-              )}
-            </div>
+
           </motion.div>
           <DialogFooter>
             <Button 

@@ -223,7 +223,7 @@ export default function MerchantInfoForm({
 
   const loadAddresses = async () => {
     try {
-      const addressList = await getAddresses();
+      const addressList = await getAddresses({ limit: 1000 });
       setAddresses(addressList.results);
     } catch (error) {
       console.error("Error loading addresses:", error);

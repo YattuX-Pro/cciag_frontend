@@ -675,7 +675,35 @@ const loadBanques = async (url?: string) => {
                       </div>
                       <DataTable 
                         data={adresses} 
-                        columns={adresseColumns} 
+                        columns={adresseColumns.map(column => {
+                            if (column.header === 'Actions') {
+                              return {
+                                ...column,
+                                cell: (adresse) => (
+                                  <div className="flex justify-end space-x-2">
+                                    <AddAddressDialog
+                                      address={adresse}
+                                      isEdit={true}
+                                      onSuccess={loadAdresses}
+                                      trigger={
+                                        <button
+                                          className={cn(
+                                            "px-2 py-1 rounded text-xs",
+                                            "dark:bg-cyan-500/10 bg-cyan-500/20",
+                                            "dark:text-cyan-400 text-cyan-600",
+                                            "hover:bg-cyan-500/30 dark:hover:bg-cyan-500/20"
+                                          )}
+                                        >
+                                          Modifier
+                                        </button>
+                                      }
+                                    />
+                                  </div>
+                                ),
+                              };
+                            }
+                            return column;
+                          })} 
                         loading={loadingAdresses}
                         pagination={{
                           count: adressesCount,
