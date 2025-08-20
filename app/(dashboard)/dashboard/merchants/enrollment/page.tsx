@@ -65,28 +65,18 @@ export default function EnrollmentPage() {
 
   const handleNext = () => {
     setActiveStep((prevStep) => {
-      // Calculate next step, possibly skipping company step
+      // Calculate next step, always incrementing by 1
+      // No need to skip steps as the renderStep function handles the different flows
       let nextStep = prevStep + 1;
-      
-      // Skip company step (index 2) if activity is non-formalized
-      if (typeAdhesionData?.typeActivite.nonFormalisee && nextStep === 2) {
-        nextStep = 3;
-      }
-      
       return Math.min(nextStep, steps.length - 1);
     });
   };
 
   const handleBack = () => {
     setActiveStep((prevStep) => {
-      // Calculate previous step, possibly skipping company step
+      // Calculate previous step, always decrementing by 1
+      // No need to skip steps as the renderStep function handles the different flows
       let prevStepIndex = prevStep - 1;
-      
-      // Skip company step (index 2) if activity is non-formalized
-      if (typeAdhesionData?.typeActivite.nonFormalisee && prevStepIndex === 2) {
-        prevStepIndex = 1;
-      }
-      
       return Math.max(prevStepIndex, 0);
     });
   };
@@ -148,7 +138,7 @@ export default function EnrollmentPage() {
     const isNonFormalized = typeAdhesionData?.typeActivite.nonFormalisee;
     
     switch (activeStep) {
-      case 0:
+      case 0: // Type Adhesion - Same for both flows
         return (
           <TypeAdhesionForm 
             onSubmit={handleTypeAdhesionSubmit} 
@@ -156,7 +146,7 @@ export default function EnrollmentPage() {
             onBack={handleBack} 
           />
         );
-      case 1:
+      case 1: // Merchant Info - Same for both flows
         return (
           <MerchantInfoForm 
             onSubmit={handleMerchantSubmit} 
@@ -166,19 +156,17 @@ export default function EnrollmentPage() {
           />
         );
       case 2:
-        // If non-formalized, this step should show activity instead of company
         if (isNonFormalized) {
+          // For non-formalized, step 2 is Activity
           return (
             <ActivitySelectionForm 
-              onSubmit={(data) => {
-                setActivityData(data);
-                handleNext();
-              }} 
+              onSubmit={handleActivitySubmit}
               onBack={handleBack} 
               initialData={activityData}
             />
           );
         } else {
+          // For formalized, step 2 is Company
           return (
             <CompanyInfoForm 
               onSubmit={handleCompanySubmit} 
@@ -189,8 +177,8 @@ export default function EnrollmentPage() {
           );
         }
       case 3:
-        // If non-formalized, this step should show documents instead of activity
         if (isNonFormalized) {
+          // For non-formalized, step 3 is Documents
           return (
             <MerchantDocumentForm 
               onSubmit={handleDocumentSubmit} 
@@ -199,20 +187,18 @@ export default function EnrollmentPage() {
             />
           );
         } else {
+          // For formalized, step 3 is Activity
           return (
             <ActivitySelectionForm 
-              onSubmit={(data) => {
-                setActivityData(data);
-                handleNext();
-              }} 
+              onSubmit={handleActivitySubmit}
               onBack={handleBack} 
               initialData={activityData}
             />
           );
         }
       case 4:
-        // If non-formalized, this step should show finalization instead of documents
         if (isNonFormalized) {
+          // For non-formalized, step 4 is Finalization
           return (
             <SubmitForm
               merchantData={merchantData!}
@@ -226,6 +212,7 @@ export default function EnrollmentPage() {
             />
           );
         } else {
+          // For formalized, step 4 is Documents
           return (
             <MerchantDocumentForm 
               onSubmit={handleDocumentSubmit} 
@@ -234,8 +221,7 @@ export default function EnrollmentPage() {
             />
           );
         }
-      case 5:
-        // This step only applies to formalized activities
+      case 5: // Only for formalized activities - Finalization
         if (!isNonFormalized) {
           return (
             <SubmitForm
