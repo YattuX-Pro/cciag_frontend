@@ -23,39 +23,72 @@ export default function EnrollmentPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const steps = [
-    {
-      title: "1",
-      description: "Type Adhésion"
-    },
-    {
-      title: "2",
-      description: "Adhérant"
-    },
-    {
-      title: "3",
-      description: "Entreprise"
-    },
-    {
-      title: "4",
-      description: "Activité"
-    },
-    {
-      title: "5",
-      description: "Pièces requises"
-    },
-    {
-      title: "6",
-      description: "Finalisation"
+  const getSteps = () => {
+    const baseSteps = [
+      {
+        title: "1",
+        description: "Type Adhésion"
+      },
+      {
+        title: "2",
+        description: "Adhérant"
+      }
+    ];
+    
+    // Only include company step if not non-formalized activity
+    if (!typeAdhesionData?.typeActivite.nonFormalisee) {
+      baseSteps.push({
+        title: String(baseSteps.length + 1),
+        description: "Entreprise"
+      });
     }
-  ];
+    
+    // Add remaining steps with dynamic numbering
+    return [
+      ...baseSteps,
+      {
+        title: String(baseSteps.length + 1),
+        description: "Activité"
+      },
+      {
+        title: String(baseSteps.length + 2),
+        description: "Pièces requises"
+      },
+      {
+        title: String(baseSteps.length + 3),
+        description: "Finalisation"
+      }
+    ];
+  };
+  
+  const steps = getSteps();
 
   const handleNext = () => {
-    setActiveStep((prevStep) => Math.min(prevStep + 1, 5));
+    setActiveStep((prevStep) => {
+      // Calculate next step, possibly skipping company step
+      let nextStep = prevStep + 1;
+      
+      // Skip company step (index 2) if activity is non-formalized
+      if (typeAdhesionData?.typeActivite.nonFormalisee && nextStep === 2) {
+        nextStep = 3;
+      }
+      
+      return Math.min(nextStep, steps.length - 1);
+    });
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => Math.max(prevStep - 1, 0));
+    setActiveStep((prevStep) => {
+      // Calculate previous step, possibly skipping company step
+      let prevStepIndex = prevStep - 1;
+      
+      // Skip company step (index 2) if activity is non-formalized
+      if (typeAdhesionData?.typeActivite.nonFormalisee && prevStepIndex === 2) {
+        prevStepIndex = 1;
+      }
+      
+      return Math.max(prevStepIndex, 0);
+    });
   };
 
   const handleDocumentSubmit = (data: DocumentItem[]) => {
@@ -111,6 +144,9 @@ export default function EnrollmentPage() {
   };
 
   const renderStep = () => {
+    // For non-formalized activities, we need to adjust the step rendering
+    const isNonFormalized = typeAdhesionData?.typeActivite.nonFormalisee;
+    
     switch (activeStep) {
       case 0:
         return (
@@ -130,45 +166,90 @@ export default function EnrollmentPage() {
           />
         );
       case 2:
-        return (
-          <CompanyInfoForm 
-            onSubmit={handleCompanySubmit} 
-            onBack={handleBack} 
-            initialData={companyData}
-            typeAdhesionData={typeAdhesionData!}
-          />
-        );
+        // If non-formalized, this step should show activity instead of company
+        if (isNonFormalized) {
+          return (
+            <ActivitySelectionForm 
+              onSubmit={(data) => {
+                setActivityData(data);
+                handleNext();
+              }} 
+              onBack={handleBack} 
+              initialData={activityData}
+            />
+          );
+        } else {
+          return (
+            <CompanyInfoForm 
+              onSubmit={handleCompanySubmit} 
+              onBack={handleBack} 
+              initialData={companyData}
+              typeAdhesionData={typeAdhesionData!}
+            />
+          );
+        }
       case 3:
-        return (
-          <ActivitySelectionForm 
-            onSubmit={(data) => {
-              setActivityData(data);
-              handleNext();
-            }} 
-            onBack={handleBack} 
-            initialData={activityData}
-          />
-        );
+        // If non-formalized, this step should show documents instead of activity
+        if (isNonFormalized) {
+          return (
+            <MerchantDocumentForm 
+              onSubmit={handleDocumentSubmit} 
+              onBack={handleBack} 
+              initialData={documentData} 
+            />
+          );
+        } else {
+          return (
+            <ActivitySelectionForm 
+              onSubmit={(data) => {
+                setActivityData(data);
+                handleNext();
+              }} 
+              onBack={handleBack} 
+              initialData={activityData}
+            />
+          );
+        }
       case 4:
-        return (
-          <MerchantDocumentForm 
-            onSubmit={handleDocumentSubmit} 
-            onBack={handleBack} 
-            initialData={documentData} 
-          />
-        );
+        // If non-formalized, this step should show finalization instead of documents
+        if (isNonFormalized) {
+          return (
+            <SubmitForm
+              merchantData={merchantData!}
+              documentData={documentData}
+              // For non-formalized activities, company data might be null/empty
+              companyData={companyData || {}}
+              typeAdhesionData={typeAdhesionData!}
+              activityData={activityData}
+              onSubmit={handleFinalSubmit}
+              onBack={handleBack}
+            />
+          );
+        } else {
+          return (
+            <MerchantDocumentForm 
+              onSubmit={handleDocumentSubmit} 
+              onBack={handleBack} 
+              initialData={documentData} 
+            />
+          );
+        }
       case 5:
-        return (
-          <SubmitForm
-            merchantData={merchantData!}
-            documentData={documentData}
-            companyData={companyData!}
-            typeAdhesionData={typeAdhesionData!}
-            activityData={activityData}
-            onSubmit={handleFinalSubmit}
-            onBack={handleBack}
-          />
-        );
+        // This step only applies to formalized activities
+        if (!isNonFormalized) {
+          return (
+            <SubmitForm
+              merchantData={merchantData!}
+              documentData={documentData}
+              companyData={companyData!}
+              typeAdhesionData={typeAdhesionData!}
+              activityData={activityData}
+              onSubmit={handleFinalSubmit}
+              onBack={handleBack}
+            />
+          );
+        }
+        return null;
       default:
         return null;
     }
