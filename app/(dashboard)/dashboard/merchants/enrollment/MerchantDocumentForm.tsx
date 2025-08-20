@@ -21,7 +21,7 @@ interface MerchantDocumentFormProps {
 // Maximum file size in bytes
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 // Maximum length for displayed filenames
-const MAX_FILENAME_LENGTH = 20;
+const MAX_FILENAME_LENGTH = 15;
 
 export default function MerchantDocumentForm({
   onSubmit,
