@@ -15,6 +15,7 @@ interface MerchantDocumentFormProps {
   onBack: () => void;
   initialData?: DocumentItem[];
   merchantId?: number;
+  isFormalized?: boolean;
 }
 
 // Maximum file size in bytes
@@ -27,6 +28,7 @@ export default function MerchantDocumentForm({
   onBack,
   initialData = [],
   merchantId,
+  isFormalized = true,
 }: MerchantDocumentFormProps) {
   const {
     register,
@@ -47,6 +49,41 @@ export default function MerchantDocumentForm({
   });
 
   const documents = watch("documents");
+
+  // Liste des documents disponibles selon le type d'activité
+  const getAvailableDocuments = (index: number) => {
+    // Documents de base pour tous les types
+    const baseDocuments = [
+      { value: "FICHE_ENROLEMENT", label: "Fiche d'enrôlement" },
+      { value: "PREUVE_PAIEMENT", label: "Preuve de paiement" },
+      { value: "PIECE_IDENTITE", label: "Pièce d'identité" },
+    ];
+    
+    // Documents supplémentaires pour les activités formalisées
+    const formalizedDocuments = [
+      { value: "RCCM", label: "RCCM" },
+      { value: "QUITUS", label: "QUITUS" },
+    ];
+    
+    // Tous les documents disponibles selon le type d'activité
+    const allDocuments = isFormalized 
+      ? [...baseDocuments, ...formalizedDocuments]
+      : baseDocuments;
+      
+    // Filtrer les documents déjà sélectionnés dans d'autres champs
+    return allDocuments.filter(doc => {
+      // Si c'est vide, on montre tous les documents
+      if (!doc.value) return true;
+      
+      // Vérifier si ce document est déjà utilisé dans un autre champ
+      const isUsedElsewhere = documents.some((item, i) => 
+        i !== index && item.name === doc.value
+      );
+      
+      // Ne pas afficher les documents déjà utilisés
+      return !isUsedElsewhere;
+    });
+  };
 
   // Add state to store selected file names
   const [selectedFiles, setSelectedFiles] = useState<{ [key: number]: string }>({});
@@ -180,9 +217,9 @@ export default function MerchantDocumentForm({
                     <SelectValue placeholder="Sélectionner un document" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="CNI">CNI</SelectItem>
-                    <SelectItem value="PASSPORT">Passport</SelectItem>
-                    <SelectItem value="EXTRAIT DE NAISSANCE">Extrait de naissance</SelectItem>
+                    {getAvailableDocuments(index).map(doc => (
+                      <SelectItem key={doc.value} value={doc.value}>{doc.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {errors.documents?.[index]?.name && (
@@ -270,11 +307,11 @@ export default function MerchantDocumentForm({
           variant="outline"
           onClick={() => append({ name: "", document: "", document_number: "" })}
           className="w-full border-dashed border-cyan-200 dark:border-cyan-800 hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/50"
-          disabled={documents.length >= 3}
+          disabled={documents.length >= (isFormalized ? 5 : 3)}
         >
           <Plus className="w-4 h-4 mr-2 text-cyan-500" />
           <span className="text-cyan-600 dark:text-cyan-400">
-            {documents.length >= 3 ? "Maximum de documents atteint" : "Ajouter un document"}
+            {documents.length >= (isFormalized ? 5 : 3) ? "Maximum de documents atteint" : "Ajouter un document"}
           </span>
         </Button>
       </div>

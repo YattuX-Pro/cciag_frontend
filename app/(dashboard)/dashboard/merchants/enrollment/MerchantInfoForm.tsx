@@ -318,21 +318,13 @@ export default function MerchantInfoForm({
       hasError = true;
     }
 
-    if (!data.user.email) {
-      setError("user.email", {
-        type: "manual",
-        message: "L'email est requis",
-      });
-      hasError = true;
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(data.user.email)
-    ) {
-      setError("user.email", {
-        type: "manual",
-        message: "Adresse email invalide",
-      });
-      hasError = true;
-    }
+    // if (data.user.email && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(data.user.email)) {
+    //   setError("user.email", {
+    //     type: "manual",
+    //     message: "Adresse email invalide",
+    //   });
+    //   hasError = true;
+    // }
 
     if (!data.user.phone_number) {
       setError("user.phone_number", {
@@ -359,7 +351,7 @@ export default function MerchantInfoForm({
     if (!data.address_id) {
       setError("address_id", {
         type: "manual",
-        message: "La ville est requise",
+        message: "La commune est requise",
       });
       hasError = true;
     }
@@ -458,22 +450,41 @@ export default function MerchantInfoForm({
           {/* Quatrième ligne */}
           <div className="space-y-2">
             <Label className="text-cyan-700 dark:text-cyan-300">
-              Ville <span className="text-red-500">*</span>
+              Commune <span className="text-red-500">*</span>
             </Label>
             <SearchableSelect
               name="address_id"
               control={control}
-              rules={{ required: "La ville est requise" }}
+              rules={{ required: "La commune est requise" }}
               label=""
               data={addresses}
               valueKey="name"
-              placeholder="Sélectionnez la ville"
+              placeholder="Sélectionnez la commune"
               currentValue={watch("address_id")}
               disabled={false}
+              className="border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950"
             />
             {errors.address_id && (
               <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                 {errors.address_id.message}
+              </p>
+            )}
+          </div>
+
+          {/* Champ Adresse */}
+          <div className="space-y-2">
+            <Label className="text-cyan-700 dark:text-cyan-300">
+              Adresse <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              type="text"
+              placeholder="Entrez votre adresse complète"
+              {...register("address", { required: "L'adresse est requise" })}
+              className="border-cyan-200 dark:border-cyan-800"
+            />
+            {errors.address && (
+              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                {errors.address.message}
               </p>
             )}
           </div>
@@ -493,33 +504,11 @@ export default function MerchantInfoForm({
               placeholder="Sélectionnez le poste de travail"
               currentValue={watch("work_position_id")}
               disabled={false}
+              className="border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950"
             />
             {errors.work_position_id && (
               <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                 {errors.work_position_id.message}
-              </p>
-            )}
-          </div>
-
-          {/* Quatrième ligne */}
-          <div className="space-y-2">
-            <Label className="text-cyan-700 dark:text-cyan-300">
-              Nationalité <span className="text-red-500">*</span>
-            </Label>
-            <SearchableSelect
-              name="nationality_id"
-              control={control}
-              rules={{ required: "La nationalité est requise" }}
-              label=""
-              data={nationalities}
-              valueKey="name"
-              placeholder="Sélectionnez la nationalité"
-              currentValue={watch("nationality_id")}
-              disabled={false}
-            />
-            {errors.nationality_id && (
-              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                {errors.nationality_id.message}
               </p>
             )}
           </div>
@@ -551,7 +540,6 @@ export default function MerchantInfoForm({
               </p>
             )}
           </div>
-
         </div>
 
         {/* Colonne droite */}
@@ -650,13 +638,12 @@ export default function MerchantInfoForm({
               className="text-cyan-700 dark:text-cyan-300"
               htmlFor="user.email"
             >
-              Email <span className="text-red-500">*</span>
+              Email
             </Label>
             <Input
               id="user.email"
               type="email"
               {...register("user.email", {
-                required: "L'email est requis",
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: "Adresse email invalide",
@@ -727,6 +714,31 @@ export default function MerchantInfoForm({
             )}
           </div>
 
+            {/* Quatrième ligne */}
+          <div className="space-y-2">
+            <Label className="text-cyan-700 dark:text-cyan-300">
+              Nationalité <span className="text-red-500">*</span>
+            </Label>
+            <SearchableSelect
+              name="nationality_id"
+              control={control}
+              rules={{ required: "La nationalité est requise" }}
+              label=""
+              data={nationalities}
+              valueKey="name"
+              placeholder="Sélectionnez la nationalité"
+              currentValue={watch("nationality_id")}
+              disabled={false}
+              className="border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950"
+            />
+            {errors.nationality_id && (
+              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                {errors.nationality_id.message}
+              </p>
+            )}
+          </div>
+
+          
           
         </div>
       </div>

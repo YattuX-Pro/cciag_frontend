@@ -224,6 +224,7 @@ export default function CompanyInfoForm({
             placeholder="Sélectionnez le siège social"
             currentValue={watch('address_id')}
             disabled={false}
+            className="border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950"
           />
           {errors.address_id && (
             <p className="text-red-500 dark:text-red-400 text-xs mt-1">

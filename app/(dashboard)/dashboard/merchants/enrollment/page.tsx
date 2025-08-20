@@ -183,7 +183,8 @@ export default function EnrollmentPage() {
             <MerchantDocumentForm 
               onSubmit={handleDocumentSubmit} 
               onBack={handleBack} 
-              initialData={documentData} 
+              initialData={documentData}
+              isFormalized={false} 
             />
           );
         } else {
@@ -217,7 +218,8 @@ export default function EnrollmentPage() {
             <MerchantDocumentForm 
               onSubmit={handleDocumentSubmit} 
               onBack={handleBack} 
-              initialData={documentData} 
+              initialData={documentData}
+              isFormalized={true} 
             />
           );
         }

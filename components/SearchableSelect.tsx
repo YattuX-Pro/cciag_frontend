@@ -12,6 +12,7 @@ interface SearchableSelectProps<T> {
   rules?: Record<string, any>;
   disabled?: boolean;
   currentValue?: string | number;
+  className?: string;
 }
 
 export default function SearchableSelect<T>({
@@ -24,6 +25,7 @@ export default function SearchableSelect<T>({
   rules,
   disabled,
   currentValue,
+  className,
 }: SearchableSelectProps<T>) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -88,7 +90,7 @@ export default function SearchableSelect<T>({
           type="button"
           onClick={() => setOpen(!open)}
           className={`w-full flex justify-between items-center border rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all ${
-            error ? "border-red-500" : "border-border"
+            error ? "border-red-500" : className || "border-border"
           }`}
         >
           {displayValue}
