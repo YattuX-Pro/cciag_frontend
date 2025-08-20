@@ -369,6 +369,7 @@ export interface MerchantEnrollmentSubmission {
   documentData: DocumentItem[];
   companyData?: Partial<Entreprise>;
   typeAdhesion: ITypeAdhesion;
+  activityData?: ActivityData;
 }
 
 // WorkPosition CRUD operations
@@ -434,4 +435,17 @@ declare global {
     STPadServerLib: any;
     STPadServerLibApi: any;
   }
+}
+
+export interface ActivityData {
+  type: string;
+  type_activite?: string;
+  type_commerce?: string;
+  secteur_activite?: string;
+  sous_secteur_activite?: string;
+  activite_principale?: string;
+  activite_secondaire?: string;
+  produits?: string;
+  quitus_fiscal?: string;
+  certificat_fiscal?: string;
 }

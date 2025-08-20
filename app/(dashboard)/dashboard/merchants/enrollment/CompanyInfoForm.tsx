@@ -32,13 +32,6 @@ export default function CompanyInfoForm({
   initialData,
   typeAdhesionData
 }: CompanyInfoFormProps) {
-  const [products, setProducts] = useState<string[]>(
-    initialData?.produits ? initialData.produits.split(';').filter(Boolean) : ['']
-  );
-
-  const [quitusFile, setQuitusFile] = useState<File | null>(null);
-  const [certificatFile, setCertificatFile] = useState<File | null>(null);
-
   const {
     register,
     handleSubmit,
@@ -62,29 +55,6 @@ export default function CompanyInfoForm({
     }
   }, [initialData, setValue]);
 
-  const addProduct = () => {
-    if (products.length < 6) {
-      setProducts([...products, '']);
-    }
-  };
-
-  const removeProduct = (index: number) => {
-    const newProducts = products.filter((_, i) => i !== index);
-    setProducts(newProducts.length ? newProducts : ['']);
-    
-    setValue('produits', newProducts.filter(Boolean).join(';'));
-    trigger('produits');
-  };
-
-  const updateProduct = (index: number, value: string) => {
-    const newProducts = [...products];
-    newProducts[index] = value;
-    setProducts(newProducts);
-    
-    setValue('produits', newProducts.filter(Boolean).join(';'));
-    trigger('produits');
-  };
-
   const [addresses, setAddresses] = useState([]);
   const loadAddresses = async () => {
     const data = await getAddresses({limit:2000});
@@ -93,12 +63,6 @@ export default function CompanyInfoForm({
 
   useEffect(() => {
     loadAddresses();
-  }, []);
-
-  useEffect(() => {
-    if (products.some(p => p.trim() !== '')) {
-      setValue('produits', products.filter(p => p.trim() !== '').join(';'));
-    }
   }, []);
 
   // Watch all values for debugging
@@ -222,54 +186,6 @@ export default function CompanyInfoForm({
         </div>
 
         <div className="space-y-2">
-          <Label className="text-cyan-700 dark:text-cyan-300">Type d&apos;activité</Label>
-          <Select 
-            value={watch("type_activite") || ""}
-            onValueChange={(value) => {
-              setValue("type_activite", value, { shouldValidate: true });
-            }}
-          >
-            <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
-              <SelectValue placeholder="Sélectionnez le type d'activité" />
-            </SelectTrigger>
-            <SelectContent>
-              {TYPE_ACTIVITE.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.type_activite && (
-            <p className="text-sm text-red-500">{errors.type_activite.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-cyan-700 dark:text-cyan-300">Type de commerce</Label>
-          <Select 
-            value={watch("type_commerce") || ""}
-            onValueChange={(value) => {
-              setValue("type_commerce", value, { shouldValidate: true });
-            }}
-          >
-            <SelectTrigger className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
-              <SelectValue placeholder="Sélectionnez le type de commerce" />
-            </SelectTrigger>
-            <SelectContent>
-              {TYPE_COMMERCE.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.type_commerce && (
-            <p className="text-sm text-red-500">{errors.type_commerce.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">Forme juridique</Label>
           <Select 
             value={watch("forme_juridique") || ""}
@@ -295,49 +211,17 @@ export default function CompanyInfoForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="numero_rccm" className="text-cyan-700 dark:text-cyan-300">Numéro RCCM</Label>
-          <Input
-            id="numero_rccm"
-            {...register("numero_rccm", { 
-              required: (!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee) ? false : "Le numéro RCCM est requis"
-            })}
-            placeholder="Numéro RCCM"
-            className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
-            disabled={!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee}
-          />
-          {errors.numero_rccm && (
-            <p className="text-sm text-red-500">{errors.numero_rccm.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="numero_nif" className="text-cyan-700 dark:text-cyan-300">Numéro NIF</Label>
-          <Input
-            id="numero_nif"
-            {...register("numero_nif", { 
-              required: (!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee) ? false : "Le numéro NIF est requis"
-            })}
-            placeholder="Numéro NIF"
-            className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
-            disabled={!typeAdhesionData.typeActivite.formalisee && typeAdhesionData.typeActivite.nonFormalisee}
-          />
-          {errors.numero_nif && (
-            <p className="text-sm text-red-500">{errors.numero_nif.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
           <Label className="text-cyan-700 dark:text-cyan-300">
-            Addresse <span className="text-red-500">*</span>
+            Siège social <span className="text-red-500">*</span>
           </Label>
           <SearchableSelect
             name="address_id"
             control={control}
-            rules={{ required: "La ville est requise" }}
+            rules={{ required: "Siège social est requise" }}
             label=""
             data={addresses}
             valueKey="name"
-            placeholder="Sélectionnez la ville"
+            placeholder="Sélectionnez le siège social"
             currentValue={watch('address_id')}
             disabled={false}
           />
@@ -346,50 +230,9 @@ export default function CompanyInfoForm({
               {errors.address_id.message}
             </p>
           )}
-        </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label className="text-cyan-700 dark:text-cyan-300">Produits</Label>
-          <div className="space-y-2">
-            {products.map((product, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  value={product}
-                  onChange={(e) => updateProduct(index, e.target.value)}
-                  placeholder={`Produit ${index + 1}`}
-                  className="w-full bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800"
-                />
-                {products.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeProduct(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            {products.length < 6 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addProduct}
-                className="mt-2"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un produit
-              </Button>
-            )}
-          </div>
-          <input type="hidden" {...register("produits")} />
-          {errors.produits && (
-            <p className="text-sm text-red-500">{errors.produits.message}</p>
-          )}
-        </div>
+
 
         <div className="space-y-2 col-span-2">
           <Label htmlFor="commentaire" className="text-cyan-700 dark:text-cyan-300">NB:</Label>
@@ -399,64 +242,6 @@ export default function CompanyInfoForm({
             placeholder="Commentaires (optionnel)"
             className="w-full h-24 px-3 py-2 rounded-md bg-white dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="quitus_fiscal" className="text-cyan-700 dark:text-cyan-300">Quitus fiscal</Label>
-          <Input
-            id="quitus_fiscal"
-            type="file"
-            accept=".pdf"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setQuitusFile(file);
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  setValue("quitus_fiscal", reader.result as string);
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-          {quitusFile && (
-            <p className="text-sm text-green-600 mt-1">
-              Fichier sélectionné: {quitusFile.name}
-            </p>
-          )}
-          {errors.quitus_fiscal && (
-            <p className="text-red-500 text-sm">{errors.quitus_fiscal.message}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="certificat_fiscal" className="text-cyan-700 dark:text-cyan-300">Certificat fiscal</Label>
-          <Input
-            id="certificat_fiscal"
-            type="file"
-            accept=".pdf"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setCertificatFile(file);
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  setValue("certificat_fiscal", reader.result as string);
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-          {certificatFile && (
-            <p className="text-sm text-green-600 mt-1">
-              Fichier sélectionné: {certificatFile.name}
-            </p>
-          )}
-          {errors.certificat_fiscal && (
-            <p className="text-red-500 text-sm">{errors.certificat_fiscal.message}</p>
-          )}
         </div>
       </div>
 
@@ -474,7 +259,7 @@ export default function CompanyInfoForm({
           disabled={(!isValid && isDirty) || !watch("nombre_employe")}
           className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-700 dark:hover:bg-cyan-800"
         >
-          Terminer
+          Suivant
         </Button>
       </div>
     </form>

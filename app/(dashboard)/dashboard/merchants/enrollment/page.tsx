@@ -11,6 +11,7 @@ import TypeAdhesionForm from "./TypeAdhesionForm";
 import { MerchantEnrollment, DocumentItem, Entreprise, TypeAdhesionData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import ActivitySelectionForm from "./ActivitySelectionForm";
 
 export default function EnrollmentPage() {
   const [activeStep, setActiveStep] = useState(0);
@@ -18,6 +19,7 @@ export default function EnrollmentPage() {
   const [documentData, setDocumentData] = useState<DocumentItem[]>([]);
   const [companyData, setCompanyData] = useState<Partial<Entreprise> | null>(null);
   const [typeAdhesionData, setTypeAdhesionData] = useState<TypeAdhesionData | null>(null);
+  const [activityData, setActivityData] = useState<any>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -28,24 +30,28 @@ export default function EnrollmentPage() {
     },
     {
       title: "2",
-      description: "Commerçant"
+      description: "Adhérant"
     },
     {
       title: "3",
-      description: "Pièces requises"
+      description: "Entreprise"
     },
     {
       title: "4",
-      description: "Informations Entreprise"
+      description: "Activité"
     },
     {
       title: "5",
+      description: "Pièces requises"
+    },
+    {
+      title: "6",
       description: "Finalisation"
     }
   ];
 
   const handleNext = () => {
-    setActiveStep((prevStep) => Math.min(prevStep + 1, 4));
+    setActiveStep((prevStep) => Math.min(prevStep + 1, 5));
   };
 
   const handleBack = () => {
@@ -67,6 +73,11 @@ export default function EnrollmentPage() {
     handleNext();
   };
 
+  const handleActivitySubmit = (data: any) => {
+    setActivityData(data);
+    handleNext();
+  };
+
   const handleCompanySubmit = async (data: Partial<Entreprise>) => {
     setCompanyData(data);
     handleNext();
@@ -78,7 +89,8 @@ export default function EnrollmentPage() {
         merchant: merchantData,
         documents: documentData,
         company: companyData,
-        typeAdhesion: typeAdhesionData
+        typeAdhesion: typeAdhesionData,
+        activity: activityData
       };
 
       toast({
@@ -119,14 +131,6 @@ export default function EnrollmentPage() {
         );
       case 2:
         return (
-          <MerchantDocumentForm 
-            onSubmit={handleDocumentSubmit} 
-            onBack={handleBack} 
-            initialData={documentData} 
-          />
-        );
-      case 3:
-        return (
           <CompanyInfoForm 
             onSubmit={handleCompanySubmit} 
             onBack={handleBack} 
@@ -134,13 +138,33 @@ export default function EnrollmentPage() {
             typeAdhesionData={typeAdhesionData!}
           />
         );
+      case 3:
+        return (
+          <ActivitySelectionForm 
+            onSubmit={(data) => {
+              setActivityData(data);
+              handleNext();
+            }} 
+            onBack={handleBack} 
+            initialData={activityData}
+          />
+        );
       case 4:
+        return (
+          <MerchantDocumentForm 
+            onSubmit={handleDocumentSubmit} 
+            onBack={handleBack} 
+            initialData={documentData} 
+          />
+        );
+      case 5:
         return (
           <SubmitForm
             merchantData={merchantData!}
             documentData={documentData}
             companyData={companyData!}
             typeAdhesionData={typeAdhesionData!}
+            activityData={activityData}
             onSubmit={handleFinalSubmit}
             onBack={handleBack}
           />

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DocumentItem, Entreprise, ITypeAdhesion, MerchantEnrollment, MerchantEnrollmentSubmission, MerchantPayment, Tarification, TypeAdhesionData } from "@/types";
+import { ActivityData, DocumentItem, Entreprise, ITypeAdhesion, MerchantEnrollment, MerchantEnrollmentSubmission, MerchantPayment, Tarification, TypeAdhesionData } from "@/types";
 import { CHIFFRE_AFFAIRE, NOMBRE_EMPLOYE } from "@/types/const";
 import { motion } from "framer-motion";
 import { Loader } from "lucide-react";
@@ -16,6 +16,7 @@ interface SubmitFormProps {
   documentData: DocumentItem[];
   companyData: Partial<Entreprise>;
   typeAdhesionData: TypeAdhesionData;
+  activityData?: ActivityData;
   onSubmit: () => Promise<void>;
   onBack: () => void;
 }
@@ -25,6 +26,7 @@ export default function SubmitForm({
   documentData,
   companyData,
   typeAdhesionData,
+  activityData,
   onSubmit,
   onBack
 }: SubmitFormProps) {
@@ -92,6 +94,7 @@ export default function SubmitForm({
       merchantData,
       documentData,
       typeAdhesion,
+      activityData,
       companyData: {
         ...companyData,
         forme_juridique: typeAdhesion.non_formalisee ? null : companyData.forme_juridique,
@@ -201,10 +204,56 @@ export default function SubmitForm({
                   {CHIFFRE_AFFAIRE.find(opt => opt.value === companyData.chiffre_affaire?.toString())?.label || '-'}
                 </span>
               </div>
-              <div className="col-span-2">
-                <span className="text-gray-500">Produits:</span>
-                <span className="ml-2">{companyData.produits?.split(';').join(', ')}</span>
-              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-medium text-cyan-600 dark:text-cyan-400">Activité</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {activityData && (
+                <>
+                  <div>
+                    <span className="text-gray-500">Secteur d'activité:</span>
+                    <span className="ml-2">{activityData.secteur_activite}</span>
+                  </div>
+                  {activityData.sous_secteur_activite && (
+                    <div>
+                      <span className="text-gray-500">Sous-secteur d'activité:</span>
+                      <span className="ml-2">{activityData.sous_secteur_activite}</span>
+                    </div>
+                  )}
+                  {activityData.type_activite && (
+                    <div>
+                      <span className="text-gray-500">Type d'activité:</span>
+                      <span className="ml-2">{activityData.type_activite}</span>
+                    </div>
+                  )}
+                  {activityData.type_commerce && (
+                    <div>
+                      <span className="text-gray-500">Type de commerce:</span>
+                      <span className="ml-2">{activityData.type_commerce}</span>
+                    </div>
+                  )}
+                  {activityData.activite_principale && (
+                    <div>
+                      <span className="text-gray-500">Activité principale:</span>
+                      <span className="ml-2">{activityData.activite_principale}</span>
+                    </div>
+                  )}
+                  {activityData.activite_secondaire && (
+                    <div>
+                      <span className="text-gray-500">Activité secondaire:</span>
+                      <span className="ml-2">{activityData.activite_secondaire}</span>
+                    </div>
+                  )}
+                  {activityData.produits && (
+                    <div className="col-span-2">
+                      <span className="text-gray-500">Produits:</span>
+                      <span className="ml-2">{activityData.produits.split(';').join(', ')}</span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
 

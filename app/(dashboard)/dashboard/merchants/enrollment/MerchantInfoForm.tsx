@@ -82,31 +82,12 @@ export default function MerchantInfoForm({
 
   // Images par défaut
   const signaturePadRef = useRef<SignatureCanvas>(null);
-  const [openSectors, setOpenSectors] = useState(false);
-  const [openSubSectors, setOpenSubSectors] = useState(false);
-  const [selectedSectors, setSelectedSectors] = useState<Activity[]>([]);
-  const [selectedSubSectors, setSelectedSubSectors] = useState<SubActivity[]>(
-    []
-  );
-  const [sectors, setSectors] = useState<Activity[]>([]);
   const [workPostions, setWorkPostions] = useState<WorkPosition[]>([]);
   const [nationalities, setNationalities] = useState<Nationality[]>([]);
   const [subSectors, setSubSectors] = useState<SubActivity[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [sizeError, setSizeError] = useState<string | null>(null);
 
-  const loadSectors = async () => {
-    try {
-      let activities = await getActivities({ limit: 1000 });
-      setSectors(activities.results);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Erreur chargement secteurs d'activité",
-      });
-    }
-  };
 
   const loadWorkPosition = async () => {
     try {
@@ -188,7 +169,6 @@ export default function MerchantInfoForm({
 
   useEffect(() => {
     loadAddresses();
-    loadSectors();
     loadSubSectos();
     loadNationalities();
     loadWorkPosition();
@@ -199,9 +179,6 @@ export default function MerchantInfoForm({
         setProfilePreview(initialData.profile_photo);
       if (initialData.signature_photo)
         setSignaturePreview(initialData.signature_photo);
-      if (initialData.activities) setSelectedSectors(initialData.activities);
-      if (initialData.sub_activities)
-        setSelectedSubSectors(initialData.sub_activities);
     }
   }, [reset, initialData]);
 
@@ -211,15 +188,13 @@ export default function MerchantInfoForm({
     const saveFormData = () => {
       const dataToSave = {
         ...formValues,
-        activities: selectedSectors,
-        sub_activities: selectedSubSectors,
       };
     };
 
     // Debounce save to prevent too frequent writes
     const timeoutId = setTimeout(saveFormData, 500);
     return () => clearTimeout(timeoutId);
-  }, [formValues, selectedSectors, selectedSubSectors]);
+  }, [formValues]);
 
   const loadAddresses = async () => {
     try {
@@ -310,22 +285,6 @@ export default function MerchantInfoForm({
     //   });
     //   hasError = true;
     // }
-
-    if (!selectedSectors.length) {
-      setError("activities", {
-        type: "manual",
-        message: "Au moins un secteur d'activité est requis",
-      });
-      hasError = true;
-    }
-
-    if (!selectedSubSectors.length) {
-      setError("sub_activities", {
-        type: "manual",
-        message: "Au moins un sous-secteur d'activité est requis",
-      });
-      hasError = true;
-    }
 
     if (!data.date_naissance) {
       setError("date_naissance", {
@@ -418,8 +377,6 @@ export default function MerchantInfoForm({
       ...getValues(),
       profile_photo: profilePreview || DEFAULT_AVATAR,
       signature_photo: signaturePreview || DEFAULT_SIGNATURE,
-      activities: selectedSectors,
-      sub_activities: selectedSubSectors,
     };
 
     onSubmit(formData);
@@ -567,85 +524,33 @@ export default function MerchantInfoForm({
             )}
           </div>
 
-          {/* Cinquième ligne - Secteurs */}
+          {/* Quatrième ligne */}
           <div className="space-y-2">
             <Label className="text-cyan-700 dark:text-cyan-300">
-              Secteurs d'activité <span className="text-red-500">*</span>
+              Type d'adhérent <span className="text-red-500">*</span>
             </Label>
-            <Popover open={openSectors} onOpenChange={setOpenSectors}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openSectors}
-                  className="w-full justify-between dark:bg-cyan-950 bg-white border-cyan-200 dark:border-cyan-800 focus-visible:ring-cyan-500"
-                >
-                  {selectedSectors.length > 0
-                    ? `${selectedSectors.length} secteur(s) sélectionné(s)`
-                    : "Sélectionner les secteurs"}
-                  <Check className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Rechercher un secteur..." />
-                  <CommandEmpty>Aucun secteur trouvé.</CommandEmpty>
-                  <CommandGroup className="max-h-[200px] overflow-y-auto">
-                    {sectors.map((sector) => (
-                      <CommandItem
-                        key={sector.id}
-                        onSelect={() => {
-                          setSelectedSectors((prev) => {
-                            const newSectors = prev.includes(sector)
-                              ? prev.filter((s) => s.id !== sector.id)
-                              : [...prev, sector];
-                            setValue(
-                              "activity_ids",
-                              newSectors.map((s) => s.id)
-                            );
-                            return newSectors;
-                          });
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedSectors.some((s) => s.id === sector.id)
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                        {sector.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <div className="flex flex-wrap gap-2">
-              {selectedSectors.map((sector) => (
-                <Badge
-                  key={sector.id}
-                  variant="secondary"
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setSelectedSectors((prev) => {
-                      const newSectors = prev.filter((s) => s.id !== sector.id);
-                      setValue(
-                        "activity_ids",
-                        newSectors.map((s) => s.id)
-                      );
-                      return newSectors;
-                    });
-                  }}
-                >
-                  {sector.name}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-            </div>
+            <Select
+              onValueChange={(value) =>
+                setValue("type_adherent", value as "ADHERANT" | "MEMBRE")
+              }
+              defaultValue={watch("type_adherent")}
+              required
+              disabled={true}
+            >
+              <SelectTrigger className="bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800 focus-visible:ring-cyan-500">
+                <SelectValue placeholder="Sélectionnez le type d'adhérent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ADHERANT">Adhérent</SelectItem>
+                <SelectItem value="MEMBRE">Membre</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.type_adherent && (
+              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                {errors.type_adherent.message}
+              </p>
+            )}
           </div>
-
 
         </div>
 
@@ -822,114 +727,7 @@ export default function MerchantInfoForm({
             )}
           </div>
 
-          {/* Quatrième ligne */}
-          <div className="space-y-2">
-            <Label className="text-cyan-700 dark:text-cyan-300">
-              Type d'adhérent <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              onValueChange={(value) =>
-                setValue("type_adherent", value as "ADHERANT" | "MEMBRE")
-              }
-              defaultValue={watch("type_adherent")}
-              required
-              disabled={true}
-            >
-              <SelectTrigger className="bg-white dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800 focus-visible:ring-cyan-500">
-                <SelectValue placeholder="Sélectionnez le type d'adhérent" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ADHERANT">Adhérent</SelectItem>
-                <SelectItem value="MEMBRE">Membre</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.type_adherent && (
-              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                {errors.type_adherent.message}
-              </p>
-            )}
-          </div>
-
-          {/* Cinquième ligne - Sous-secteurs */}
-          <div className="space-y-2">
-            <Label className="text-cyan-700 dark:text-cyan-300">
-              Sous-secteurs d'activité <span className="text-red-500">*</span>
-            </Label>
-            <Popover open={openSubSectors} onOpenChange={setOpenSubSectors}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openSubSectors}
-                  className="w-full justify-between dark:bg-cyan-950 bg-white border-cyan-200 dark:border-cyan-800 focus-visible:ring-cyan-500"
-                >
-                  {selectedSubSectors.length > 0
-                    ? `${selectedSubSectors.length} sous-secteur(s) sélectionné(s)`
-                    : "Sélectionner les sous-secteurs"}
-                  <Check className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Rechercher un sous-secteur..." />
-                  <CommandEmpty>Aucun sous-secteur trouvé.</CommandEmpty>
-                  <CommandGroup className="max-h-[200px] overflow-y-auto">
-                    {subSectors.map((subSector) => (
-                      <CommandItem
-                        key={subSector.id}
-                        onSelect={() => {
-                          setSelectedSubSectors((prev) => {
-                            const newSubSectors = prev.includes(subSector)
-                              ? prev.filter((s) => s.id !== subSector.id)
-                              : [...prev, subSector];
-                            setValue(
-                              "sub_activity_ids",
-                              newSubSectors.map((s) => s.id)
-                            );
-                            return newSubSectors;
-                          });
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedSubSectors.includes(subSector)
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                        {subSector.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <div className="flex flex-wrap gap-2">
-              {selectedSubSectors.map((subSector) => (
-                <Badge
-                  key={subSector.id}
-                  variant="secondary"
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setSelectedSubSectors((prev) => {
-                      const newSubSectors = prev.filter(
-                        (s) => s.id !== subSector.id
-                      );
-                      setValue(
-                        "sub_activity_ids",
-                        newSubSectors.map((s) => s.id)
-                      );
-                      return newSubSectors;
-                    });
-                  }}
-                >
-                  {subSector.name}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-            </div>
-          </div>
+          
         </div>
       </div>
 
