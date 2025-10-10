@@ -25,6 +25,7 @@ import { Search } from "lucide-react";
 
 import type { User } from "@/types";
 import AddUserDialog from "./(dialog)/AddUserDialog";
+import ChangePasswordDialog from "./(dialog)/ChangePasswordDialog";
 import { getUsers } from "@/fetcher/api-fetcher";
 import { toast } from "@/hooks/use-toast";
 import { user_roles, user_status_list } from "@/types/const";
@@ -178,7 +179,9 @@ export default function UsersPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
+          className="flex gap-3"
         >
+          <ChangePasswordDialog />
           <AddUserDialog afterClose={setAfterUserDialogClose} />
         </motion.div>
       </div>

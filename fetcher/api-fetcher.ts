@@ -45,6 +45,9 @@ export const getUserDetail = (id): Promise<User> => fetcher(`/api/users/${id}`);
 export const resetPassword = (email: string): Promise<any> => 
   poster('/api/users/admin/reset_password', { email });
 
+export const changePassword = (data: { old_password: string; new_password: string; confirm_password: string }): Promise<any> => 
+  poster('/api/users/change_password', data);
+
 export const getMerchants = async (params: Record<string, any> = {}): Promise<DjangoPaginatedResponse<MerchantEnrollment>> => {
   let queryString;
   if (params.url) {

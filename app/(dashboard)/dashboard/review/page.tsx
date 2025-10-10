@@ -30,6 +30,7 @@ import { MerchantInfoDialog } from '../merchants/(dialog)/MerchantInfoDialog';
 import { AuthActions } from '@/app/(auth)/utils';
 import { MerchantCardSkeleton } from '@/components/merchant/merchant-card-skeleton';
 import { MerchantRejectDialog } from './(Dialog)/MerchantRejectDialog';
+import ChangePasswordDialog from '../users/(dialog)/ChangePasswordDialog';
 
 const statusMap = {
   A_VALIDER: 'A Valider',
@@ -52,6 +53,8 @@ const getStatusColor = (status: string) => {
 };
 
 export default function MerchantReviewPage() {
+  const { getUserRoleFromToken } = AuthActions();
+  const [role, setRole] = useState(null);
   const [data, setData] = useState<MerchantEnrollment[]>([]);
   const { getUserIdFromToken } = AuthActions();
   const [loading, setLoading] = useState(true);
@@ -97,6 +100,11 @@ export default function MerchantReviewPage() {
   useEffect(() => {
     loadMerchants();
   }, [searchTerm, status, date, activityType]);
+
+  useEffect(() => {
+    const role = getUserRoleFromToken();
+    setRole(role);
+  }, []);
 
   const handleApprove = async (merchant: MerchantEnrollment) => {
     showConfirmation({
@@ -240,6 +248,7 @@ export default function MerchantReviewPage() {
         )}>
           Dossier des Commerçants
         </h1>
+        {role !== "admin" && <ChangePasswordDialog />}
       </div>
 
       <Card className={cn(

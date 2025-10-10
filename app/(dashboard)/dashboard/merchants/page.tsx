@@ -21,8 +21,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { statusMap } from '@/types/const';
 import { MerchantInfoDialog } from './(dialog)/MerchantInfoDialog';
+import ChangePasswordDialog from '../users/(dialog)/ChangePasswordDialog';
+import { AuthActions } from '@/app/(auth)/utils';
+
 
 export default function MerchantsPage() {
+
+  const { getUserRoleFromToken } = AuthActions();
+  const [role, setRole] = useState(null);
   const [data, setData] = useState<MerchantEnrollment[]>([]);
   const [loading, setLoading] = useState(true);
   const [next, setNext] = useState<string | null>(null);
@@ -63,6 +69,11 @@ export default function MerchantsPage() {
   useEffect(() => {
     loadMerchants();
   }, [searchTerm, status, date]);
+
+    useEffect(() => {
+      const role = getUserRoleFromToken();
+      setRole(role);
+    }, []);
 
   const actionsColumn = {
     header: "Actions", 
@@ -112,11 +123,18 @@ export default function MerchantsPage() {
           <Button
             variant="outline"
             onClick={() => window.location.href = '/dashboard/merchants/enrollment'}
-            className="flex items-center gap-2"
+              className={cn(
+                "gap-2",
+                "dark:border-cyan-900/20 border-cyan-600/20",
+                "dark:text-cyan-400 text-cyan-600",
+                "dark:hover:bg-cyan-500/10 hover:bg-cyan-500/10",
+                "dark:hover:text-cyan-300 hover:text-cyan-700"
+              )}
           >
             <Plus className="w-4 h-4" />
             Commencer l&apos;enrollment
           </Button>
+          {role !== "admin" && <ChangePasswordDialog />}
         </motion.div>
       </div>
 

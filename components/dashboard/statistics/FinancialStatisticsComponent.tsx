@@ -15,10 +15,51 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
   // Format amounts helper function
   const formatAmount = (amount: number) => {
     if (amount >= 1000000) {
-      return `${(amount / 1000000).toLocaleString(undefined, { maximumFractionDigits: 1 })}M`;
+      const millions = amount / 1000000;
+      return `${millions.toFixed(1)}M`;
     }
-    return amount.toLocaleString();
+    if (amount >= 1000) {
+      const thousands = amount / 1000;
+      return `${thousands.toFixed(1)}K`;
+    }
+    return amount.toString();
   };
+
+  // Calculate total FASO and CCIAG amounts from all payment types
+  const calculateTotalFasoAmount = (): number => {
+    if (!financialStatistics.payment_type_statistics?.details) return financialStatistics.faso_amount || 0;
+    return financialStatistics.payment_type_statistics.details.reduce(
+      (sum, detail) => sum + (detail.faso_amount || 0),
+      0
+    );
+  };
+
+  const calculateTotalCciagAmount = (): number => {
+    if (!financialStatistics.payment_type_statistics?.details) return financialStatistics.cciag_amount || 0;
+    return financialStatistics.payment_type_statistics.details.reduce(
+      (sum, detail) => sum + (detail.cciag_amount || 0),
+      0
+    );
+  };
+
+  const totalFasoAmount = calculateTotalFasoAmount();
+  const totalCciagAmount = calculateTotalCciagAmount();
+
+  // Calculate accurate percentages based on actual amounts
+  const calculatePercentage = (partAmount: number, totalAmount: number): number => {
+    if (totalAmount === 0) return 0;
+    return Number(((partAmount / totalAmount) * 100).toFixed(2));
+  };
+
+  const fasoPercentage = calculatePercentage(
+    totalFasoAmount,
+    financialStatistics.total_amount_collected || 0
+  );
+
+  const cciagPercentage = calculatePercentage(
+    totalCciagAmount,
+    financialStatistics.total_amount_collected || 0
+  );
 
   // Animation variants
   const containerVariants = {
@@ -110,7 +151,7 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
                   Part FASO
                 </CardTitle>
                 <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">
-                  {formatAmount(financialStatistics.faso_amount || 0)} GNF
+                  {formatAmount(totalFasoAmount)} GNF
                 </div>
               </div>
               <div className="rounded-full bg-emerald-500/20 p-2.5">
@@ -119,7 +160,7 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
             </CardHeader>
             <CardContent className="relative z-10 pt-0">
               <div className="flex items-center text-sm text-emerald-600 dark:text-emerald-400">
-                <span>{financialStatistics.faso_percentage || 0}% du montant total</span>
+                <span>{fasoPercentage}% du montant total</span>
               </div>
             </CardContent>
           </Card>
@@ -135,7 +176,7 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
                   Part CCIAG
                 </CardTitle>
                 <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-1">
-                  {formatAmount(financialStatistics.cciag_amount || 0)} GNF
+                  {formatAmount(totalCciagAmount)} GNF
                 </div>
               </div>
               <div className="rounded-full bg-blue-500/20 p-2.5">
@@ -144,7 +185,7 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
             </CardHeader>
             <CardContent className="relative z-10 pt-0">
               <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
-                <span>{financialStatistics.cciag_percentage || 0}% du montant total</span>
+                <span>{cciagPercentage}% du montant total</span>
               </div>
             </CardContent>
           </Card>

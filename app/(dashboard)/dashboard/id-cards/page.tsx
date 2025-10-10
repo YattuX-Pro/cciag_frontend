@@ -29,6 +29,7 @@ import { useConfirmationDialog } from '@/hooks/use-confirmation-dialog';
 import { AuthActions } from '@/app/(auth)/utils';
 import { MerchantCardSkeleton } from '@/components/merchant/merchant-card-skeleton';
 import BadgeCardDialog from './(dialog)/BadgeCardDialog';
+import ChangePasswordDialog from '../users/(dialog)/ChangePasswordDialog';
 
 const statusMap = {
   A_VALIDER: 'A Valider',
@@ -52,12 +53,13 @@ const getStatusColor = (status: string) => {
 
 export default function MerchantReviewPage() {
   const [data, setData] = useState<MerchantEnrollment[]>([]);
-  const { getUserIdFromToken } = AuthActions();
+  const { getUserIdFromToken, getUserRoleFromToken } = AuthActions();
   const [loading, setLoading] = useState(true);
   const [next, setNext] = useState<string | null>(null);
   const [previous, setPrevious] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [role, setRole] = useState(null);
   const [activityType, setActivityType] = useState<string>('all');
 
   const { showConfirmation } = useConfirmationDialog();
@@ -95,6 +97,11 @@ export default function MerchantReviewPage() {
     loadMerchants();
   }, [searchTerm, activityType]);
 
+  useEffect(() => {
+    const role = getUserRoleFromToken();
+    setRole(role);
+  }, []);
+
 
   return (
     <div className="space-y-6">
@@ -119,6 +126,7 @@ export default function MerchantReviewPage() {
         )}>
           Cartes
         </h1>
+        {role !== "admin" && <ChangePasswordDialog />}
       </div>
 
       <Card className={cn(

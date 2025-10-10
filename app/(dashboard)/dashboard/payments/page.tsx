@@ -29,8 +29,12 @@ import { columns } from './columns';
 import { PaymentDialog } from './payment-dialog';
 import { OrangeMoneyList } from './orange-money-list';
 import { OrangeMoneyDialog } from './orange-money-dialog';
+import ChangePasswordDialog from '../users/(dialog)/ChangePasswordDialog';
+import { AuthActions } from '@/app/(auth)/utils';
 
 export default function MerchantPaymentPage() {
+  const { getUserRoleFromToken } = AuthActions();
+  const [role, setRole] = useState(null);
   const [data, setData] = useState<MerchantPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [next, setNext] = useState<string | null>(null);
@@ -83,6 +87,11 @@ export default function MerchantPaymentPage() {
     loadCardPaymentPage();
     loadPaymentStatistics();
   }, [searchTerm, status]);
+
+    useEffect(() => {
+      const role = getUserRoleFromToken();
+      setRole(role);
+    }, []);
 
   const actionsColumn: Column<MerchantPayment> = {
     header: "Actions", 
@@ -162,6 +171,7 @@ export default function MerchantPaymentPage() {
       >
         Paiements
       </motion.h1>
+      {role !== "admin" && <ChangePasswordDialog />}
     </div>
 
     {/* Payment Status Cards */}
