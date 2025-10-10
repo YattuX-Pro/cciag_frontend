@@ -335,7 +335,8 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
                           borderColor: 'hsl(var(--border))',
                           borderRadius: '12px',
                           boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05)',
-                          border: 'none'
+                          border: 'none',
+                          padding: '12px'
                         }}
                         itemStyle={{
                           color: 'var(--foreground)',
@@ -343,9 +344,17 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
                         }}
                         labelStyle={{
                           color: 'var(--foreground)',
-                          fontWeight: '600'
+                          fontWeight: '600',
+                          marginBottom: '8px'
                         }}
-                        formatter={(value: any) => [`${value.toLocaleString()} GNF`, '']}
+                        formatter={(value: any, name: string, props: any) => {
+                          const totalForPeriod = (props.payload.faso_amount || 0) + (props.payload.cciag_amount || 0);
+                          const percentage = totalForPeriod > 0 ? ((value / totalForPeriod) * 100).toFixed(1) : '0.0';
+                          return [
+                            `${value.toLocaleString()} GNF (${percentage}%)`,
+                            name
+                          ];
+                        }}
                         cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
                       />
                       <Legend 
@@ -362,6 +371,18 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
                         stackId="a" 
                         fill="#10b981"
                         radius={[0, 0, 4, 4]}
+                        label={{
+                          position: 'center',
+                          formatter: (value: any, entry: any) => {
+                            if (!entry || !entry.payload) return '';
+                            const total = (entry.payload.faso_amount || 0) + (entry.payload.cciag_amount || 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : '0';
+                            return value > 0 ? `${percentage}%` : '';
+                          },
+                          fill: '#ffffff',
+                          fontSize: 12,
+                          fontWeight: 600
+                        }}
                       />
                       <Bar 
                         dataKey="cciag_amount" 
@@ -369,6 +390,18 @@ export default function FinancialStatisticsComponent({ financialStatistics }: Fi
                         stackId="a" 
                         fill="#3b82f6"
                         radius={[4, 4, 0, 0]}
+                        label={{
+                          position: 'center',
+                          formatter: (value: any, entry: any) => {
+                            if (!entry || !entry.payload) return '';
+                            const total = (entry.payload.faso_amount || 0) + (entry.payload.cciag_amount || 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : '0';
+                            return value > 0 ? `${percentage}%` : '';
+                          },
+                          fill: '#ffffff',
+                          fontSize: 12,
+                          fontWeight: 600
+                        }}
                       />
                     </BarChart>
                   ) : (
